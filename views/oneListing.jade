@@ -1,0 +1,36 @@
+extends layout
+
+block content
+  .w3-row-padding.w3-padding-48
+    form(action='/getlistings', method='get')
+      .w3-col.s4.w3-padding-small
+        input.w3-input(type='text', placeholder='Resort ID', id='resort_id', name='resort_id', required)
+      .w3-col.s4.w3-padding-small
+        select.w3-select(required, id='suite_type', name='suite_type')
+          option(value='', disabled='', selected='') Select Suite Type
+          option(value='Studio') Studio
+          option(value='1 Bedroom') 1 Bedroom
+          option(value='2 Bedroom') 2 Bedroom
+          option(value='3 Bedroom') 3 Bedroom
+          option(value='4 Bedroom') 4 Bedroom
+      .w3-col.s2.w3-padding-small
+        input.w3-input(type='number', placeholder='Months', id='months', name='months', required)
+      .w3-col.s2.w3-padding-small
+        input(type='submit', value='Run', class='w3-btn w3-round w3-green w3-block')
+    .w3-padding-64
+      table.w3-table.w3-card.w3-centered
+        tr
+          th Guesty Listing ID
+          th Wyndham Resort ID
+          th Unit Type
+          th Status
+          th Started At
+          th Finished At
+        tr
+          td WOR-C-W-EST-1BRMU
+          td PI|R000000000031
+          td 1 BEDROOM
+          td DONE
+          td 2023-09-07 02:28:56
+          td 2023-09-06 22:48:37
+

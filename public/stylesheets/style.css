@@ -1,0 +1,15 @@
+body{
+  font-family: Montserrat Light;
+}
+
+.w3-input:focus {
+  outline: none;
+}
+
+.w3-select:focus {
+  outline: none;
+}
+
+.w3-btn:hover {
+  box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2); 
+}

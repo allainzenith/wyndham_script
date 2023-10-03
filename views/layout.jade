@@ -1,0 +1,94 @@
+doctype html
+html(lang='en')
+  head
+    meta(charset='UTF-8')
+    meta(name='viewport', content='width=device-width, initial-scale=1.0')
+    link(rel='stylesheet', href='https://www.w3schools.com/w3css/4/w3.css')
+    link(rel='stylesheet', type='text/css', href='/stylesheets/style.css')
+    title Wyndham Script
+  body
+
+    #mySidebar.w3-sidebar.w3-light-grey.w3-card
+      button.w3-bar-item.w3-button.w3-large(onclick='w3_close()') &#9776;
+      .w3-bar-item
+        center
+          img(src='/images/logo.png', style='width:40%;height:40%')
+      a.w3-bar-item.w3-button.w3-block.w3-left-align(id='', onclick='navigate(this.id)') Update Calendar
+      #updateItems.w3-bar-block.w3-hide.w3-white.w3-card-4
+        a.w3-bar-item.w3-button(id='oneListing', onclick='navigate(this.id)') One Listing
+        a.w3-bar-item.w3-button(id='allListings', onclick='navigate(this.id)') All Listings
+        a.w3-bar-item.w3-button(id='scheduledUpdates', onclick='navigate(this.id)') Scheduled Updates
+      a.w3-bar-item.w3-button.w3-block.w3-left-align(id='resorts', onclick='navigate(this.id)') Resorts
+      a.w3-bar-item.w3-button.w3-block.w3-left-align(id='events', onclick='navigate(this.id)') Events
+
+    #main
+      div
+        button#openNav.w3-button.w3-xlarge(onclick='w3_open()') &#9776;
+      .w3-container
+        block content
+  script.
+    window.onload = w3_open();
+    
+    function w3_open() {
+      document.getElementById("main").style.marginLeft = "15%";
+      document.getElementById("mySidebar").style.width = "15%";
+      document.getElementById("mySidebar").style.display = "block";
+      document.getElementById("openNav").style.display = 'none';
+
+      checkHref();
+    }
+    
+    function w3_close() {
+      document.getElementById("main").style.marginLeft = "0%";
+      document.getElementById("mySidebar").style.display = "none";
+      document.getElementById("openNav").style.display = "inline-block";
+
+      checkHref();
+    }
+
+    function checkHref() {  
+      let id = (window.location.pathname).replace("/","");
+      id = (id === "") ? "oneListing": id;
+
+      if(id !== "resorts" && id !== "events"){
+        selectItemformAccordion(id);
+      } else {
+        var parItem = document.getElementById(id);
+
+        //becomes true if item is not highlighted as green
+        if (parItem.className.indexOf("w3-green") == -1) {
+          parItem.className += " w3-green";
+        } else { 
+          parItem.className = parItem.className.replace(" w3-green", "");
+        }      
+      }
+    }
+    
+    function navigate(id) {
+      window.location.href = `/${id}`;
+    }
+
+    function selectItemformAccordion(id){  
+      var item = document.getElementById("updateItems");
+      if (item.className.indexOf("w3-show") == -1) {
+        item.className += " w3-show";
+        //set the parent item's color to green
+        item.previousElementSibling.className += " w3-green";
+      } else { 
+        item.className = item.className.replace(" w3-show", "");
+        item.previousElementSibling.className = item.previousElementSibling.className.replace(" w3-green", "");
+      }
+
+      var accordionItems = item.querySelectorAll(".w3-button");
+
+      for (var i = 0; i < accordionItems.length; i++) {
+        accordionItem = accordionItems[i];
+        accordionItem.className = accordionItem.className.replace(" w3-sand", "");
+
+      }
+
+      var selectedAccordionItem = document.getElementById(id);
+      selectedAccordionItem.className += " w3-sand"
+    }
+
+
