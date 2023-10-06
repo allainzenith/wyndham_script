@@ -2,15 +2,26 @@ const axios = require('axios')
 const qs = require('qs');
 const fs = require('fs');
 const path = require('path');
+const { Sequelize } = require('sequelize');
 
 // Wyndham Credentials
 userName = "SJO111"
 passWord = "zgw5qbc@xpw2JEQ@ypy"
 
 // For database connection
-database = "wyndham_script";
-dbUsername = "root";
-dbPassword = "asdasd";
+// database = "wyndham_script";
+// dbUsername = "root";
+// dbPassword = "asdasd";
+
+const sequelize = new Sequelize("wyndham_script", "root", "asdasd", {
+    host: 'localhost',
+    dialect: 'mysql',
+    define : { freezeTableName: true },
+    dialectOptions: {
+        timezone: 'America/New_York',
+    },
+    logging: false
+});
 
 
 // Guesty Application (name: 'scraper-allain-dev')
@@ -100,11 +111,9 @@ async function returnAValidToken(clientID, clientSecret){
 module.exports = {
     userName,
     passWord,
-    database,
-    dbUsername,
-    dbPassword,
     clientID,
     clientSecret,
     MAP_API_KEY,
+    sequelize,
     returnAValidToken
 };

@@ -1,3 +1,27 @@
-2023/10/03-16:18:24.166 31cc Creating DB C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage since it was missing.
-2023/10/03-16:18:24.893 31cc Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/MANIFEST-000001
-2023/10/03-16:20:29.222 804 Level-0 table #5: started
+2023/10/06-11:04:15.134 27f8 Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/MANIFEST-000001
+2023/10/06-11:04:15.136 27f8 Recovering log #449
+2023/10/06-11:04:15.149 27f8 Level-0 table #452: started
+2023/10/06-11:04:15.277 27f8 Level-0 table #452: 711675 bytes OK
+2023/10/06-11:04:15.279 27f8 Recovering log #451
+2023/10/06-11:04:15.300 27f8 Level-0 table #453: started
+2023/10/06-11:04:15.380 27f8 Level-0 table #453: 472332 bytes OK
+2023/10/06-11:04:15.429 27f8 Delete type=0 #449
+2023/10/06-11:04:15.429 27f8 Delete type=0 #451
+2023/10/06-11:04:24.317 2fb0 Level-0 table #456: started
+2023/10/06-11:04:24.406 2fb0 Level-0 table #456: 443999 bytes OK
+2023/10/06-11:04:24.434 2fb0 Delete type=0 #454
+2023/10/06-11:04:24.436 2fb0 Compacting 4@0 + 1@1 files
+2023/10/06-11:04:24.512 2fb0 Generated table #457@0: 1341 keys, 458570 bytes
+2023/10/06-11:04:24.512 2fb0 Compacted 4@0 + 1@1 files => 458570 bytes
+2023/10/06-11:04:24.539 2fb0 compacted to: files[ 0 1 9 0 0 0 0 ]
+2023/10/06-11:04:24.541 2fb0 Delete type=2 #448
+2023/10/06-11:04:24.541 2fb0 Delete type=2 #450
+2023/10/06-11:04:24.541 2fb0 Delete type=2 #452
+2023/10/06-11:04:24.541 2fb0 Delete type=2 #453
+2023/10/06-11:04:24.541 2fb0 Delete type=2 #456
+2023/10/06-11:05:11.654 2fb0 Level-0 table #459: started
+2023/10/06-11:05:11.722 2fb0 Level-0 table #459: 35520 bytes OK
+2023/10/06-11:05:11.776 2fb0 Delete type=0 #455
+2023/10/06-11:05:23.075 2fb0 Level-0 table #461: started
+2023/10/06-11:05:23.112 27f8 Current memtable full; waiting...
+2023/10/06-11:05:23.314 2fb0 Level-0 table #461: 711672 bytes IO error: C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/000461.ldb: OS or hardware error. (ChromeMethodBFE: 8::NewRandomAccessFile::16)

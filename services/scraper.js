@@ -32,9 +32,10 @@ async function executeScraper(resortID, suiteType, months){
     await browser.close();
 
     if (doneLogin && doneSelecting && doneScraping && doneGettingAddress){
-      return { address, updatedAvail };
+      console.log("Done scraping. Calendar updating...")
+      return { address, updatedAvail, sElement };
     } else {
-      console.log("One or more of the processes did not execute successfully. Please try again.")
+      console.log("One or more of the scraping processes did not execute successfully. Please try again.")
       return null;
     }
 
@@ -111,8 +112,10 @@ async function selectElements(resortID, suiteType){
     var calendarUrl = `https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`;
     await page.goto(calendarUrl);   
 
+    await page.waitForTimeout(5000);
+
     const resortSelector = "#ResortSelect";
-    await page.waitForSelector(resortSelector);
+    // await page.waitForSelector(resortSelector);
 
     let selectedOptionText = await page.evaluate((selector) => {
       const select = document.querySelector(selector);
@@ -292,8 +295,8 @@ async function getResortAddress(resortID, sElement){
 
     const placeholderText = 'Enter a location';
     const inputSelector = `input[placeholder="${placeholderText}"]`;
-    // const textToEnter = `${sElement}`;
     const textToEnter = sElement;
+    const id = resortID.replace("|","");
   
     // Type text into the input field
     await pageForAddress.type(inputSelector, textToEnter);
@@ -301,11 +304,12 @@ async function getResortAddress(resortID, sElement){
     // Simulate pressing the Enter key
     await pageForAddress.keyboard.press('Enter');
 
+    const resortCardSelector = `#${id}.resort-card`;
+    const resortCardElement = await pageForAddress.waitForSelector(resortCardSelector, { timeout: 5000 });
     const resortCardAddressSelector = '.resort-card__address';
-    await pageForAddress.waitForSelector(resortCardAddressSelector)
+    await resortCardElement.waitForSelector(resortCardAddressSelector, { timeout: 5000 });
 
-
-    let resortAddress = await pageForAddress.$eval(resortCardAddressSelector, (element) => {
+    let resortAddress = await resortCardElement.$eval(resortCardAddressSelector, (element) => {
       return element.textContent;
     });
 

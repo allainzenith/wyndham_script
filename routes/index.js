@@ -1,8 +1,9 @@
 var express = require('express');
 var router = express.Router();
-var { executeScraper } = require('../services/scraper')
-var { executeUpdates } = require('../services/guestyUpdates')
-var { saveRecord, updateRecord, deleteRecord, findRecords } = require('../sequelizer/controller/controller')
+var { executeScript } = require('../scripts/oneListing');
+var { joinTwoTables } = require('../sequelizer/controller/controller')
+const { sequelize } = require('../config/config');
+const { format } = require('date-fns');
 
 router.get('/', function(req, res, next) {
   res.render('oneListing');
@@ -34,11 +35,10 @@ router.get('/events', function(req, res, next) {
 
 });
 
-
-router.get('/getlistings', async(req, res, next) => {
-  var resortID = req.query.resort_id;
-  var suiteType = req.query.suite_type;
-  var months = req.query.months;
+router.get('/one', async(req, res, next) => {
+  const resortID = req.query.resort_id;
+  const suiteType = req.query.suite_type;
+  const months = req.query.months;
 
   console.log(resortID)
   console.log(suiteType)
@@ -47,53 +47,45 @@ router.get('/getlistings', async(req, res, next) => {
   res.redirect('/');
 
   const token = await req.token;
+  const executedScript = await executeScript(token, resortID, suiteType, months);
 
-  // const data = {
-  //   execType: "ONE_LISTING",
-  //   resortID: resortID,
-  //   execStatus: "UPDATING_DONE",
-  // }
-
-  // const recordObject = await saveRecord(data, "execution");
-
-  // const updatedData = {
-  //   execStatus: "DONE_SCRAPING",
-  // }
-
-  // await new Promise(resolve => setTimeout(resolve, 60000));
-
-  //FINDS ALL RECORDS WITH A SPECIFIF EXECTYPE
-  condJson = {
-    execType: "ONE_LISTING"
-  }
-  const foundRecords = await findRecords(condJson, "execution")
-  for (const f of foundRecords){
-    console.log(JSON.stringify(f, null, 2));
-  }
-
-  // forUpdate = await executeScraper(resortID, suiteType, months);
-
-  // console.log("PADUNG NA UPDATE")
-
-  // options = {
-  //   'Studio': 0,
-  //   '1 Bedroom': 1,
-  //   '2 Bedroom': 2,
-  //   '3 Bedroom': 3,
-  //   '4 Bedroom': 4,
-  // } 
-
-  // if (forUpdate !== null) {
-  //   address = forUpdate.address;
-  //   updatedAvail = forUpdate.updatedAvail;
-
-  //   result = await executeUpdates(token, address, updatedAvail, options[suiteType]);
-  //   console.log(result);
-  // }
-
+  console.log("Executed Script Successfully: " + executedScript);
 
 
 });
 
+// SSE ENDPOINTS
+router.get('/sse/oneListing', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  setInterval(async () => {
+    const eventCond = {
+      execType: "ONE_RESORT"
+    }
+
+    
+    let data = await joinTwoTables("execution", "resorts", eventCond, "createdAt");
+
+    const formattedRecords = data.map(item => ({
+      ...item.toJSON(), 
+      resort: {
+        listingName: item.resort.listingName === null? "To be updated": item.resort.listingName, 
+        resortName: item.resort.resortName === null? "To be updated": item.resort.resortName, 
+        unitType: item.resort.unitType === null? "To be updated": item.resort.unitType, 
+      },
+      createdAt: format(item.createdAt, 'MM-dd-yyyy HH:mm:ss'),
+      updatedAt: format(item.updatedAt, 'MM-dd-yyyy HH:mm:ss'),
+    }));
+
+    res.write(`data: ${JSON.stringify(formattedRecords)}\n\n`);
+  }, 1000);
+});
+
 module.exports = router;
+
+
+
+
 

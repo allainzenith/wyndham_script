@@ -13,3 +13,10 @@ body{
 .w3-btn:hover {
   box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2); 
 }
+
+.w3-table td {
+  max-width: 250px; 
+  white-space: nowrap; 
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+}

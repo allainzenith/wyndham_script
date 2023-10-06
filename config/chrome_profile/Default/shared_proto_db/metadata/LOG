@@ -1,2 +1,3 @@
-2023/10/03-16:18:24.131 2aa8 Creating DB C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\shared_proto_db\metadata since it was missing.
-2023/10/03-16:18:24.425 2aa8 Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\shared_proto_db\metadata/MANIFEST-000001
+2023/10/06-11:04:15.021 b38 Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\shared_proto_db\metadata/MANIFEST-000001
+2023/10/06-11:04:15.021 b38 Recovering log #3
+2023/10/06-11:04:15.022 b38 Reusing old log C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\shared_proto_db\metadata/000003.log 

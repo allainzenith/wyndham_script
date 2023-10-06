@@ -5,6 +5,7 @@
 
 //// USE THE SUBSCRIBE FUNCTION TOMORROW
 const { execution, resorts } = require('../models/model')
+const { sequelize } = require('../../config/config');
 
 async function saveRecord(recordJson, objectType){
     const typeofObject = (objectType == "execution") ? execution : resorts;
@@ -12,7 +13,7 @@ async function saveRecord(recordJson, objectType){
     // create() function instantiates the object and saves it to the database
     try {
         const record = await typeofObject.create(recordJson);
-        console.log(JSON.stringify(record, null, 4)); 
+        // console.log(JSON.stringify(record, null, 4)); 
         return record;
     } catch (error) {
         console.error("Error saving record: " + error);
@@ -20,13 +21,52 @@ async function saveRecord(recordJson, objectType){
     }
 }
 
-async function findRecords(condJson, objectType){
+async function findAllRecords(objectType){
     const typeofObject = (objectType == "execution") ? execution : resorts;
-    return await typeofObject.findAll({
-        where: condJson
-      });
+    return await typeofObject.findAll();
 }
 
+async function findRecords(condJson, objectType, order){
+    const typeofObject = (objectType == "execution") ? execution : resorts;
+    var records = await typeofObject.findAll({
+        where: condJson,
+        order: [
+            [sequelize.col(order), 'DESC']
+          ],
+          
+        });
+
+    return records;
+
+}
+
+async function findByPk(primaryKey, objectType){
+    const typeofObject = (objectType == "execution") ? execution : resorts;
+    const record = await typeofObject.findByPk(primaryKey);
+    return record;
+}
+
+async function joinTwoTables(fModel, sModel, condJson, order){
+    const firstModel = (fModel == "execution") ? execution : resorts;
+    const secondModel = (sModel == "execution") ? execution : resorts;
+
+    var records = await firstModel.findAll({
+        where: condJson,
+        include: [
+        {
+            model: secondModel, 
+            required: true, 
+        },
+        ],
+        order: [
+            [sequelize.col(order), 'DESC']
+          ],
+    })
+
+    return records
+    
+  
+}
 async function updateRecord(recordJson, recordObject){
     // update() function updates fields only specified and makes other fields as-is
     // save() saves the record to the database
@@ -56,7 +96,10 @@ async function deleteRecord(recordObject){
 
 module.exports = {
     saveRecord,
+    findAllRecords,
     findRecords,
+    findByPk,
+    joinTwoTables,
     deleteRecord,
     updateRecord
 }

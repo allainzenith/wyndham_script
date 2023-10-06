@@ -2,7 +2,7 @@ extends layout
 
 block content
   .w3-row-padding.w3-padding-48
-    form(action='/getlistings', method='get')
+    form(action='/one', method='get')
       .w3-col.s4.w3-padding-small
         input.w3-input(type='text', placeholder='Resort ID', id='resort_id', name='resort_id', required)
       .w3-col.s4.w3-padding-small
@@ -20,17 +20,34 @@ block content
     .w3-padding-64
       table.w3-table.w3-card.w3-centered
         tr
-          th Guesty Listing ID
-          th Wyndham Resort ID
+          th Guesty Listing Name
+          th Wyndham Resort Name
           th Unit Type
           th Status
+          th Months
           th Started At
           th Finished At
-        tr
-          td WOR-C-W-EST-1BRMU
-          td PI|R000000000031
-          td 1 BEDROOM
-          td DONE
-          td 2023-09-07 02:28:56
-          td 2023-09-06 22:48:37
+          
+        tbody(id="table-body")
+      script.
+        const tableBody = document.getElementById("table-body");
+        const eventSource = new EventSource('/sse/oneListing');
+        eventSource.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+          tableBody.innerHTML = '';
+          data.forEach(item => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${item.resort.listingName}</td>
+              <td>${item.resort.resortName}</td>
+              <td>${item.resort.unitType}</td>
+              <td>${item.execStatus}</td>
+              <td>${item.monthstoScrape}</td>
+              <td>${item.createdAt}</td>
+              <td>${item.updatedAt}</td>
+            `;
+            tableBody.appendChild(row);
+          });
+        };
+
 
