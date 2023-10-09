@@ -17,7 +17,7 @@ const sequelize = new Sequelize("freedb_wyndham_script", "freedb_allainzenith", 
     host: 'sql.freedb.tech',
     dialect: 'mysql',
     define : { freezeTableName: true },
-    // logging: false
+    logging: false
 });
 
 
