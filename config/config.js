@@ -13,8 +13,9 @@ passWord = "zgw5qbc@xpw2JEQ@ypy"
 // dbUsername = "root";
 // dbPassword = "asdasd";
 
-const sequelize = new Sequelize("freedb_wyndham_script", "freedb_allainzenith", "Gg$wQTE%UB$xE8P", {
-    host: 'sql.freedb.tech',
+// database, username, password
+const sequelize = new Sequelize("sql12651926", "sql12651926", "ZFP2H3RNqE", {
+    host: 'sql12.freesqldatabase.com',
     dialect: 'mysql',
     define : { freezeTableName: true },
     logging: false
