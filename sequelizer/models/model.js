@@ -81,7 +81,7 @@ resorts.hasMany(execution, { foreignKey: 'resortRefNum' });
 execution.belongsTo(resorts, { foreignKey: 'resortRefNum' });
 
 (async () => {
-    await sequelize.sync();
+    await sequelize.sync({alter:true});
     // Code here
   })();
 // use sequelize.close() if all database actions are done

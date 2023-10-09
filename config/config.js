@@ -13,14 +13,11 @@ passWord = "zgw5qbc@xpw2JEQ@ypy"
 // dbUsername = "root";
 // dbPassword = "asdasd";
 
-const sequelize = new Sequelize("wyndham_script", "root", "asdasd", {
-    host: 'localhost',
+const sequelize = new Sequelize("freedb_wyndham_script", "freedb_allainzenith", "Gg$wQTE%UB$xE8P", {
+    host: 'sql.freedb.tech',
     dialect: 'mysql',
     define : { freezeTableName: true },
-    // dialectOptions: {
-    //     timezone: 'America/New_York',
-    // },
-    logging: false
+    // logging: false
 });
 
 
