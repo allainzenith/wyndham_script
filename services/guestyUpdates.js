@@ -12,13 +12,13 @@ async function executeUpdates(resortFoundorCreated, token, address, updatedAvail
         let listingID, listingName; 
 
         var resortJSON = resortFoundorCreated.toJSON()
-
-        if (resortJSON.hasOwnProperty("listingID")){
+        var resortJSONlistingID = resortJSON.listingID
+        if (resortJSONlistingID !== null){
 
             console.log("Listing found!");
-            var listings = (resortFoundorCreated.listingID).split(","); 
 
-            const listingJsonArray = listings.map(item => ({ _id: item.trim() })); 
+            var listingIDObj = resortJSONlistingID.split(","); 
+            const listingJsonArray = listingIDObj.map(item => ({ _id: item.trim() })); 
 
 
             console.log("Printing calendar availability scraped from wyndham...")
@@ -28,14 +28,13 @@ async function executeUpdates(resortFoundorCreated, token, address, updatedAvail
 
             for (const listing of listingJsonArray) {
                 console.log(await updateAvailability(listing, updatedAvail, token));
+                console.log("listing._id: " + listing._id);
+                console.log("listing.title: " + listing.title);
                 listingIDs.push(listing._id);
-                listingNames.push(listing.title);
             }
 
-            listingID = resortFoundorCreated.listingID;
-            listingName = resortFoundorCreated.listingName;
 
-            return {listingID, listingName};
+            return "okay";
 
         } else {
             console.log("There is no existing records for this listing. Searching one now..")

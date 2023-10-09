@@ -1,9 +1,9 @@
 var express = require('express');
 var router = express.Router();
-var { executeScript } = require('../scripts/oneListing');
-var { joinTwoTables } = require('../sequelizer/controller/controller')
-const { sequelize } = require('../config/config');
-const { format } = require('date-fns');
+const { format } = require('date-fns-tz');
+var { joinTwoTables } = require('../sequelizer/controller/controller');
+var { addToQueue, resourceIntensiveTask } = require('../scripts/queueProcessor');
+const { findOrCreateAResort, createAnEvent } = require('../scripts/oneListing');
 
 router.get('/', function(req, res, next) {
   res.render('oneListing');
@@ -36,23 +36,30 @@ router.get('/events', function(req, res, next) {
 });
 
 router.get('/one', async(req, res, next) => {
-  const resortID = req.query.resort_id;
-  const suiteType = req.query.suite_type;
-  const months = req.query.months;
 
-  console.log(resortID)
-  console.log(suiteType)
-  console.log(months)
+  var resortID = req.query.resort_id;
+  var suiteType = req.query.suite_type;
+  var months = req.query.months;
+  var token = await req.token;  
+  res.redirect('/');  
 
-  res.redirect('/');
-
-  const token = await req.token;
-  const executedScript = await executeScript(token, resortID, suiteType, months);
-
-  console.log("Executed Script Successfully: " + executedScript);
+  let resort = await findOrCreateAResort(resortID, suiteType); 
+  let eventCreated = ( resort !== null) ? await createAnEvent(resort.resortRefNum, months) : null;
 
 
+  if (eventCreated !== null){
+    //first parameter is a callback function
+    addToQueue(resourceIntensiveTask, () => {
+      console.log('Task completed');
+    }, token, resortID, suiteType, months, resort, eventCreated);
+  } else {
+    console.log("Creating a resort or execution record failed.")
+  }
+
+  
+  // console.log("executed: " + executed);
 });
+
 
 // SSE ENDPOINTS
 router.get('/sse/oneListing', (req, res) => {
@@ -74,9 +81,9 @@ router.get('/sse/oneListing', (req, res) => {
         listingName: item.resort.listingName === null? "To be updated": item.resort.listingName, 
         resortName: item.resort.resortName === null? "To be updated": item.resort.resortName, 
         unitType: item.resort.unitType === null? "To be updated": item.resort.unitType, 
-      },
-      createdAt: format(item.createdAt, 'MM-dd-yyyy HH:mm:ss'),
-      updatedAt: format(item.updatedAt, 'MM-dd-yyyy HH:mm:ss'),
+      },  
+      createdAt: format(item.createdAt, 'MM-dd-yyyy HH:mm:ss', { timeZone: 'America/New_York' }),
+      updatedAt: format(item.updatedAt, 'MM-dd-yyyy HH:mm:ss', { timeZone: 'America/New_York' }),
     }));
 
     res.write(`data: ${JSON.stringify(formattedRecords)}\n\n`);

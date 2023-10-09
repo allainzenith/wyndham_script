@@ -17,7 +17,7 @@ const resorts = sequelize.define('resorts', {
       allowNull: true
     },
     listingID: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
       allowNull: true
     },
     listingName: {

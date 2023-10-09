@@ -4,28 +4,23 @@ var { executeScraper } = require('../services/scraper')
 var { executeUpdates } = require('../services/guestyUpdates')
 var { saveRecord, updateRecord, findRecords } = require('../sequelizer/controller/controller')
 
-async function executeScript(token, resortID, suiteType, months){
+async function executeScript(token, resortID, suiteType, months, resortFoundorCreated, eventCreated){
 
-    const resortFoundorCreated = await findOrCreateAResort(resortID, suiteType); 
+    // const resortRefNum = resortFoundorCreated.resortRefNum;
 
-    const resortRefNum = resortFoundorCreated.resortRefNum;
-
-    const eventCreated = ( resortFoundorCreated !== null) ? await createAnEvent(resortRefNum, months) : null;
+    // // const eventCreated = ( resortFoundorCreated !== null) ? await createAnEvent(resortRefNum, months) : null;
     let scraped;
     if ( eventCreated !== null) {
         scraped = await executeScraper(resortID, suiteType, months);
     } else {
         scraped = null;
-
         await updateEventStatus(eventCreated, "SCRAPE_FAILED");
     }
 
     const success = ( scraped !== null) ? await updateGuestyandRecord(
         resortFoundorCreated, eventCreated, scraped, token, suiteType) : false;
 
-
     return success;
-
 
 }
 
@@ -100,17 +95,18 @@ async function updateGuestyandRecord(resortFoundorCreated, eventCreated, scraped
 
     let result = await executeUpdates(resortFoundorCreated, token, address, updatedAvail, options[suiteType]);
 
-    //call function to update resort and 
+    //call function to update resort and status 
     if (result !== null) {
         try {
+            if (result !== "okay"){
+                const updateResJson = {
+                    resortName: title,
+                    listingID: result.listingID,
+                    listingName: result.listingName
+                }
 
-            const updateResJson = {
-                resortName: title,
-                listingID: result.listingID,
-                listingName: result.listingName
+                await updateRecord(updateResJson, resortFoundorCreated);
             }
-
-            await updateRecord(updateResJson, resortFoundorCreated);
 
             await updateEventStatus(eventCreated, "DONE");
 
@@ -147,5 +143,7 @@ async function updateEventStatus(recordObject, status){
 
 
 module.exports = {
-    executeScript
+    executeScript,
+    findOrCreateAResort,
+    createAnEvent
 }

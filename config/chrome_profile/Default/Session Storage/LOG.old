@@ -1,27 +1,27 @@
-2023/10/06-10:46:03.810 1854 Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/MANIFEST-000001
-2023/10/06-10:46:03.812 1854 Recovering log #440
-2023/10/06-10:46:03.825 1854 Level-0 table #443: started
-2023/10/06-10:46:03.920 1854 Level-0 table #443: 711623 bytes OK
-2023/10/06-10:46:03.922 1854 Recovering log #442
-2023/10/06-10:46:03.932 1854 Level-0 table #444: started
-2023/10/06-10:46:03.985 1854 Level-0 table #444: 472915 bytes OK
-2023/10/06-10:46:04.017 1854 Delete type=0 #440
-2023/10/06-10:46:04.017 1854 Delete type=0 #442
-2023/10/06-10:46:13.278 1854 Level-0 table #447: started
-2023/10/06-10:46:13.369 1854 Level-0 table #447: 444628 bytes OK
-2023/10/06-10:46:13.398 1854 Delete type=0 #445
-2023/10/06-10:46:13.400 1854 Compacting 4@0 + 1@1 files
-2023/10/06-10:46:13.499 1854 Generated table #448@0: 1341 keys, 459177 bytes
-2023/10/06-10:46:13.499 1854 Compacted 4@0 + 1@1 files => 459177 bytes
-2023/10/06-10:46:13.556 1854 compacted to: files[ 0 1 9 0 0 0 0 ]
-2023/10/06-10:46:13.558 1854 Delete type=2 #439
-2023/10/06-10:46:13.558 1854 Delete type=2 #441
-2023/10/06-10:46:13.558 1854 Delete type=2 #443
-2023/10/06-10:46:13.558 1854 Delete type=2 #444
-2023/10/06-10:46:13.559 1854 Delete type=2 #447
-2023/10/06-10:47:01.247 1854 Level-0 table #450: started
-2023/10/06-10:47:01.341 1854 Level-0 table #450: 35355 bytes OK
-2023/10/06-10:47:01.366 1854 Delete type=0 #446
-2023/10/06-10:47:12.311 2cb8 Level-0 table #452: started
-2023/10/06-10:47:12.351 1854 Current memtable full; waiting...
-2023/10/06-10:47:12.584 2cb8 Level-0 table #452: 711675 bytes IO error: C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/000452.ldb: OS or hardware error. (ChromeMethodBFE: 8::NewRandomAccessFile::16)
+2023/10/06-19:22:00.444 3260 Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/MANIFEST-000001
+2023/10/06-19:22:00.450 3260 Recovering log #684
+2023/10/06-19:22:00.463 3260 Level-0 table #688: started
+2023/10/06-19:22:00.642 3260 Level-0 table #688: 711618 bytes OK
+2023/10/06-19:22:00.644 3260 Recovering log #687
+2023/10/06-19:22:00.655 3260 Level-0 table #689: started
+2023/10/06-19:22:00.715 3260 Level-0 table #689: 465082 bytes OK
+2023/10/06-19:22:00.744 3260 Delete type=0 #684
+2023/10/06-19:22:00.744 3260 Delete type=0 #687
+2023/10/06-19:22:09.483 3260 Level-0 table #692: started
+2023/10/06-19:22:09.557 3260 Level-0 table #692: 443959 bytes OK
+2023/10/06-19:22:09.575 3260 Delete type=0 #690
+2023/10/06-19:22:57.762 3260 Level-0 table #694: started
+2023/10/06-19:22:57.819 3260 Level-0 table #694: 35995 bytes OK
+2023/10/06-19:22:57.888 3260 Delete type=0 #691
+2023/10/06-19:22:57.894 3260 Compacting 4@0 + 1@1 files
+2023/10/06-19:22:58.008 3260 Generated table #695@0: 204 keys, 480023 bytes
+2023/10/06-19:22:58.008 3260 Compacted 4@0 + 1@1 files => 480023 bytes
+2023/10/06-19:22:58.032 3260 compacted to: files[ 0 1 1 0 0 0 0 ]
+2023/10/06-19:22:58.034 3260 Delete type=2 #686
+2023/10/06-19:22:58.034 3260 Delete type=2 #688
+2023/10/06-19:22:58.034 3260 Delete type=2 #689
+2023/10/06-19:22:58.034 3260 Delete type=2 #692
+2023/10/06-19:22:58.034 3260 Delete type=2 #694
+2023/10/06-19:23:11.697 2854 Level-0 table #697: started
+2023/10/06-19:23:11.757 3260 Current memtable full; waiting...
+2023/10/06-19:23:12.029 2854 Level-0 table #697: 711620 bytes IO error: C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/000697.ldb: OS or hardware error. (ChromeMethodBFE: 8::NewRandomAccessFile::16)

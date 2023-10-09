@@ -1,27 +1,30 @@
-2023/10/06-11:04:15.134 27f8 Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/MANIFEST-000001
-2023/10/06-11:04:15.136 27f8 Recovering log #449
-2023/10/06-11:04:15.149 27f8 Level-0 table #452: started
-2023/10/06-11:04:15.277 27f8 Level-0 table #452: 711675 bytes OK
-2023/10/06-11:04:15.279 27f8 Recovering log #451
-2023/10/06-11:04:15.300 27f8 Level-0 table #453: started
-2023/10/06-11:04:15.380 27f8 Level-0 table #453: 472332 bytes OK
-2023/10/06-11:04:15.429 27f8 Delete type=0 #449
-2023/10/06-11:04:15.429 27f8 Delete type=0 #451
-2023/10/06-11:04:24.317 2fb0 Level-0 table #456: started
-2023/10/06-11:04:24.406 2fb0 Level-0 table #456: 443999 bytes OK
-2023/10/06-11:04:24.434 2fb0 Delete type=0 #454
-2023/10/06-11:04:24.436 2fb0 Compacting 4@0 + 1@1 files
-2023/10/06-11:04:24.512 2fb0 Generated table #457@0: 1341 keys, 458570 bytes
-2023/10/06-11:04:24.512 2fb0 Compacted 4@0 + 1@1 files => 458570 bytes
-2023/10/06-11:04:24.539 2fb0 compacted to: files[ 0 1 9 0 0 0 0 ]
-2023/10/06-11:04:24.541 2fb0 Delete type=2 #448
-2023/10/06-11:04:24.541 2fb0 Delete type=2 #450
-2023/10/06-11:04:24.541 2fb0 Delete type=2 #452
-2023/10/06-11:04:24.541 2fb0 Delete type=2 #453
-2023/10/06-11:04:24.541 2fb0 Delete type=2 #456
-2023/10/06-11:05:11.654 2fb0 Level-0 table #459: started
-2023/10/06-11:05:11.722 2fb0 Level-0 table #459: 35520 bytes OK
-2023/10/06-11:05:11.776 2fb0 Delete type=0 #455
-2023/10/06-11:05:23.075 2fb0 Level-0 table #461: started
-2023/10/06-11:05:23.112 27f8 Current memtable full; waiting...
-2023/10/06-11:05:23.314 2fb0 Level-0 table #461: 711672 bytes IO error: C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/000461.ldb: OS or hardware error. (ChromeMethodBFE: 8::NewRandomAccessFile::16)
+2023/10/06-19:39:35.314 3758 Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/MANIFEST-000001
+2023/10/06-19:39:35.316 3758 Recovering log #693
+2023/10/06-19:39:35.330 3758 Level-0 table #697: started
+2023/10/06-19:39:35.558 3758 Level-0 table #697: 711620 bytes OK
+2023/10/06-19:39:35.561 3758 Recovering log #696
+2023/10/06-19:39:35.572 3758 Level-0 table #698: started
+2023/10/06-19:39:35.697 3758 Level-0 table #698: 469479 bytes OK
+2023/10/06-19:39:35.732 3758 Delete type=0 #693
+2023/10/06-19:39:35.732 3758 Delete type=0 #696
+2023/10/06-19:39:44.206 35c0 Level-0 table #701: started
+2023/10/06-19:39:44.264 35c0 Level-0 table #701: 446667 bytes OK
+2023/10/06-19:39:44.288 35c0 Delete type=0 #699
+2023/10/06-19:40:32.317 3758 Level-0 table #703: started
+2023/10/06-19:40:32.357 3758 Level-0 table #703: 35637 bytes OK
+2023/10/06-19:40:32.378 3758 Delete type=0 #700
+2023/10/06-19:40:32.379 3758 Compacting 4@0 + 1@1 files
+2023/10/06-19:40:32.638 3758 Generated table #704@0: 220 keys, 482731 bytes
+2023/10/06-19:40:32.638 3758 Compacted 4@0 + 1@1 files => 482731 bytes
+2023/10/06-19:40:32.659 3758 compacted to: files[ 0 1 1 0 0 0 0 ]
+2023/10/06-19:40:32.664 3758 Delete type=2 #695
+2023/10/06-19:40:32.664 3758 Delete type=2 #697
+2023/10/06-19:40:32.664 3758 Delete type=2 #698
+2023/10/06-19:40:32.664 3758 Delete type=2 #701
+2023/10/06-19:40:32.664 3758 Delete type=2 #703
+2023/10/06-19:40:44.657 35c0 Level-0 table #706: started
+2023/10/06-19:40:44.762 3758 Current memtable full; waiting...
+2023/10/06-19:40:45.122 35c0 Level-0 table #706: 711574 bytes OK
+2023/10/06-19:40:45.136 35c0 Delete type=0 #702
+2023/10/06-19:40:45.145 35c0 Level-0 table #708: started
+2023/10/06-19:40:45.249 35c0 Level-0 table #708: 469296 bytes OK

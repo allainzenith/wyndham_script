@@ -17,9 +17,9 @@ const sequelize = new Sequelize("wyndham_script", "root", "asdasd", {
     host: 'localhost',
     dialect: 'mysql',
     define : { freezeTableName: true },
-    dialectOptions: {
-        timezone: 'America/New_York',
-    },
+    // dialectOptions: {
+    //     timezone: 'America/New_York',
+    // },
     logging: false
 });
 
@@ -46,7 +46,7 @@ async function returnAValidToken(clientID, clientSecret){
 
         // Compare the expiration date with the current date
         if (expirationDate <= currentDate){
-            console.log('The expiration date has passed. Creating access token now..');
+            console.log('The token expiration date has passed. Creating access token now..');
             try {
                 const postData = {
                 grant_type: 'client_credentials',
@@ -95,7 +95,7 @@ async function returnAValidToken(clientID, clientSecret){
             } 
         }
         else {
-            console.log('The expiration date is in the future.');
+            console.log('The token expiration date is in the future.');
             return jsonData.access_token;
         }
     } catch (error) {

@@ -41,6 +41,7 @@ async function executeScraper(resortID, suiteType, months){
 
   } catch (error) {
     console.error('Error:', error.message);
+    await browser.close();
     return null;
   }
 }
@@ -305,9 +306,9 @@ async function getResortAddress(resortID, sElement){
     await pageForAddress.keyboard.press('Enter');
 
     const resortCardSelector = `#${id}.resort-card`;
-    const resortCardElement = await pageForAddress.waitForSelector(resortCardSelector, { timeout: 5000 });
+    const resortCardElement = await pageForAddress.waitForSelector(resortCardSelector, { timeout: 10000 });
     const resortCardAddressSelector = '.resort-card__address';
-    await resortCardElement.waitForSelector(resortCardAddressSelector, { timeout: 5000 });
+    await resortCardElement.waitForSelector(resortCardAddressSelector, { timeout: 10000 });
 
     let resortAddress = await resortCardElement.$eval(resortCardAddressSelector, (element) => {
       return element.textContent;
