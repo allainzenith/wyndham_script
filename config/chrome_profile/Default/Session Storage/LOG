@@ -1,30 +1,17 @@
-2023/10/06-19:39:35.314 3758 Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/MANIFEST-000001
-2023/10/06-19:39:35.316 3758 Recovering log #693
-2023/10/06-19:39:35.330 3758 Level-0 table #697: started
-2023/10/06-19:39:35.558 3758 Level-0 table #697: 711620 bytes OK
-2023/10/06-19:39:35.561 3758 Recovering log #696
-2023/10/06-19:39:35.572 3758 Level-0 table #698: started
-2023/10/06-19:39:35.697 3758 Level-0 table #698: 469479 bytes OK
-2023/10/06-19:39:35.732 3758 Delete type=0 #693
-2023/10/06-19:39:35.732 3758 Delete type=0 #696
-2023/10/06-19:39:44.206 35c0 Level-0 table #701: started
-2023/10/06-19:39:44.264 35c0 Level-0 table #701: 446667 bytes OK
-2023/10/06-19:39:44.288 35c0 Delete type=0 #699
-2023/10/06-19:40:32.317 3758 Level-0 table #703: started
-2023/10/06-19:40:32.357 3758 Level-0 table #703: 35637 bytes OK
-2023/10/06-19:40:32.378 3758 Delete type=0 #700
-2023/10/06-19:40:32.379 3758 Compacting 4@0 + 1@1 files
-2023/10/06-19:40:32.638 3758 Generated table #704@0: 220 keys, 482731 bytes
-2023/10/06-19:40:32.638 3758 Compacted 4@0 + 1@1 files => 482731 bytes
-2023/10/06-19:40:32.659 3758 compacted to: files[ 0 1 1 0 0 0 0 ]
-2023/10/06-19:40:32.664 3758 Delete type=2 #695
-2023/10/06-19:40:32.664 3758 Delete type=2 #697
-2023/10/06-19:40:32.664 3758 Delete type=2 #698
-2023/10/06-19:40:32.664 3758 Delete type=2 #701
-2023/10/06-19:40:32.664 3758 Delete type=2 #703
-2023/10/06-19:40:44.657 35c0 Level-0 table #706: started
-2023/10/06-19:40:44.762 3758 Current memtable full; waiting...
-2023/10/06-19:40:45.122 35c0 Level-0 table #706: 711574 bytes OK
-2023/10/06-19:40:45.136 35c0 Delete type=0 #702
-2023/10/06-19:40:45.145 35c0 Level-0 table #708: started
-2023/10/06-19:40:45.249 35c0 Level-0 table #708: 469296 bytes OK
+2023/10/10-14:52:27.967 2d20 Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/MANIFEST-000001
+2023/10/10-14:52:27.969 2d20 Recovering log #707
+2023/10/10-14:52:27.972 2d20 Level-0 table #710: started
+2023/10/10-14:52:28.149 2d20 Level-0 table #710: 54653 bytes OK
+2023/10/10-14:52:28.250 2d20 Delete type=0 #707
+2023/10/10-14:52:36.348 2d20 Level-0 table #713: started
+2023/10/10-14:52:36.423 2d20 Level-0 table #713: 66691 bytes OK
+2023/10/10-14:52:36.442 2d20 Delete type=0 #711
+2023/10/10-14:52:36.447 2d20 Compacting 4@0 + 1@1 files
+2023/10/10-14:52:36.521 2d20 Generated table #714@0: 190 keys, 69179 bytes
+2023/10/10-14:52:36.521 2d20 Compacted 4@0 + 1@1 files => 69179 bytes
+2023/10/10-14:52:36.562 2d20 compacted to: files[ 0 1 1 0 0 0 0 ]
+2023/10/10-14:52:36.563 2d20 Delete type=2 #704
+2023/10/10-14:52:36.564 2d20 Delete type=2 #706
+2023/10/10-14:52:36.564 2d20 Delete type=2 #708
+2023/10/10-14:52:36.564 2d20 Delete type=2 #710
+2023/10/10-14:52:36.564 2d20 Delete type=2 #713

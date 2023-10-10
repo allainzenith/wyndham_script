@@ -1,6 +1,7 @@
 const puppeteer = require('puppeteer');
 const fs = require('fs');
 const path = require('path');
+require("dotenv").config();
 
 let sharedData = {
     browser: null,
@@ -21,8 +22,17 @@ async function globals() {
     
     // Launch Puppeteer with the custom profile directory
     sharedData.browser = await puppeteer.launch({
+      args: [
+        "--disable-setuid-sandbox",
+        "--no-sandbox",
+        "--single-process",
+        "--no-zygote",
+      ],
       headless: 'new', 
       // headless: false,
+      executablePath: process.env.NODE_ENV === 'production' 
+        ? process.env.PUPPETEER_EXECUTABLE_PATH
+        : puppeteer.executablePath(),
       userDataDir: customProfileDir,
     });
     

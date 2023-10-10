@@ -5,6 +5,7 @@ const path = require('path');
 const { Sequelize } = require('sequelize');
 const { mysql2 } = require('mysql2')
 
+
 // Wyndham Credentials
 userName = "SJO111"
 passWord = "zgw5qbc@xpw2JEQ@ypy"

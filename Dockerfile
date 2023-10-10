@@ -1,17 +1,11 @@
-FROM node:18-alpine as base
+FROM ghcr.io/puppeteer/puppeteer:21.3.8
 
-WORKDIR /src
-COPY package*.json /
-EXPOSE 3000
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
 
-FROM base as production
-ENV NODE_ENV=production
+WORKDIR /usr/src/app
+
+COPY package*.json ./
 RUN npm ci
-COPY . /
-CMD ["node", "bin/www"]
-
-FROM base as dev
-ENV NODE_ENV=development
-RUN npm install -g nodemon && npm install
-COPY . /
-CMD ["nodemon", "bin/www"]
+COPY . .
+CMD ["npm", "start"]

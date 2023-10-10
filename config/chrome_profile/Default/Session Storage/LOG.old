@@ -1,27 +1,3 @@
-2023/10/06-19:22:00.444 3260 Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/MANIFEST-000001
-2023/10/06-19:22:00.450 3260 Recovering log #684
-2023/10/06-19:22:00.463 3260 Level-0 table #688: started
-2023/10/06-19:22:00.642 3260 Level-0 table #688: 711618 bytes OK
-2023/10/06-19:22:00.644 3260 Recovering log #687
-2023/10/06-19:22:00.655 3260 Level-0 table #689: started
-2023/10/06-19:22:00.715 3260 Level-0 table #689: 465082 bytes OK
-2023/10/06-19:22:00.744 3260 Delete type=0 #684
-2023/10/06-19:22:00.744 3260 Delete type=0 #687
-2023/10/06-19:22:09.483 3260 Level-0 table #692: started
-2023/10/06-19:22:09.557 3260 Level-0 table #692: 443959 bytes OK
-2023/10/06-19:22:09.575 3260 Delete type=0 #690
-2023/10/06-19:22:57.762 3260 Level-0 table #694: started
-2023/10/06-19:22:57.819 3260 Level-0 table #694: 35995 bytes OK
-2023/10/06-19:22:57.888 3260 Delete type=0 #691
-2023/10/06-19:22:57.894 3260 Compacting 4@0 + 1@1 files
-2023/10/06-19:22:58.008 3260 Generated table #695@0: 204 keys, 480023 bytes
-2023/10/06-19:22:58.008 3260 Compacted 4@0 + 1@1 files => 480023 bytes
-2023/10/06-19:22:58.032 3260 compacted to: files[ 0 1 1 0 0 0 0 ]
-2023/10/06-19:22:58.034 3260 Delete type=2 #686
-2023/10/06-19:22:58.034 3260 Delete type=2 #688
-2023/10/06-19:22:58.034 3260 Delete type=2 #689
-2023/10/06-19:22:58.034 3260 Delete type=2 #692
-2023/10/06-19:22:58.034 3260 Delete type=2 #694
-2023/10/06-19:23:11.697 2854 Level-0 table #697: started
-2023/10/06-19:23:11.757 3260 Current memtable full; waiting...
-2023/10/06-19:23:12.029 2854 Level-0 table #697: 711620 bytes IO error: C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/000697.ldb: OS or hardware error. (ChromeMethodBFE: 8::NewRandomAccessFile::16)
+2023/10/10-14:46:41.492 2dc8 Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/MANIFEST-000001
+2023/10/10-14:46:41.495 2dc8 Recovering log #707
+2023/10/10-14:46:41.508 2dc8 Reusing old log C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/000707.log 
