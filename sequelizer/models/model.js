@@ -81,33 +81,10 @@ resorts.hasMany(execution, { foreignKey: 'resortRefNum' });
 execution.belongsTo(resorts, { foreignKey: 'resortRefNum' });
 
 // (async () => {
-//     await sequelize.sync();
+//     await sequelize.sync({force:true});
 //     // Code here
 //   })();
-// use sequelize.close() if all database actions are done
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
-
-// class User extends Model {
-//     static classLevelMethod() {
-//       return 'foo';
-//     }
-//     instanceLevelMethod() {
-//       return 'bar';
-//     }
-//     getFullname() {
-//       return [this.firstname, this.lastname].join(' ');
-//     }
-//   }
-//   User.init({
-//     firstname: Sequelize.TEXT,
-//     lastname: Sequelize.TEXT
-//   }, { sequelize });
-  
-//   console.log(User.classLevelMethod()); // 'foo'
-//   const user = User.build({ firstname: 'Jane', lastname: 'Doe' });
-//   console.log(user.instanceLevelMethod()); // 'bar'
-//   console.log(user.getFullname()); // 'Jane Doe'
 
 module.exports = {
     resorts,

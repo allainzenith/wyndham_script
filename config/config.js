@@ -15,8 +15,8 @@ passWord = "zgw5qbc@xpw2JEQ@ypy"
 // dbPassword = "asdasd";
 
 // database, username, password
-const sequelize = new Sequelize("sql12651926", "sql12651926", "ZFP2H3RNqE", {
-    host: 'sql12.freesqldatabase.com',
+const sequelize = new Sequelize("bhrqmtj8akypattytak1", "u6sxdyl3j2awklux", "NWQ1CyBKlOdY0vX426MP", {
+    host: 'bhrqmtj8akypattytak1-mysql.services.clever-cloud.com',
     dialect: 'mysql',
     dialectModule: mysql2,
     define : { freezeTableName: true },
