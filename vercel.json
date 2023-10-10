@@ -8,12 +8,16 @@
     ],
     "routes": [
       {
-        "src": "/(.*)", 
-        "dest": "app.js" 
+        "src": "/",
+        "dest": "app.js"
       },
       {
-        "src": "/oneListing", 
-        "dest": "app.js" 
+        "src": "/oneListing",
+        "dest": "routes/index.js"
+      },
+      {
+        "src": "/(.*)",  
+        "dest": "app.js"
       }
     ]
   }
