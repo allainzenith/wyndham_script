@@ -28,7 +28,7 @@ async function globals() {
         "--single-process",
         "--no-zygote",
       ],
-      headless: 'new', 
+      headless: true, 
       // headless: false,
       executablePath: process.env.NODE_ENV === 'production' 
         ? process.env.PUPPETEER_EXECUTABLE_PATH
