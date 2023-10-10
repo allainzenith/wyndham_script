@@ -3,6 +3,7 @@ const qs = require('qs');
 const fs = require('fs');
 const path = require('path');
 const { Sequelize } = require('sequelize');
+const { mysql2 } = require('mysql2')
 
 // Wyndham Credentials
 userName = "SJO111"
@@ -17,6 +18,7 @@ passWord = "zgw5qbc@xpw2JEQ@ypy"
 const sequelize = new Sequelize("sql12651926", "sql12651926", "ZFP2H3RNqE", {
     host: 'sql12.freesqldatabase.com',
     dialect: 'mysql',
+    dialectModule: mysql2,
     define : { freezeTableName: true },
     logging: false
 });
