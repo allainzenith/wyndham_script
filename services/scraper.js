@@ -83,6 +83,7 @@ async function login () {
 
   } catch ( error ) {
     console.error('Error:', error.message);
+    console.error('DIRI DAPITA NAERROR')
     return false;
     
   } finally {
