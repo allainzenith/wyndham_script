@@ -12,10 +12,6 @@
         "dest": "app.js"
       },
       {
-        "src": "/oneListing",
-        "dest": "routes/index.js"
-      },
-      {
         "src": "/(.*)",  
         "dest": "app.js"
       }
