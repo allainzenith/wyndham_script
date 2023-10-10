@@ -9,11 +9,11 @@
     "routes": [
       {
         "src": "/(.*)", 
-        "dest": "/routes/index.js" 
+        "dest": "app.js" 
       },
       {
         "src": "/oneListing", 
-        "dest": "/routes/index.js" 
+        "dest": "app.js" 
       }
     ]
   }
