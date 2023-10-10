@@ -62,33 +62,33 @@ router.get('/one', async(req, res, next) => {
 
 
 // SSE ENDPOINTS
-router.get('/sse/oneListing', (req, res) => {
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
+// router.get('/sse/oneListing', (req, res) => {
+//   res.setHeader('Content-Type', 'text/event-stream');
+//   res.setHeader('Cache-Control', 'no-cache');
+//   res.setHeader('Connection', 'keep-alive');
 
-  setInterval(async () => {
-    const eventCond = {
-      execType: "ONE_RESORT"
-    }
+//   setInterval(async () => {
+//     const eventCond = {
+//       execType: "ONE_RESORT"
+//     }
 
     
-    let data = await joinTwoTables("execution", "resorts", eventCond, "createdAt");
+//     let data = await joinTwoTables("execution", "resorts", eventCond, "createdAt");
 
-    const formattedRecords = data.map(item => ({
-      ...item.toJSON(), 
-      resort: {
-        listingName: item.resort.listingName === null? "To be updated": item.resort.listingName, 
-        resortName: item.resort.resortName === null? "To be updated": item.resort.resortName, 
-        unitType: item.resort.unitType === null? "To be updated": item.resort.unitType, 
-      },  
-      createdAt: format(item.createdAt, 'MM-dd-yyyy HH:mm:ss', { timeZone: 'America/New_York' }),
-      updatedAt: format(item.updatedAt, 'MM-dd-yyyy HH:mm:ss', { timeZone: 'America/New_York' }),
-    }));
+//     const formattedRecords = data.map(item => ({
+//       ...item.toJSON(), 
+//       resort: {
+//         listingName: item.resort.listingName === null? "To be updated": item.resort.listingName, 
+//         resortName: item.resort.resortName === null? "To be updated": item.resort.resortName, 
+//         unitType: item.resort.unitType === null? "To be updated": item.resort.unitType, 
+//       },  
+//       createdAt: format(item.createdAt, 'MM-dd-yyyy HH:mm:ss', { timeZone: 'America/New_York' }),
+//       updatedAt: format(item.updatedAt, 'MM-dd-yyyy HH:mm:ss', { timeZone: 'America/New_York' }),
+//     }));
 
-    res.write(`data: ${JSON.stringify(formattedRecords)}\n\n`);
-  }, 1000);
-});
+//     res.write(`data: ${JSON.stringify(formattedRecords)}\n\n`);
+//   }, 1000);
+// });
 
 module.exports = router;
 
