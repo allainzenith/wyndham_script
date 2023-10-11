@@ -1,12 +1,5 @@
-2023/10/10-17:03:12.127 2ad0 Creating DB C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage since it was missing.
-2023/10/10-17:03:12.305 2ad0 Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/MANIFEST-000001
-2023/10/10-17:04:11.016 2ad0 Level-0 table #5: started
-2023/10/10-17:04:11.146 2ad0 Level-0 table #5: 40897 bytes OK
-2023/10/10-17:04:11.182 2ad0 Delete type=0 #3
-2023/10/10-17:04:15.077 1b1c Level-0 table #7: started
-2023/10/10-17:04:15.145 2ad0 Current memtable full; waiting...
-2023/10/10-17:04:15.204 1b1c Level-0 table #7: 906201 bytes OK
-2023/10/10-17:04:15.314 1b1c Delete type=0 #4
-2023/10/10-17:04:15.319 1b1c Level-0 table #9: started
-2023/10/10-17:04:15.427 1b1c Level-0 table #9: 711690 bytes OK
-2023/10/10-17:04:15.503 1b1c Delete type=0 #6
+2023/10/11-15:21:09.138 2f88 Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/MANIFEST-000001
+2023/10/11-15:21:09.146 2f88 Recovering log #26
+2023/10/11-15:21:09.792 2f88 Level-0 table #30: started
+2023/10/11-15:21:09.889 2f88 Level-0 table #30: 585645 bytes OK
+2023/10/11-15:21:10.000 2f88 Delete type=0 #26

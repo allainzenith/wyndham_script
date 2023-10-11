@@ -7,8 +7,10 @@ const { addMonths, addDays } = require('date-fns');
 const { userName, passWord} = require('../config/config')
 const { globals, sharedData } =  require('../config/puppeteerOptions'); 
 
+async function launchPuppeteer(){
+  await globals();
+}
 async function executeScraper(resortID, suiteType, months){
-  // await globals();
   const browser = sharedData.browser;
 
   try {
@@ -46,8 +48,6 @@ async function executeScraper(resortID, suiteType, months){
 }
 
 async function login () {
-
-  await globals();
   const page = sharedData.page;
 
   try {
@@ -66,19 +66,15 @@ async function login () {
     const selector = `a[data-se="${dataSeValue}"]`;
 
     try {
+      await page.waitForTimeout(5000);
       await page.waitForSelector(selector);
       await page.click(selector);
 
-      // var userInput = await getUserInput();
-      // await page.type('#input60', userInput)
-      // await page.click('#input69');
-      // await page.click('input[type="submit"]');
-      // console.log('Logged in successfullyyyy!!');
-      return true;
+      return "needs OTP";
     } catch (error) {
       console.log("No need for OTP verification")
       console.log('Logged in successfullyyyy!!');
-      return false;
+      return true;
     } 
 
   } catch ( error ) {
@@ -88,18 +84,32 @@ async function login () {
   } 
 }
 
-async function getUserInput() {
-  return new Promise((resolve, reject) => {
-    const rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout,
-    });
 
-    rl.question('Enter something: ', (userInput) => {
-      rl.close();
-      resolve(userInput);
-    });
-  });
+
+async function sendOTP(verOTP) {
+  const browser = sharedData.browser;
+  const page = sharedData.page;
+  try {
+    await page.type('#input60', verOTP)
+    await page.click('#input69');
+    await page.click('input[type="submit"]');
+
+    try {
+      await page.waitForTimeout(3000);
+      await page.waitForSelector('#error-fragment');
+      console.log("The token code is incorrect");
+      return false;
+    } catch (error) {
+      console.log('Logged in successfullyyyy!!');
+      return true;
+    }
+
+  } catch ( error ) {
+    console.error('Error:', error.message);
+    return false;  
+  } finally {
+    await browser.close();
+  }
 }
 
 
@@ -326,5 +336,7 @@ async function getResortAddress(resortID, sElement){
 
 module.exports = {
   executeScraper,
-  login
+  login,
+  sendOTP,
+  launchPuppeteer
 };

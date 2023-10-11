@@ -4,16 +4,34 @@ const { format } = require('date-fns-tz');
 var { joinTwoTables } = require('../sequelizer/controller/controller');
 var { addToQueue, resourceIntensiveTask } = require('../scripts/queueProcessor');
 const { findOrCreateAResort, createAnEvent } = require('../scripts/oneListing');
-var { login } = require('../services/scraper')
+var { login, sendOTP, launchPuppeteer } = require('../services/scraper')
 
-router.get('/', function(req, res, next) {
+router.get('/', async(req, res, next) => {
   res.render('oneListing');
+});
+
+router.get('/verify', async(req, res, next) => {
+  res.render('verify');
+  await launchPuppeteer();
+  await login();
+});
+
+router.post('/sendOTP', async(req, res, next) => {
+  let verOTP = req.body.OTP;
+
+  let loggedIn = await sendOTP(verOTP);
+  
+  if (loggedIn){
+    res.redirect('/oneListing')
+  } else {
+    //display a modal
+    res.redirect('/allListings')
+  }
 
 });
 
 router.get('/oneListing', function(req, res, next) {
-  res.redirect('/');
-
+  res.render('oneListing');
 });
 
 router.get('/allListings', function(req, res, next) {
@@ -36,22 +54,19 @@ router.get('/events', function(req, res, next) {
 
 });
 
+// FOR CALLING SERVICES AND SCRIPTS
 router.post('/one', async(req, res, next) => {
 
   var resortID = req.body.resort_id;
   var suiteType = req.body.suite_type;
   var months = req.body.months;
-  var token = await req.token;  
-  res.redirect('/');  
+  var token = await req.token;   
 
-  var needOTP = await login();
+  res.redirect('/oneListing'); 
+  
 
-  if(needOTP) {
-    console.log("need jud siya OTP")
-  } 
-
-  // let resort = await findOrCreateAResort(resortID, suiteType); 
-  // let eventCreated = ( resort !== null) ? await createAnEvent(resort.resortRefNum, months) : null;
+  let resort = await findOrCreateAResort(resortID, suiteType); 
+  let eventCreated = ( resort !== null) ? await createAnEvent(resort.resortRefNum, months) : null;
 
 
   // if (eventCreated !== null){
@@ -65,10 +80,6 @@ router.post('/one', async(req, res, next) => {
 
   
   // console.log("executed: " + executed);
-});
-
-router.get('/otpModal', (req, res, next) => {
-  res.render('otpModal');
 });
 
 
