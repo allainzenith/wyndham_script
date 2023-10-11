@@ -24,10 +24,10 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Middleware to check token expiration and refresh if necessary
-// app.use(async (req, res, next) => {
-//   req.token = await returnAValidToken(clientID, clientSecret); 
-//   next();
-// });
+app.use(async (req, res, next) => {
+  req.token = await returnAValidToken(clientID, clientSecret); 
+  next();
+});
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);

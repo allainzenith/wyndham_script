@@ -8,11 +8,10 @@ const { userName, passWord} = require('../config/config')
 const { globals, sharedData } =  require('../config/puppeteerOptions'); 
 
 async function executeScraper(resortID, suiteType, months){
+  // await globals();
+  const browser = sharedData.browser;
+
   try {
-    await globals();
-
-    const browser = sharedData.browser;
-
     doneLogin = await login();
     console.log("Done login: " + doneLogin);
 
@@ -29,7 +28,6 @@ async function executeScraper(resortID, suiteType, months){
     updatedAvail = (doneGettingAddress) ? await checkAvailability(months): null;
     doneScraping = (updatedAvail !== null);
     console.log("Done scraping: " + doneScraping);
-    await browser.close();
 
     if (doneLogin && doneSelecting && doneScraping && doneGettingAddress){
       console.log("Done scraping. Calendar updating...")
@@ -41,12 +39,15 @@ async function executeScraper(resortID, suiteType, months){
 
   } catch (error) {
     console.error('Error:', error.message);
-    await browser.close();
     return null;
+  } finally {
+    await browser.close();
   }
 }
 
 async function login () {
+
+  await globals();
   const page = sharedData.page;
 
   try {
@@ -68,28 +69,23 @@ async function login () {
       await page.waitForSelector(selector);
       await page.click(selector);
 
-      var userInput = await getUserInput();
-      await page.type('#input60', userInput)
-      await page.click('#input69');
-      await page.click('input[type="submit"]');
-      console.log('Logged in successfullyyyy!!');
-
+      // var userInput = await getUserInput();
+      // await page.type('#input60', userInput)
+      // await page.click('#input69');
+      // await page.click('input[type="submit"]');
+      // console.log('Logged in successfullyyyy!!');
+      return true;
     } catch (error) {
       console.log("No need for OTP verification")
       console.log('Logged in successfullyyyy!!');
-
+      return false;
     } 
-    return true;
 
   } catch ( error ) {
+    console.error('Error logging in using the login credentials');
     console.error('Error:', error.message);
-    console.error('DIRI DAPITA NAERROR')
-    return false;
-    
-  } finally {
-    await page.waitForTimeout(2000);
-
-  }
+    return false;   
+  } 
 }
 
 async function getUserInput() {
@@ -329,5 +325,6 @@ async function getResortAddress(resortID, sElement){
 }
 
 module.exports = {
-  executeScraper
+  executeScraper,
+  login
 };

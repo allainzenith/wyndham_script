@@ -4,6 +4,7 @@ const { format } = require('date-fns-tz');
 var { joinTwoTables } = require('../sequelizer/controller/controller');
 var { addToQueue, resourceIntensiveTask } = require('../scripts/queueProcessor');
 const { findOrCreateAResort, createAnEvent } = require('../scripts/oneListing');
+var { login } = require('../services/scraper')
 
 router.get('/', function(req, res, next) {
   res.render('oneListing');
@@ -35,29 +36,39 @@ router.get('/events', function(req, res, next) {
 
 });
 
-router.get('/one', async(req, res, next) => {
+router.post('/one', async(req, res, next) => {
 
-  var resortID = req.query.resort_id;
-  var suiteType = req.query.suite_type;
-  var months = req.query.months;
+  var resortID = req.body.resort_id;
+  var suiteType = req.body.suite_type;
+  var months = req.body.months;
   var token = await req.token;  
   res.redirect('/');  
 
-  let resort = await findOrCreateAResort(resortID, suiteType); 
-  let eventCreated = ( resort !== null) ? await createAnEvent(resort.resortRefNum, months) : null;
+  var needOTP = await login();
+
+  if(needOTP) {
+    console.log("need jud siya OTP")
+  } 
+
+  // let resort = await findOrCreateAResort(resortID, suiteType); 
+  // let eventCreated = ( resort !== null) ? await createAnEvent(resort.resortRefNum, months) : null;
 
 
-  if (eventCreated !== null){
-    //first parameter is a callback function
-    addToQueue(resourceIntensiveTask, () => {
-      console.log('Task completed');
-    }, token, resortID, suiteType, months, resort, eventCreated);
-  } else {
-    console.log("Creating a resort or execution record failed.")
-  }
+  // if (eventCreated !== null){
+  //   //first parameter is a callback function
+  //   addToQueue(resourceIntensiveTask, () => {
+  //     console.log('Task completed');
+  //   }, token, resortID, suiteType, months, resort, eventCreated);
+  // } else {
+  //   console.log("Creating a resort or execution record failed.")
+  // }
 
   
   // console.log("executed: " + executed);
+});
+
+router.get('/otpModal', (req, res, next) => {
+  res.render('otpModal');
 });
 
 

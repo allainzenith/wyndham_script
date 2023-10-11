@@ -1,0 +1,25 @@
+extends layout
+block content
+  form(action='/sendOtp', method='post')
+    .w3-modal#myModal
+      .w3-modal-content(style="width: 30%") 
+        header.w3-container.w3-sand
+          span.w3-button.w3-display-topright#closeModal &times;
+          h2 OTP verification
+        .w3-container
+          p Please go to the Business Inbox and enter the OTP sent.
+          input.w3-input.w3-padding-small(type="text", id='OTP', name='OTP', placeholder="Enter OTP", required)         
+        footer.w3-container.w3-padding-large
+            input(type='submit', value='Send', class='w3-btn w3-round w3-green w3-right')
+
+    script.
+      document.addEventListener('DOMContentLoaded', function() {
+        var modal = document.getElementById('myModal');
+        var closeModalButton = document.getElementById('closeModal');
+
+        modal.style.display = 'block';
+
+        closeModalButton.onclick = function() {
+          modal.style.display = 'none';
+        };
+      });
