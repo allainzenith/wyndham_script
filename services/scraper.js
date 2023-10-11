@@ -11,8 +11,8 @@ async function launchPuppeteer(){
   await globals();
 }
 async function executeScraper(resortID, suiteType, months){
+  await globals();
   const browser = sharedData.browser;
-
   try {
     doneLogin = await login();
     console.log("Done login: " + doneLogin);
