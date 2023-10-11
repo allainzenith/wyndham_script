@@ -54,6 +54,8 @@ async function login () {
     // Navigate to the login page
     await page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/login');
 
+    console.log("I'M ON THE LOGIN PAGE")
+
     // Fill out the login form
     await page.type('#okta-signin-username', userName);
     await page.type('#okta-signin-password', passWord);
