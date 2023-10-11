@@ -71,7 +71,7 @@ async function login () {
       await page.waitForTimeout(5000);
       await page.waitForSelector(selector);
       await page.click(selector);
-
+      console.log("We need OTP verification!")
       return "needs OTP";
     } catch (error) {
       console.log("No need for OTP verification")
