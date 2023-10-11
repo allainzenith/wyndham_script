@@ -69,17 +69,17 @@ router.post('/one', async(req, res, next) => {
   let eventCreated = ( resort !== null) ? await createAnEvent(resort.resortRefNum, months) : null;
 
 
-  // if (eventCreated !== null){
-  //   //first parameter is a callback function
-  //   addToQueue(resourceIntensiveTask, () => {
-  //     console.log('Task completed');
-  //   }, token, resortID, suiteType, months, resort, eventCreated);
-  // } else {
-  //   console.log("Creating a resort or execution record failed.")
-  // }
+  if (eventCreated !== null){
+    //first parameter is a callback function
+    addToQueue(resourceIntensiveTask, () => {
+      console.log('Task completed');
+    }, token, resortID, suiteType, months, resort, eventCreated);
+  } else {
+    console.log("Creating a resort or execution record failed.")
+  }
 
   
-  // console.log("executed: " + executed);
+  console.log("executed: " + executed);
 });
 
 

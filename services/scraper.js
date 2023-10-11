@@ -109,7 +109,9 @@ async function sendOTP(verOTP) {
   } catch ( error ) {
     console.error('Error:', error.message);
     return false;  
-  } 
+  } finally {
+    await browser.close();
+  }
 }
 
 
