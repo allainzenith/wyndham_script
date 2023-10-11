@@ -79,7 +79,7 @@ router.post('/one', async(req, res, next) => {
   }
 
   
-  console.log("executed: " + executed);
+  // console.log("executed: " + executed);
 });
 
 
