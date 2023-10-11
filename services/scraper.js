@@ -98,7 +98,7 @@ async function sendOTP(verOTP) {
 
     try {
       await page.waitForTimeout(3000);
-      await page.waitForSelector('#error-fragment');
+      await page.$('#error-fragment');
       console.log("The token code is incorrect");
       return false;
     } catch (error) {
@@ -109,9 +109,7 @@ async function sendOTP(verOTP) {
   } catch ( error ) {
     console.error('Error:', error.message);
     return false;  
-  } finally {
-    await browser.close();
-  }
+  } 
 }
 
 
