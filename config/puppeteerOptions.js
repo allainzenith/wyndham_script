@@ -25,8 +25,8 @@ async function globals() {
       args: [
         "--disable-setuid-sandbox",
         "--no-sandbox",
-        // "--single-process",
-        // "--no-zygote",
+        "--single-process",
+        "--no-zygote",
       ],
       // headless: true, 
       headless: true,
