@@ -1,7 +1,11 @@
 FROM ghcr.io/puppeteer/puppeteer:21.3.8
 
+USER root
 RUN mkdir -p /custom-profile
-COPY ./config/chrome_profile /custom-profile
+RUN chown -R node:node /custom-profile
+
+ENV CHROMIUM_USER_DATA=/custom-profile
+USER node
 
 ENV CHROMIUM_USER_DATA=/custom-profile
 
