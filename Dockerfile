@@ -1,7 +1,7 @@
 FROM ghcr.io/puppeteer/puppeteer:21.3.8
 
 RUN mkdir -p /app/chromium-profile
-COPY ./chrome_profile /app/chromium-profile
+COPY ./config/chrome_profile /app/chromium-profile
 
 ENV CHROMIUM_USER_DATA=/app/chromium-profile
 
