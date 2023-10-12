@@ -33,9 +33,8 @@ async function globals() {
       executablePath: process.env.NODE_ENV === 'production' 
         ? process.env.PUPPETEER_EXECUTABLE_PATH
         : puppeteer.executablePath(),
-      userDataDir: process.env.NODE_ENV === 'production'
-        ? process.env.CHROMIUM_USER_DATA
-        : customProfileDir,
+      userDataDir: process.env.CHROMIUM_USER_DATA
+        // : customProfileDir,
     });
     
     // Open a new page

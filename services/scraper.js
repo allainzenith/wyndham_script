@@ -61,6 +61,10 @@ async function login () {
 
     console.log("I'M ON THE LOGIN PAGE")
 
+    if (process.env.NODE_ENV === 'production' ){
+      console.log("THIS IS THE PRODUCTION ENVIRONMENTTT")
+    }
+
     // Fill out the login form
     await page.type('#okta-signin-username', userName);
     await page.type('#okta-signin-password', passWord);
