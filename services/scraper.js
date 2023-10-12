@@ -19,8 +19,6 @@ async function executeScraper(resortID, suiteType, months){
     doneLogin = await login();
     console.log("Done login: " + doneLogin);
 
-    console.log("TRY COOKIES")
-
     sElement = (doneLogin) ? await selectElements(resortID, suiteType) : null;
     console.log('Selected Option Text:', sElement);
     doneSelecting = (sElement !== null);
