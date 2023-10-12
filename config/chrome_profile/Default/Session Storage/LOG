@@ -1,2 +1,8 @@
-2023/10/12-13:54:06.378 190c Creating DB C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage since it was missing.
-2023/10/12-13:54:06.536 190c Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/MANIFEST-000001
+2023/10/12-16:21:56.060 187c Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/MANIFEST-000001
+2023/10/12-16:21:56.068 187c Recovering log #3
+2023/10/12-16:21:56.359 187c Level-0 table #3: started
+2023/10/12-16:21:56.834 187c Level-0 table #3: 586355 bytes OK
+2023/10/12-16:21:56.906 187c Delete type=0 #3
+2023/10/12-16:22:05.944 187c Level-0 table #6: started
+2023/10/12-16:22:06.030 187c Level-0 table #6: 442852 bytes OK
+2023/10/12-16:22:06.112 187c Delete type=0 #4

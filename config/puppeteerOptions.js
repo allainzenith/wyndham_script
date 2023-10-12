@@ -23,18 +23,19 @@ async function globals() {
     // Launch Puppeteer with the custom profile directory
     sharedData.browser = await puppeteer.launch({
       args: [
-        "--disable-setuid-sandbox",
+        // "--disable-setuid-sandbox",
         "--no-sandbox",
-        "--single-process",
-        "--no-zygote",
+        // "--single-process",
+        // "--no-zygote",
       ],
       // headless: true, 
-      headless: true,
+      headless: false,
       executablePath: process.env.NODE_ENV === 'production' 
         ? process.env.PUPPETEER_EXECUTABLE_PATH
         : puppeteer.executablePath(),
-      userDataDir: process.env.CHROMIUM_USER_DATA
-        // : customProfileDir,
+      userDataDir: process.env.NODE_ENV === 'production' 
+        ? process.env.CHROMIUM_USER_DATA
+        : customProfileDir,
     });
     
     // Open a new page
