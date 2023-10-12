@@ -3,6 +3,8 @@
 ////////////////////////////////////////////////////////////////////
 
 const readline = require('readline');
+const fs = require('fs');
+const path = require('path');
 const { addMonths, addDays } = require('date-fns');
 const { userName, passWord} = require('../config/config')
 const { globals, sharedData } =  require('../config/puppeteerOptions'); 
@@ -16,6 +18,8 @@ async function executeScraper(resortID, suiteType, months){
   try {
     doneLogin = await login();
     console.log("Done login: " + doneLogin);
+
+    console.log("TRY COOKIES")
 
     sElement = (doneLogin) ? await selectElements(resortID, suiteType) : null;
     console.log('Selected Option Text:', sElement);
@@ -51,8 +55,51 @@ async function login () {
   const page = sharedData.page;
 
   try {
+
+    const lDataPath = path.join(__dirname, '../config/jsons/localData.json'); 
+    const sDataPath = path.join(__dirname, '../config/jsons/sessionData.json'); 
+    const cookiePath = path.join(__dirname, '../config/jsons/cookies.json'); 
+  
+    const lDataFile = fs.readFileSync(lDataPath, 'utf8');
+    const localData = JSON.parse(lDataFile);
+  
+    const sDataFile = fs.readFileSync(sDataPath, 'utf8');
+    const sessionData = JSON.parse(sDataFile);
+
+    const cookieFile = fs.readFileSync(cookiePath, 'utf8');
+    const cookies = JSON.parse(cookieFile);
+
+    // await page.evaluate((localData, sessionData) => {
+    //   window.localStorage.clear();
+    //   window.sessionStorage.clear();
+    //   Object.assign(window.localStorage, localData);
+    //   Object.assign(window.sessionStorage, sessionData);
+    // }, localData, sessionData);
+
+    // Load saved cookies
+    await page.setCookie(...cookies);
+
+    
     // Navigate to the login page
     await page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/login');
+
+    // const lDataPath = path.join(__dirname, '../config/jsons/localData.json'); 
+    // const sDataPath = path.join(__dirname, '../config/jsons/sessionData.json'); 
+    // const cookiePath = path.join(__dirname, '../config/jsons/cookies.json'); 
+    // const cookies = JSON.stringify(await page.cookies(), null, 2);
+
+    // const localData = await page.evaluate(() => {
+    //   return JSON.stringify(window.localStorage);
+    // });
+    
+    // const sessionData = await page.evaluate(() => {
+    //   return JSON.stringify(window.sessionStorage);
+    // });
+
+
+    // fs.writeFileSync(cookiePath, cookies);
+    // fs.writeFileSync(lDataPath, localData);
+    // fs.writeFileSync(sDataPath, sessionData);
 
     console.log("I'M ON THE LOGIN PAGE")
 
@@ -119,8 +166,28 @@ async function selectElements(resortID, suiteType){
   const page = sharedData.page;
 
   try {
+
+    // const lDataPath = path.join(__dirname, '../config/jsons/localData.json'); 
+    // const sDataPath = path.join(__dirname, '../config/jsons/sessionData.json'); 
+    // // const cookiePath = path.join(__dirname, '../config/jsons/cookies.json'); 
+  
+    // const lDataFile = fs.readFileSync(lDataPath, 'utf8');
+    // const localData = JSON.parse(lDataFile);
+  
+    // const sDataFile = fs.readFileSync(sDataPath, 'utf8');
+    // const sessionData = JSON.parse(sDataFile);
+
+
     var calendarUrl = `https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`;
-    await page.goto(calendarUrl);   
+
+    // await page.goto(calendarUrl);   
+
+    // await page.evaluate((localData, sessionData) => {
+    //   window.localStorage.clear();
+    //   window.sessionStorage.clear();
+    //   Object.assign(window.localStorage, localData);
+    //   Object.assign(window.sessionStorage, sessionData);
+    // }, localData, sessionData);
 
     await page.waitForTimeout(5000);
 
@@ -168,9 +235,12 @@ async function selectElements(resortID, suiteType){
       return null;
     }
 
+    
+
 
   } catch ( error ) {
     console.error('Error:', error.message);  
+    await page.waitForTimeout(60000);
     return null;
 
   } finally {
