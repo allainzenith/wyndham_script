@@ -1,11 +1,9 @@
 FROM ghcr.io/puppeteer/puppeteer:21.3.8
 
-USER root  
-RUN mkdir -p /app/chromium-profile
-COPY ./config/chrome_profile /app/chromium-profile
-USER node  
+RUN mkdir -p /custom-profile
+COPY ./config/chrome_profile /custom-profile
 
-ENV CHROMIUM_USER_DATA=/app/chromium-profile
+ENV CHROMIUM_USER_DATA=/custom-profile
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
