@@ -23,13 +23,13 @@ async function globals() {
     // Launch Puppeteer with the custom profile directory
     sharedData.browser = await puppeteer.launch({
       args: [
-        // "--disable-setuid-sandbox",
+        "--disable-setuid-sandbox",
         "--no-sandbox",
         // "--single-process",
         // "--no-zygote",
       ],
       // headless: true, 
-      headless: false,
+      headless: true,
       executablePath: process.env.NODE_ENV === 'production' 
         ? process.env.PUPPETEER_EXECUTABLE_PATH
         : puppeteer.executablePath(),
