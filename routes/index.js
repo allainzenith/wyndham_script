@@ -109,7 +109,7 @@ router.get('/sse/oneListing', (req, res) => {
     }));
 
     res.write(`data: ${JSON.stringify(formattedRecords)}\n\n`);
-  }, 180000);
+  }, 10000);
 });
 
 module.exports = router;
