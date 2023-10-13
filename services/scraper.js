@@ -126,17 +126,14 @@ async function selectElements(resortID, suiteType){
   const page = sharedData.page;
 
   try {
-
-
     var calendarUrl = `https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`;
 
     await page.goto(calendarUrl);   
 
-
     await page.waitForTimeout(5000);
 
     const resortSelector = "#ResortSelect";
-    // await page.waitForSelector(resortSelector);
+    await page.waitForSelector(resortSelector);
 
     let selectedOptionText = await page.evaluate((selector) => {
       const select = document.querySelector(selector);
