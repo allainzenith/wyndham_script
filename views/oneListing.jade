@@ -28,26 +28,26 @@ block content
           th Started At
           th Finished At
           
-      //-   tbody(id="table-body")
-      //- script.
-      //-   const tableBody = document.getElementById("table-body");
-      //-   const eventSource = new EventSource('/sse/oneListing');
-      //-   eventSource.onmessage = (event) => {
-      //-     const data = JSON.parse(event.data);
-      //-     tableBody.innerHTML = '';
-      //-     data.forEach(item => {
-      //-       const row = document.createElement("tr");
-      //-       row.innerHTML = `
-      //-         <td>${item.resort.listingName}</td>
-      //-         <td>${item.resort.resortName}</td>
-      //-         <td>${item.resort.unitType}</td>
-      //-         <td>${item.execStatus}</td>
-      //-         <td>${item.monthstoScrape}</td>
-      //-         <td>${item.createdAt}</td>
-      //-         <td>${item.updatedAt}</td>
-      //-       `;
-      //-       tableBody.appendChild(row);
-      //-     });
-      //-   };
+        tbody(id="table-body")
+      script.
+        const tableBody = document.getElementById("table-body");
+        const eventSource = new EventSource('/sse/oneListing');
+        eventSource.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+          tableBody.innerHTML = '';
+          data.forEach(item => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${item.resort.listingName}</td>
+              <td>${item.resort.resortName}</td>
+              <td>${item.resort.unitType}</td>
+              <td>${item.execStatus}</td>
+              <td>${item.monthstoScrape}</td>
+              <td>${item.createdAt}</td>
+              <td>${item.updatedAt}</td>
+            `;
+            tableBody.appendChild(row);
+          });
+        };
 
 
