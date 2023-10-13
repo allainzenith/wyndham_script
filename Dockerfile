@@ -5,11 +5,12 @@ ENV CHROMIUM_USER_DATA=.config/chrome_profile
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
 
-COPY ./config/jsons/token.json /usr/src/app/config/jsons/token.json
+WORKDIR /usr/src/app
 
-RUN chmod 666 /usr/src/app/config/jsons/token.json
+# Copy the token.json file with the correct permissions
+COPY --chown=node:node ./config/jsons/token.json /usr/src/app/config/jsons/token.json
 
-USER node
+USER root
 
 COPY package*.json ./
 RUN npm ci
