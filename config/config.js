@@ -99,6 +99,18 @@ async function returnAValidToken(clientID, clientSecret){
         }
         else {
             console.log('The token expiration date is in the future.');
+            //write json object in an existing json file
+            tokenSpecs = {
+                "token_type": "Bearer",
+                "expires_in": jsonData.expires_in,
+                "access_token": jsonData.access_token,
+                "scope": "open-apiiiii"
+            }
+
+            console.log('TOKEN UPDATED SUCCESSFULLY')
+            let jsonString = JSON.stringify(tokenSpecs, null, 2);
+            
+            fs.writeFileSync(tokenJsonPath, jsonString);
             return jsonData.access_token;
         }
     } catch (error) {
