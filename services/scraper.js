@@ -56,7 +56,6 @@ async function login () {
    // Navigate to the login page
     await page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/login');
 
-
     console.log("I'M ON THE LOGIN PAGE")
 
     if (process.env.NODE_ENV === 'production' ){
@@ -131,6 +130,7 @@ async function selectElements(resortID, suiteType){
     await page.goto(calendarUrl);   
 
     await page.waitForTimeout(5000);
+    console.log("I'M ON THE CALENDAR PAGE")
 
     const resortSelector = "#ResortSelect";
     await page.waitForSelector(resortSelector);
