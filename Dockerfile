@@ -9,7 +9,9 @@ WORKDIR /usr/src/app
 
 COPY ./config/jsons/token.json /usr/src/app/config/jsons/token.json
 
+USER root
 RUN /usr/src/app/config/jsons/token.json
+USER node
 
 COPY package*.json ./
 RUN npm ci
