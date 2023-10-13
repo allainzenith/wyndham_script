@@ -55,6 +55,7 @@ async function login () {
   try {    
    // Navigate to the login page
     await page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/login');
+    await page.waitForTimeout(5000);
 
     console.log("I'M ON THE LOGIN PAGE")
 
