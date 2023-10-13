@@ -7,13 +7,10 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
 
 WORKDIR /usr/src/app
 
-# Copy the token.json file to the container
-COPY ./config/jsons/token.json /usr/src/app/config/jsons/token.json
+# Copy the token.json file with the correct permissions
+COPY --chown=node:node ./config/jsons/token.json /usr/src/app/config/jsons/token.json
 
-# Set the file permissions for the token.json file
-RUN chmod 644 /usr/src/app/config/jsons/token.json && chown node:node /usr/src/app/config/jsons/token.json
-
-USER node
+USER root
 
 COPY package*.json ./
 RUN npm ci
