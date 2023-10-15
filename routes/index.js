@@ -12,7 +12,6 @@ router.get('/', async(req, res, next) => {
 
 router.get('/verify', async(req, res, next) => {
   res.render('verify');
-  await launchPuppeteer();
   await login();
 });
 
