@@ -53,7 +53,6 @@ async function login () {
 
   try {    
    // Navigate to the login page
-    await globals();
     const page = sharedData.page;
     await page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/login');
 
@@ -96,7 +95,6 @@ async function login () {
 
 
 async function sendOTP(verOTP) {
-  await globals();
   const browser = sharedData.browser;
 
   try {
@@ -127,7 +125,6 @@ async function sendOTP(verOTP) {
 async function selectElements(resortID, suiteType){
 
   try {
-    await globals();
     const page = sharedData.page;
     var calendarUrl = `https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`;
 
@@ -197,7 +194,6 @@ async function selectElements(resortID, suiteType){
 async function checkAvailability(months){
 
   try{
-    await globals();
     const page = sharedData.page;
     var { currentDate, EndDate } = getCurrentAndEndDate(months);
     var dates = [];
@@ -311,7 +307,6 @@ function getCurrentAndEndDate(months){
 async function getResortAddress(resortID, sElement){
 
   try {
-    await globals();
     const pageForAddress = await browser.newPage();
 
     url = `https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results`;
