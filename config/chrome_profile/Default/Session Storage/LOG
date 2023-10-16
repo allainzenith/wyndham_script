@@ -1,24 +1,26 @@
-2023/10/16-07:21:33.689 390 Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/MANIFEST-000001
-2023/10/16-07:21:33.821 390 Recovering log #3
-2023/10/16-07:21:33.926 390 Level-0 table #3: started
-2023/10/16-07:21:34.024 390 Level-0 table #3: 54610 bytes OK
-2023/10/16-07:21:34.287 390 Recovering log #4
-2023/10/16-07:21:34.288 390 Reusing old log C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/000004.log 
-2023/10/16-07:21:34.459 390 Delete type=0 #3
-2023/10/16-07:22:38.830 390 Level-0 table #6: started
-2023/10/16-07:22:38.967 390 Level-0 table #6: 913840 bytes OK
-2023/10/16-07:22:39.050 390 Delete type=0 #4
-2023/10/16-07:22:48.075 390 Level-0 table #8: started
-2023/10/16-07:22:48.109 390 Level-0 table #8: 30949 bytes OK
-2023/10/16-07:22:48.169 390 Delete type=0 #5
-2023/10/16-07:25:09.673 390 Level-0 table #10: started
-2023/10/16-07:25:09.748 390 Level-0 table #10: 712989 bytes OK
-2023/10/16-07:25:09.793 390 Delete type=0 #7
-2023/10/16-07:25:09.795 390 Compacting 4@0 + 0@1 files
-2023/10/16-07:25:10.151 390 Generated table #11@0: 114 keys, 1632844 bytes
-2023/10/16-07:25:10.151 390 Compacted 4@0 + 0@1 files => 1632844 bytes
-2023/10/16-07:25:10.229 390 compacted to: files[ 0 1 0 0 0 0 0 ]
-2023/10/16-07:25:10.230 390 Delete type=2 #3
-2023/10/16-07:25:10.230 390 Delete type=2 #6
-2023/10/16-07:25:10.230 390 Delete type=2 #8
-2023/10/16-07:25:10.230 390 Delete type=2 #10
+2023/10/16-10:01:35.525 21c8 Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/MANIFEST-000001
+2023/10/16-10:01:35.537 21c8 Recovering log #34
+2023/10/16-10:01:35.554 21c8 Level-0 table #37: started
+2023/10/16-10:01:35.799 21c8 Level-0 table #37: 712816 bytes OK
+2023/10/16-10:01:35.803 21c8 Recovering log #36
+2023/10/16-10:01:35.806 21c8 Reusing old log C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/000036.log 
+2023/10/16-10:01:35.866 21c8 Delete type=0 #34
+2023/10/16-10:01:42.907 345c Level-0 table #39: started
+2023/10/16-10:01:42.961 345c Level-0 table #39: 445938 bytes OK
+2023/10/16-10:01:43.008 345c Delete type=0 #36
+2023/10/16-10:01:43.046 345c Compacting 4@0 + 1@1 files
+2023/10/16-10:01:43.115 345c Generated table #40@0: 38 keys, 444237 bytes
+2023/10/16-10:01:43.115 345c Compacted 4@0 + 1@1 files => 444237 bytes
+2023/10/16-10:01:43.136 345c compacted to: files[ 0 1 0 0 0 0 0 ]
+2023/10/16-10:01:43.136 345c Delete type=2 #31
+2023/10/16-10:01:43.136 345c Delete type=2 #33
+2023/10/16-10:01:43.136 345c Delete type=2 #35
+2023/10/16-10:01:43.136 345c Delete type=2 #37
+2023/10/16-10:01:43.136 345c Delete type=2 #39
+2023/10/16-10:02:33.663 345c Level-0 table #42: started
+2023/10/16-10:02:33.689 345c Level-0 table #42: 35984 bytes OK
+2023/10/16-10:02:33.732 345c Delete type=0 #38
+2023/10/16-10:02:46.993 345c Current memtable full; waiting...
+2023/10/16-10:02:47.121 21c8 Level-0 table #44: started
+2023/10/16-10:02:47.160 21c8 Level-0 table #44: 471728 bytes OK
+2023/10/16-10:02:47.186 21c8 Delete type=0 #41

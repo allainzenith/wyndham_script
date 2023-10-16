@@ -9,16 +9,17 @@ const { addMonths, addDays } = require('date-fns');
 const { userName, passWord} = require('../config/config')
 const { globals, sharedData } =  require('../config/puppeteerOptions'); 
 
+
 async function launchPuppeteer(){
   await globals();
 }
 async function executeScraper(resortID, suiteType, months){
-  // await globals();
+  await globals();
   const browser = sharedData.browser;
   try {
-    // doneLogin = await login();
-    // console.log("Done login: " + doneLogin);
-    doneLogin = true;
+    doneLogin = await loginSecondTime();
+    console.log("Done login: " + doneLogin);
+    
     sElement = (doneLogin) ? await selectElements(resortID, suiteType) : null;
     console.log('Selected Option Text:', sElement);
     doneSelecting = (sElement !== null);
@@ -52,7 +53,75 @@ async function executeScraper(resortID, suiteType, months){
 async function login () {
   await globals();
   try {    
-   // Navigate to the login page
+    // Navigate to the login page
+    const page = sharedData.page;
+    await page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/login');
+
+    console.log("I'M ON THE LOGIN PAGE")
+
+    if (process.env.NODE_ENV === 'production' ){
+      console.log("THIS IS THE PRODUCTION ENVIRONMENTTT")
+    }
+
+    // Fill out the login form
+    await page.type('#okta-signin-username', userName);
+    await page.type('#okta-signin-password', passWord);
+
+    // Submit the form
+    await page.click('input[type="submit"]');
+
+    // Click the <a> tag with a specific data-se attribute value
+    const dataSeValue = 'sms-send-code'; 
+    const selector = `a[data-se="${dataSeValue}"]`;
+
+    try {
+      await page.waitForTimeout(5000);
+      await page.waitForSelector(selector);
+      await page.click(selector);
+      console.log("We need OTP verification!")
+      return "needs OTP";
+    } catch (error) {
+      console.log("No need for OTP verification")
+      console.log('Logged in successfullyyyy!!');
+      return true;
+    } 
+
+  } catch ( error ) {
+    console.error('Error logging in using the login credentials');
+    console.error('Error:', error.message);
+    return false;   
+  } 
+}
+
+async function sendOTP(verOTP) {
+  // const browser = sharedData.browser;
+  const page = sharedData.page;
+  try {
+    await page.type('#input60', verOTP)
+    await page.click('#input69');
+    await page.click('input[type="submit"]');
+
+    // try {
+    //   await page.waitForTimeout(3000);
+    //   await page.$('#error-fragment');
+    //   console.log("The token code is incorrect");
+    //   return false;
+    // } catch (error) {
+      console.log('Logged in successfullyyyy!!');
+      return true;
+    // }
+
+  } catch ( error ) {
+    console.error('Error:', error.message);
+    return false;  
+  } finally {
+    await page.close();
+  }
+}
+
+async function loginSecondTime () {
+  try {    
+    // Navigate to the login page
     const page = sharedData.page;
     await page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/login');
 
@@ -93,39 +162,10 @@ async function login () {
 }
 
 
-
-async function sendOTP(verOTP) {
-  // const browser = sharedData.browser;
-
-  try {
-    const page = sharedData.page;
-    await page.type('#input60', verOTP)
-    await page.click('#input69');
-    await page.click('input[type="submit"]');
-
-    // try {
-    //   await page.waitForTimeout(3000);
-    //   await page.$('#error-fragment');
-    //   console.log("The token code is incorrect");
-    //   return false;
-    // } catch (error) {
-      console.log('Logged in successfullyyyy!!');
-      return true;
-    // }
-
-  } catch ( error ) {
-    console.error('Error:', error.message);
-    return false;  
-  } finally {
-    // await browser.close();
-  }
-}
-
-
 async function selectElements(resortID, suiteType){
+  const page = sharedData.page;
 
   try {
-    const page = sharedData.page;
     var calendarUrl = `https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`;
 
     await page.goto(calendarUrl);   
@@ -193,8 +233,8 @@ async function selectElements(resortID, suiteType){
 
 async function checkAvailability(months){
 
+  const page = sharedData.page;
   try{
-    const page = sharedData.page;
     var { currentDate, EndDate } = getCurrentAndEndDate(months);
     var dates = [];
     var available;
@@ -305,7 +345,7 @@ function getCurrentAndEndDate(months){
 }
 
 async function getResortAddress(resortID, sElement){
-
+  const browser = sharedData.browser;
   try {
     const pageForAddress = await browser.newPage();
 

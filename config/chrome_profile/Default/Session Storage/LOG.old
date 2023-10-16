@@ -1,3 +1,24 @@
-2023/10/13-10:42:43.087 31e0 Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/MANIFEST-000001
-2023/10/13-10:42:43.088 31e0 Recovering log #3
-2023/10/13-10:42:43.088 31e0 Reusing old log C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/000003.log 
+2023/10/16-09:58:50.319 1a68 Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/MANIFEST-000001
+2023/10/16-09:58:50.319 1a68 Recovering log #24
+2023/10/16-09:58:50.330 1a68 Level-0 table #27: started
+2023/10/16-09:58:50.465 1a68 Level-0 table #27: 470635 bytes OK
+2023/10/16-09:58:50.521 1a68 Delete type=0 #24
+2023/10/16-09:58:58.425 51c Level-0 table #30: started
+2023/10/16-09:58:58.483 51c Level-0 table #30: 449045 bytes OK
+2023/10/16-09:58:58.644 51c Delete type=0 #28
+2023/10/16-09:58:58.645 51c Compacting 4@0 + 1@1 files
+2023/10/16-09:58:58.749 51c Generated table #31@0: 38 keys, 447862 bytes
+2023/10/16-09:58:58.749 51c Compacted 4@0 + 1@1 files => 447862 bytes
+2023/10/16-09:58:58.817 51c compacted to: files[ 0 1 0 0 0 0 0 ]
+2023/10/16-09:58:58.818 51c Delete type=2 #20
+2023/10/16-09:58:58.818 51c Delete type=2 #22
+2023/10/16-09:58:58.818 51c Delete type=2 #25
+2023/10/16-09:58:58.818 51c Delete type=2 #27
+2023/10/16-09:58:58.818 51c Delete type=2 #30
+2023/10/16-09:59:51.475 51c Level-0 table #33: started
+2023/10/16-09:59:51.579 51c Level-0 table #33: 36037 bytes OK
+2023/10/16-09:59:51.640 51c Delete type=0 #29
+2023/10/16-10:00:01.634 1a68 Current memtable full; waiting...
+2023/10/16-10:00:01.805 51c Level-0 table #35: started
+2023/10/16-10:00:01.852 51c Level-0 table #35: 469628 bytes OK
+2023/10/16-10:00:01.875 51c Delete type=0 #32
