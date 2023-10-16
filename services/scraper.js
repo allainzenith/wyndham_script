@@ -182,6 +182,8 @@ async function selectElements(resortID, suiteType){
       return selectedOption.text;
     }, resortSelector);
 
+    console.log("this is the selected option: " + selectedOptionText);
+
     const suiteSelector = '#suiteType';
     // await page.waitForSelector(suiteSelector);
 
