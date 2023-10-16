@@ -51,10 +51,11 @@ async function executeScraper(resortID, suiteType, months){
 }
 
 async function login () {
+  await globals();
+  const page = sharedData.page;
+  
   try {    
     // Navigate to the login page
-    await globals();
-    const page = sharedData.page;
     await page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/login');
 
     console.log("I'M ON THE LOGIN PAGE")
@@ -64,6 +65,7 @@ async function login () {
     }
 
     // Fill out the login form
+    await page.waitForSelector('#okta-signin-username');
     await page.type('#okta-signin-username', userName);
     await page.type('#okta-signin-password', passWord);
 
