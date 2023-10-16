@@ -146,8 +146,7 @@ async function loginSecondTime () {
     const selector = `a[data-se="${dataSeValue}"]`;
 
     try {
-      await page.waitForTimeout(5000);
-      await page.waitForSelector(selector);
+      await page.waitForSelector(selector, {timeout: 10000});
       await page.click(selector);
       console.log("We need OTP verification!")
       return "needs OTP";
