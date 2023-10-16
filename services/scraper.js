@@ -176,7 +176,7 @@ async function selectElements(resortID, suiteType){
     console.log("I'M ON THE CALENDAR PAGE")
 
     const resortSelector = "#ResortSelect";
-    // await page.waitForSelector(resortSelector);
+    await page.waitForSelector(resortSelector);
 
     let selectedOptionText = await page.evaluate((selector) => {
       const select = document.querySelector(selector);
