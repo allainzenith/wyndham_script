@@ -56,7 +56,8 @@ async function login () {
     // Navigate to the login page
     const page = sharedData.page;
     await page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/login');
-
+    await page.waitForNavigation();
+    
     console.log("I'M ON THE LOGIN PAGE")
 
     if (process.env.NODE_ENV === 'production' ){
