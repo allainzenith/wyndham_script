@@ -13,11 +13,11 @@ async function launchPuppeteer(){
   await globals();
 }
 async function executeScraper(resortID, suiteType, months){
-  await globals();
+  // await globals();
   const browser = sharedData.browser;
   try {
-    doneLogin = await login();
-    console.log("Done login: " + doneLogin);
+    // doneLogin = await login();
+    // console.log("Done login: " + doneLogin);
 
     sElement = (doneLogin) ? await selectElements(resortID, suiteType) : null;
     console.log('Selected Option Text:', sElement);
@@ -50,6 +50,7 @@ async function executeScraper(resortID, suiteType, months){
 }
 
 async function login () {
+  await globals();
   try {    
    // Navigate to the login page
     const page = sharedData.page;
@@ -94,7 +95,7 @@ async function login () {
 
 
 async function sendOTP(verOTP) {
-  const browser = sharedData.browser;
+  // const browser = sharedData.browser;
 
   try {
     const page = sharedData.page;
@@ -116,7 +117,7 @@ async function sendOTP(verOTP) {
     console.error('Error:', error.message);
     return false;  
   } finally {
-    await browser.close();
+    // await browser.close();
   }
 }
 
