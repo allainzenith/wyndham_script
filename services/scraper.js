@@ -51,13 +51,13 @@ async function executeScraper(resortID, suiteType, months){
 }
 
 async function login () {
-  await globals();
+  const page = sharedData.page;
   try {    
     // Navigate to the login page
-    const page = sharedData.page;
+    await globals();
     await page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/login');
     await page.waitForNavigation();
-    
+
     console.log("I'M ON THE LOGIN PAGE")
 
     if (process.env.NODE_ENV === 'production' ){
