@@ -53,7 +53,7 @@ async function executeScraper(resortID, suiteType, months){
 async function login () {
   await globals();
   const page = sharedData.page;
-  
+  const browser = sharedData.browser;
   try {    
     // Navigate to the login page
     await page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/login');
@@ -85,6 +85,7 @@ async function login () {
     } catch (error) {
       console.log("No need for OTP verification")
       console.log('Logged in successfullyyyy!!');
+      await browser.close();
       return true;
     } 
 
@@ -96,7 +97,7 @@ async function login () {
 }
 
 async function sendOTP(verOTP) {
-  // const browser = sharedData.browser;
+  const browser = sharedData.browser;
   const page = sharedData.page;
   try {
     await page.type('#input60', verOTP)
@@ -117,7 +118,8 @@ async function sendOTP(verOTP) {
     console.error('Error:', error.message);
     return false;  
   } finally {
-    await page.close();
+    // await page.close();
+    await browser.close();
   }
 }
 

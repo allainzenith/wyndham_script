@@ -1,27 +1,8 @@
-2023/10/16-15:17:05.757 2a7c Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/MANIFEST-000001
-2023/10/16-15:17:05.758 2a7c Recovering log #8
-2023/10/16-15:17:05.769 2a7c Level-0 table #11: started
-2023/10/16-15:17:05.826 2a7c Level-0 table #11: 471119 bytes OK
-2023/10/16-15:17:05.828 2a7c Recovering log #10
-2023/10/16-15:17:05.828 2a7c Reusing old log C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/000010.log 
-2023/10/16-15:17:05.867 2a7c Delete type=0 #8
-2023/10/16-15:17:56.569 4dc Level-0 table #13: started
-2023/10/16-15:17:56.649 4dc Level-0 table #13: 443926 bytes OK
-2023/10/16-15:17:56.676 4dc Delete type=0 #10
-2023/10/16-15:18:03.572 2a7c Level-0 table #15: started
-2023/10/16-15:18:03.617 2a7c Level-0 table #15: 30649 bytes OK
-2023/10/16-15:18:03.684 2a7c Delete type=0 #12
-2023/10/16-15:18:03.685 2a7c Compacting 4@0 + 1@1 files
-2023/10/16-15:18:03.768 2a7c Generated table #16@0: 172 keys, 474767 bytes
-2023/10/16-15:18:03.768 2a7c Compacted 4@0 + 1@1 files => 474767 bytes
-2023/10/16-15:18:03.792 2a7c compacted to: files[ 0 1 1 0 0 0 0 ]
-2023/10/16-15:18:03.793 2a7c Delete type=2 #7
-2023/10/16-15:18:03.793 2a7c Delete type=2 #9
-2023/10/16-15:18:03.793 2a7c Delete type=2 #11
-2023/10/16-15:18:03.793 2a7c Delete type=2 #13
-2023/10/16-15:18:03.793 2a7c Delete type=2 #15
-2023/10/16-15:18:07.793 4dc Level-0 table #18: started
-2023/10/16-15:18:08.094 4dc Level-0 table #18: 714064 bytes OK
-2023/10/16-15:18:08.126 4dc Delete type=0 #14
-2023/10/16-15:18:12.476 2c28 Level-0 table #20: started
-2023/10/16-15:18:12.577 2c28 Level-0 table #20: 476095 bytes OK
+2023/10/16-15:47:27.353 11f0 Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/MANIFEST-000001
+2023/10/16-15:47:27.361 11f0 Recovering log #27
+2023/10/16-15:47:27.367 11f0 Level-0 table #30: started
+2023/10/16-15:47:27.460 11f0 Level-0 table #30: 143939 bytes OK
+2023/10/16-15:47:27.622 11f0 Delete type=0 #27
+2023/10/16-15:47:34.835 11f0 Level-0 table #33: started
+2023/10/16-15:47:34.883 11f0 Level-0 table #33: 443605 bytes OK
+2023/10/16-15:47:34.904 11f0 Delete type=0 #31
