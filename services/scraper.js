@@ -122,9 +122,10 @@ async function sendOTP(verOTP) {
 }
 
 async function loginSecondTime () {
+  const page = sharedData.page;
+
   try {    
     // Navigate to the login page
-    const page = sharedData.page;
     await page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/login');
 
     console.log("I'M ON THE LOGIN PAGE")
@@ -234,8 +235,8 @@ async function selectElements(resortID, suiteType){
 }
 
 async function checkAvailability(months){
-
   const page = sharedData.page;
+
   try{
     var { currentDate, EndDate } = getCurrentAndEndDate(months);
     var dates = [];
