@@ -1,10 +1,13 @@
-2023/10/16-14:40:08.565 3474 Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/MANIFEST-000001
-2023/10/16-14:40:08.577 3474 Recovering log #11
-2023/10/16-14:40:08.581 3474 Level-0 table #15: started
-2023/10/16-14:40:08.633 3474 Level-0 table #15: 134666 bytes OK
-2023/10/16-14:40:08.634 3474 Recovering log #14
-2023/10/16-14:40:08.641 3474 Reusing old log C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/000014.log 
-2023/10/16-14:40:08.714 3474 Delete type=0 #11
-2023/10/16-14:40:16.605 3474 Level-0 table #17: started
-2023/10/16-14:40:16.673 3474 Level-0 table #17: 448222 bytes OK
-2023/10/16-14:40:16.707 3474 Delete type=0 #14
+2023/10/16-15:11:47.924 35fc Creating DB C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage since it was missing.
+2023/10/16-15:11:48.025 35fc Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/MANIFEST-000001
+2023/10/16-15:11:54.654 35fc Level-0 table #5: started
+2023/10/16-15:11:54.710 35fc Level-0 table #5: 443750 bytes OK
+2023/10/16-15:11:54.753 35fc Delete type=0 #3
+2023/10/16-15:12:48.743 35fc Level-0 table #7: started
+2023/10/16-15:12:48.802 35fc Level-0 table #7: 30671 bytes OK
+2023/10/16-15:12:48.844 35fc Delete type=0 #4
+2023/10/16-15:12:52.734 31d4 Level-0 table #9: started
+2023/10/16-15:12:52.788 31d4 Level-0 table #9: 713953 bytes OK
+2023/10/16-15:12:52.836 31d4 Delete type=0 #6
+2023/10/16-15:12:59.746 dcc Level-0 table #11: started
+2023/10/16-15:12:59.841 dcc Level-0 table #11: 471119 bytes OK

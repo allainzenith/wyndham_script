@@ -172,12 +172,24 @@ async function selectElements(resortID, suiteType){
   try {
     var calendarUrl = `https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`;
 
-    await page.goto(calendarUrl);   
+    const navigationTimeout = 60000; 
+  
+    // Create a race between page.goto and a timeout promise
+    const navigationPromise = page.goto(calendarUrl);
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Navigation timeout')), navigationTimeout)
+    );
+  
+    try {
+      await Promise.race([navigationPromise, timeoutPromise]);
+      // The navigation completed within the timeout
+      console.log("I'M ON THE CALENDAR PAGE")
+    } catch (error) {
+      // Handle the timeout error or other navigation errors
+      console.error(error.message);
+    }
 
-    console.log("I'M ON THE CALENDAR PAGE")
-
-    const pageHTML = await page.content();
-    console.log(pageHTML);
+    // await page.goto(calendarUrl);   
 
     const resortSelector = "#ResortSelect";
     await page.waitForSelector(resortSelector);
