@@ -1,26 +1,6 @@
-2023/10/16-10:01:35.525 21c8 Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/MANIFEST-000001
-2023/10/16-10:01:35.537 21c8 Recovering log #34
-2023/10/16-10:01:35.554 21c8 Level-0 table #37: started
-2023/10/16-10:01:35.799 21c8 Level-0 table #37: 712816 bytes OK
-2023/10/16-10:01:35.803 21c8 Recovering log #36
-2023/10/16-10:01:35.806 21c8 Reusing old log C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/000036.log 
-2023/10/16-10:01:35.866 21c8 Delete type=0 #34
-2023/10/16-10:01:42.907 345c Level-0 table #39: started
-2023/10/16-10:01:42.961 345c Level-0 table #39: 445938 bytes OK
-2023/10/16-10:01:43.008 345c Delete type=0 #36
-2023/10/16-10:01:43.046 345c Compacting 4@0 + 1@1 files
-2023/10/16-10:01:43.115 345c Generated table #40@0: 38 keys, 444237 bytes
-2023/10/16-10:01:43.115 345c Compacted 4@0 + 1@1 files => 444237 bytes
-2023/10/16-10:01:43.136 345c compacted to: files[ 0 1 0 0 0 0 0 ]
-2023/10/16-10:01:43.136 345c Delete type=2 #31
-2023/10/16-10:01:43.136 345c Delete type=2 #33
-2023/10/16-10:01:43.136 345c Delete type=2 #35
-2023/10/16-10:01:43.136 345c Delete type=2 #37
-2023/10/16-10:01:43.136 345c Delete type=2 #39
-2023/10/16-10:02:33.663 345c Level-0 table #42: started
-2023/10/16-10:02:33.689 345c Level-0 table #42: 35984 bytes OK
-2023/10/16-10:02:33.732 345c Delete type=0 #38
-2023/10/16-10:02:46.993 345c Current memtable full; waiting...
-2023/10/16-10:02:47.121 21c8 Level-0 table #44: started
-2023/10/16-10:02:47.160 21c8 Level-0 table #44: 471728 bytes OK
-2023/10/16-10:02:47.186 21c8 Delete type=0 #41
+2023/10/16-14:42:11.660 1148 Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/MANIFEST-000001
+2023/10/16-14:42:11.667 1148 Recovering log #16
+2023/10/16-14:42:11.796 1148 Reusing old log C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/000016.log 
+2023/10/16-14:42:18.685 1148 Level-0 table #20: started
+2023/10/16-14:42:18.928 1148 Level-0 table #20: 441923 bytes OK
+2023/10/16-14:42:19.098 1148 Delete type=0 #16

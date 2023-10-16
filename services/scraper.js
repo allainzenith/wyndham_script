@@ -160,7 +160,9 @@ async function loginSecondTime () {
     console.error('Error logging in using the login credentials');
     console.error('Error:', error.message);
     return false;   
-  } 
+  } finally {
+    await page.waitForTimeout(30000)
+  }
 }
 
 
@@ -178,7 +180,7 @@ async function selectElements(resortID, suiteType){
     console.log(pageHTML);
 
     const resortSelector = "#ResortSelect";
-    await page.waitForSelector(resortSelector, {timeout: 200000});
+    await page.waitForSelector(resortSelector);
 
     let selectedOptionText = await page.evaluate((selector) => {
       const select = document.querySelector(selector);
