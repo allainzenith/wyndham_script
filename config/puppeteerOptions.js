@@ -40,7 +40,7 @@ async function globals() {
     
     // Open a new page
     sharedData.page = await sharedData.browser.newPage();
-    sharedData.page.setDefaultNavigationTimeout(80000);
+    sharedData.page.setDefaultNavigationTimeout(120000);
 
     return sharedData;
 }
