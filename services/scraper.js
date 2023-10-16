@@ -185,15 +185,26 @@ async function selectElements(resortID, suiteType){
     const suiteSelector = '#suiteType';
     // await page.waitForSelector(suiteSelector);
 
+    // await page.waitForFunction(
+    //   (selector) => {
+    //     const select = document.querySelector(selector);
+    //     const options = select ? select.options : [];
+    //     return options.length > 1;
+    //   },
+    //   { timeout: 200000 }, 
+    //   suiteSelector
+    // );
+
     await page.waitForFunction(
       (selector) => {
         const select = document.querySelector(selector);
-        const options = select ? select.options : [];
-        return options.length > 1;
+        return select && select.options && select.options.length > 1;
       },
-      { timeout: 200000 }, 
+      { timeout: 30000 },
       suiteSelector
     );
+
+    console.log("naabot pa sha diri")
 
     const optionExists = await page.evaluate((suiteSelector, suiteType) => {
       const select = document.querySelector(`${suiteSelector}`);
