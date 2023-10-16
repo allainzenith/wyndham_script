@@ -194,7 +194,7 @@ async function selectElements(resortID, suiteType){
         const options = select ? select.options : [];
         return options.length > 1;
       },
-      { timeout: 10000 }, 
+      { timeout: 200000 }, 
       suiteSelector
     );
 
