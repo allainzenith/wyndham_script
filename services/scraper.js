@@ -14,7 +14,7 @@ async function launchPuppeteer(){
   await globals();
 }
 async function executeScraper(resortID, suiteType, months){
-  await globals();
+  // await globals();
   const browser = sharedData.browser;
   try {
     doneLogin = await loginSecondTime();
@@ -119,7 +119,7 @@ async function sendOTP(verOTP) {
     return false;  
   } finally {
     // await page.close();
-    await browser.close();
+    await page.close();
   }
 }
 

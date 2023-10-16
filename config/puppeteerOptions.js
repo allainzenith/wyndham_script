@@ -29,7 +29,7 @@ async function globals() {
         // "--no-zygote",
       ],
       // headless: true, 
-      headless: true,
+      headless: false,
       executablePath: process.env.NODE_ENV === 'production' 
         ? process.env.PUPPETEER_EXECUTABLE_PATH
         : puppeteer.executablePath(),

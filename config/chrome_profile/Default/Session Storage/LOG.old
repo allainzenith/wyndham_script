@@ -1,17 +1,8 @@
-2023/10/16-15:45:56.900 31d4 Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/MANIFEST-000001
-2023/10/16-15:45:56.918 31d4 Recovering log #21
-2023/10/16-15:45:56.921 31d4 Level-0 table #24: started
-2023/10/16-15:45:57.071 31d4 Level-0 table #24: 147735 bytes OK
-2023/10/16-15:45:57.128 31d4 Delete type=0 #21
-2023/10/16-15:45:57.130 1bd0 Compacting 4@0 + 1@1 files
-2023/10/16-15:45:57.308 1bd0 Generated table #26@0: 269 keys, 592300 bytes
-2023/10/16-15:45:57.308 1bd0 Compacted 4@0 + 1@1 files => 592300 bytes
-2023/10/16-15:45:57.320 1bd0 compacted to: files[ 0 1 1 0 0 0 0 ]
-2023/10/16-15:45:57.322 1bd0 Delete type=2 #16
-2023/10/16-15:45:57.322 1bd0 Delete type=2 #18
-2023/10/16-15:45:57.323 1bd0 Delete type=2 #20
-2023/10/16-15:45:57.323 1bd0 Delete type=2 #22
-2023/10/16-15:45:57.323 1bd0 Delete type=2 #24
-2023/10/16-15:46:04.656 31d4 Level-0 table #28: started
-2023/10/16-15:46:04.722 31d4 Level-0 table #28: 445129 bytes OK
-2023/10/16-15:46:04.757 31d4 Delete type=0 #25
+2023/10/16-15:47:27.353 11f0 Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/MANIFEST-000001
+2023/10/16-15:47:27.361 11f0 Recovering log #27
+2023/10/16-15:47:27.367 11f0 Level-0 table #30: started
+2023/10/16-15:47:27.460 11f0 Level-0 table #30: 143939 bytes OK
+2023/10/16-15:47:27.622 11f0 Delete type=0 #27
+2023/10/16-15:47:34.835 11f0 Level-0 table #33: started
+2023/10/16-15:47:34.883 11f0 Level-0 table #33: 443605 bytes OK
+2023/10/16-15:47:34.904 11f0 Delete type=0 #31
