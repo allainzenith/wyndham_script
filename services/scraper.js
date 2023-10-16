@@ -50,7 +50,6 @@ async function executeScraper(resortID, suiteType, months){
 }
 
 async function login () {
-
   try {    
    // Navigate to the login page
     const page = sharedData.page;

@@ -4,7 +4,8 @@ const { format } = require('date-fns-tz');
 var { joinTwoTables } = require('../sequelizer/controller/controller');
 var { addToQueue, resourceIntensiveTask } = require('../scripts/queueProcessor');
 const { findOrCreateAResort, createAnEvent } = require('../scripts/oneListing');
-var { login, sendOTP, launchPuppeteer } = require('../services/scraper')
+var { login, sendOTP } = require('../services/scraper')
+const { globals } =  require('../config/puppeteerOptions'); 
 
 router.get('/', async(req, res, next) => {
   res.render('oneListing');
@@ -12,6 +13,7 @@ router.get('/', async(req, res, next) => {
 
 router.get('/verify', async(req, res, next) => {
   res.render('verify');
+  await globals();
   await login();
 });
 
