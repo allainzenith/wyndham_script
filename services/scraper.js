@@ -17,8 +17,10 @@ async function executeScraper(resortID, suiteType, months){
   const browser = sharedData.browser;
 
   try {
-    doneLogin = await loginSecondTime();
-    console.log("Done login: " + doneLogin);
+    // doneLogin = await loginSecondTime();
+    // console.log("Done login: " + doneLogin);
+
+    doneLogin = true;
     
     sElement = (doneLogin) ? await selectElements(resortID, suiteType) : null;
     console.log('Selected Option Text:', sElement);

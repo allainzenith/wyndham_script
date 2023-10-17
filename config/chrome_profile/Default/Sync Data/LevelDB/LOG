@@ -1,3 +1,2 @@
-2023/10/16-17:28:42.893 3034 Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Sync Data\LevelDB/MANIFEST-000001
-2023/10/16-17:28:42.894 3034 Recovering log #3
-2023/10/16-17:28:42.894 3034 Reusing old log C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Sync Data\LevelDB/000003.log 
+2023/10/17-09:28:15.018 3558 Creating DB C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Sync Data\LevelDB since it was missing.
+2023/10/17-09:28:15.205 3558 Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Sync Data\LevelDB/MANIFEST-000001

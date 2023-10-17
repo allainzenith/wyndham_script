@@ -1,19 +1,2 @@
-2023/10/16-17:28:43.015 3034 Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/MANIFEST-000001
-2023/10/16-17:28:43.016 3034 Recovering log #51
-2023/10/16-17:28:43.027 3034 Level-0 table #54: started
-2023/10/16-17:28:43.126 3034 Level-0 table #54: 594114 bytes OK
-2023/10/16-17:28:43.129 3034 Recovering log #54
-2023/10/16-17:28:43.129 3034 Reusing old log C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/000054.log 
-2023/10/16-17:28:43.208 3034 Delete type=0 #51
-2023/10/16-17:28:50.779 3050 Level-0 table #56: started
-2023/10/16-17:28:50.828 3050 Level-0 table #56: 446968 bytes OK
-2023/10/16-17:28:50.850 3050 Delete type=0 #54
-2023/10/16-17:28:50.852 3050 Compacting 4@0 + 1@1 files
-2023/10/16-17:28:50.927 3050 Generated table #57@0: 761 keys, 455751 bytes
-2023/10/16-17:28:50.927 3050 Compacted 4@0 + 1@1 files => 455751 bytes
-2023/10/16-17:28:50.951 3050 compacted to: files[ 0 1 1 0 0 0 0 ]
-2023/10/16-17:28:50.952 3050 Delete type=2 #48
-2023/10/16-17:28:50.952 3050 Delete type=2 #50
-2023/10/16-17:28:50.952 3050 Delete type=2 #52
-2023/10/16-17:28:50.952 3050 Delete type=2 #54
-2023/10/16-17:28:50.952 3050 Delete type=2 #56
+2023/10/17-09:28:19.151 33ec Creating DB C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage since it was missing.
+2023/10/17-09:28:19.916 33ec Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/MANIFEST-000001
