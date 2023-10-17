@@ -24,10 +24,10 @@ async function globals() {
     // Launch Puppeteer with the custom profile directory
     sharedData.browser = await puppeteer.launch({
       args: [
-        "--disable-setuid-sandbox",
-        "--no-sandbox",
+        // "--disable-setuid-sandbox",
+        // "--no-sandbox",
         // "--single-process",
-        "--no-zygote",
+        // "--no-zygote",
       ],
       // headless: true, 
       headless: true,

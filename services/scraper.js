@@ -168,24 +168,7 @@ async function selectElements(resortID, suiteType){
   try {
     var calendarUrl = `https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`;
 
-    const navigationTimeout = 120000; 
-  
-    // Create a race between page.goto and a timeout promise
-    const navigationPromise = page.goto(calendarUrl);
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Navigation timeout')), navigationTimeout)
-    );
-  
-    try {
-      await Promise.race([navigationPromise, timeoutPromise]);
-      // The navigation completed within the timeout
-      console.log("I'M ON THE CALENDAR PAGE")
-    } catch (error) {
-      // Handle the timeout error or other navigation errors
-      console.error(error.message);
-    }
-
-    // await page.goto(calendarUrl); 
+    await page.goto(`https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`); 
     
     await page.waitForTimeout(30000);
 
@@ -245,8 +228,6 @@ async function selectElements(resortID, suiteType){
       console.log(`The option with value "${suiteType}" does not exist in the select element.`);
       return null;
     }
-
-    
 
 
   } catch ( error ) {
