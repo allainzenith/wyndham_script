@@ -171,8 +171,6 @@ async function selectElements(resortID, suiteType){
     var calendarUrl = `https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`;
 
     await page.goto(`https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`); 
-    
-    await page.waitForTimeout(30000);
 
     const resortSelector = "#ResortSelect";
     await page.waitForSelector(resortSelector);
