@@ -8,19 +8,18 @@ const path = require('path');
 const { addMonths, addDays } = require('date-fns');
 const { userName, passWord} = require('../config/config')
 const { globals, sharedData } =  require('../config/puppeteerOptions'); 
-let pageforlogin;
+let needtoLogin = true;
 
 async function launchPuppeteer(){
   await globals();
 }
 async function executeScraper(resortID, suiteType, months){
+  await globals();
   const browser = sharedData.browser;
 
   try {
-    // doneLogin = await loginSecondTime();
-    // console.log("Done login: " + doneLogin);
-
-    doneLogin = true;
+    doneLogin = needtoLogin ? await loginSecondTime() : true;
+    console.log("Done login: " + doneLogin);
     
     sElement = (doneLogin) ? await selectElements(resortID, suiteType) : null;
     console.log('Selected Option Text:', sElement);
@@ -111,6 +110,7 @@ async function sendOTP(verOTP) {
     //   return false;
     // } catch (error) {
       console.log('Logged in successfullyyyy!!');
+      needtoLogin = false;
       return true;
     // }
 
@@ -153,6 +153,7 @@ async function loginSecondTime () {
     } catch (error) {
       console.log("No need for OTP verification")
       console.log('Logged in successfullyyyy!!');
+      await page.waitForTimeout(10000);
       return true;
     } 
 
