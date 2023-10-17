@@ -14,7 +14,6 @@ async function launchPuppeteer(){
   await globals();
 }
 async function executeScraper(resortID, suiteType, months){
-  await globals();
   const browser = sharedData.browser;
 
   try {
@@ -53,12 +52,11 @@ async function executeScraper(resortID, suiteType, months){
 
 async function login () {
   await globals();
-  // const page = sharedData.page;
-  const browser = sharedData.browser;
-  pageforlogin = await browser.newPage();
+  const page = sharedData.page;
+
   try {    
     // Navigate to the login page
-    await pageforlogin.goto('https://clubwyndham.wyndhamdestinations.com/us/en/login');
+    await page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/login');
 
     console.log("I'M ON THE LOGIN PAGE")
 
@@ -67,27 +65,26 @@ async function login () {
     }
 
     // Fill out the login form
-    await pageforlogin.waitForSelector('#okta-signin-username');
-    await pageforlogin.type('#okta-signin-username', userName);
-    await pageforlogin.type('#okta-signin-password', passWord);
+    await page.waitForSelector('#okta-signin-username');
+    await page.type('#okta-signin-username', userName);
+    await page.type('#okta-signin-password', passWord);
 
     // Submit the form
-    await pageforlogin.click('input[type="submit"]');
+    await page.click('input[type="submit"]');
 
     // Click the <a> tag with a specific data-se attribute value
     const dataSeValue = 'sms-send-code'; 
     const selector = `a[data-se="${dataSeValue}"]`;
 
     try {
-      await pageforlogin.waitForTimeout(5000);
-      await pageforlogin.waitForSelector(selector);
-      await pageforlogin.click(selector);
+      await page.waitForTimeout(5000);
+      await page.waitForSelector(selector);
+      await page.click(selector);
       console.log("We need OTP verification!")
       return "needs OTP";
     } catch (error) {
       console.log("No need for OTP verification")
       console.log('Logged in successfullyyyy!!');
-      await pageforlogin.close();
       return true;
     } 
 
@@ -99,12 +96,11 @@ async function login () {
 }
 
 async function sendOTP(verOTP) {
-  // const browser = sharedData.browser;
-  // const page = sharedData.page;
+  const page = sharedData.page;
   try {
-    await pageforlogin.type('#input60', verOTP)
-    await pageforlogin.click('#input69');
-    await pageforlogin.click('input[type="submit"]');
+    await page.type('#input60', verOTP)
+    await page.click('#input69');
+    await page.click('input[type="submit"]');
 
     // try {
     //   await page.waitForTimeout(3000);
@@ -113,15 +109,11 @@ async function sendOTP(verOTP) {
     //   return false;
     // } catch (error) {
       console.log('Logged in successfullyyyy!!');
-      await pageforlogin.close();
       return true;
     // }
 
-    
-
   } catch ( error ) {
     console.error('Error:', error.message);
-    await pageforlogin.close();
     return false;  
   } 
 
@@ -167,7 +159,7 @@ async function loginSecondTime () {
     console.error('Error:', error.message);
     return false;   
   } finally {
-    await page.waitForTimeout(30000)
+    await page.waitForTimeout(30000);
   }
 }
 
