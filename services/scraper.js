@@ -363,8 +363,8 @@ async function getResortAddress(resortID, sElement){
 
     url = `https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results`;
     await pageForAddress.goto(url);
-
-    await pageForAddress.waitForTimeout(30000);
+    
+    await pageForAddress.waitForTimeout(2000);
 
     const placeholderText = 'Enter a location';
     const inputSelector = `input[placeholder="${placeholderText}"]`;
