@@ -11,7 +11,8 @@ let sharedData = {
 // Make the module an async module
 async function globals() {
     const scriptDir = __dirname;
-    const customProfileRelPath = 'chrome_profile'; 
+    // const customProfileRelPath = 'chrome_profile'; 
+    const customProfileRelPath = 'custom_profile'; 
     const customProfileDir = path.join(scriptDir, customProfileRelPath);
     
     // Check if the custom profile directory exists
@@ -29,7 +30,7 @@ async function globals() {
         "--no-zygote",
       ],
       // headless: true, 
-      headless: true,
+      headless: false,
       executablePath: process.env.NODE_ENV === 'production' 
         ? process.env.PUPPETEER_EXECUTABLE_PATH
         : puppeteer.executablePath(),
