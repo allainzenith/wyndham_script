@@ -158,9 +158,7 @@ async function loginSecondTime () {
     console.error('Error logging in using the login credentials');
     console.error('Error:', error.message);
     return false;   
-  } finally {
-    await page.waitForTimeout(30000);
-  }
+  } 
 }
 
 
@@ -170,7 +168,7 @@ async function selectElements(resortID, suiteType){
   try {
     var calendarUrl = `https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`;
 
-    const navigationTimeout = 60000; 
+    const navigationTimeout = 120000; 
   
     // Create a race between page.goto and a timeout promise
     const navigationPromise = page.goto(calendarUrl);
@@ -187,7 +185,9 @@ async function selectElements(resortID, suiteType){
       console.error(error.message);
     }
 
-    // await page.goto(calendarUrl);   
+    // await page.goto(calendarUrl); 
+    
+    await page.waitForTimeout(30000);
 
     const resortSelector = "#ResortSelect";
     await page.waitForSelector(resortSelector);
