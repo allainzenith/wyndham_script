@@ -31,17 +31,18 @@ async function globals() {
       ],
       // headless: true, 
       headless: true,
-      executablePath: process.env.NODE_ENV === 'production' 
-        ? process.env.PUPPETEER_EXECUTABLE_PATH
-        : puppeteer.executablePath(),
-      userDataDir: process.env.NODE_ENV === 'production' 
-        ? process.env.CHROMIUM_USER_DATA
-        : customProfileDir,
+      userDataDir: customProfileDir
+      // executablePath: process.env.NODE_ENV === 'production' 
+      //   ? process.env.PUPPETEER_EXECUTABLE_PATH
+      //   : puppeteer.executablePath(),
+      // userDataDir: process.env.NODE_ENV === 'production' 
+      //   ? process.env.CHROMIUM_USER_DATA
+      //   : customProfileDir,
     });
     
     // Open a new page
     sharedData.page = await sharedData.browser.newPage();
-    sharedData.page.setDefaultNavigationTimeout(120000);
+    sharedData.page.setDefaultNavigationTimeout(30000);
 
     return sharedData;
 }
