@@ -102,16 +102,16 @@ async function sendOTP(verOTP) {
     await page.click('#input69');
     await page.click('input[type="submit"]');
 
-    try {
-      await page.waitForTimeout(30000);
-      await page.$('#error-fragment');
-      console.log("The token code is incorrect");
-      return false;
-    } catch (error) {
+    // try {
+    //   await page.waitForTimeout(30000);
+    //   await page.$('#error-fragment');
+    //   console.log("The token code is incorrect");
+    //   return false;
+    // } catch (error) {
       console.log('Logged in successfullyyyy!!');
       needtoLogin = false;
       return true;
-    }
+    // }
 
   } catch ( error ) {
     console.error('Error:', error.message);
