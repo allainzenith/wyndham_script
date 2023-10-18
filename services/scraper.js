@@ -152,7 +152,7 @@ async function loginSecondTime () {
     } catch (error) {
       console.log("No need for OTP verification")
       console.log('Logged in successfullyyyy!!');
-      await page.waitForTimeout(3000);
+      await page.waitForTimeout(30000);
       return true;
     } 
 
