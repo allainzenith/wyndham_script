@@ -103,7 +103,7 @@ async function sendOTP(verOTP) {
     await page.click('input[type="submit"]');
 
     try {
-      await page.waitForTimeout(3000);
+      await page.waitForTimeout(30000);
       await page.$('#error-fragment');
       console.log("The token code is incorrect");
       return false;
