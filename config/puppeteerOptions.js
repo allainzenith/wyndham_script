@@ -30,7 +30,7 @@ async function globals() {
         "--no-zygote",
       ],
       // headless: true, 
-      headless: false,
+      headless: 'new',
       userDataDir: customProfileDir
       // executablePath: process.env.NODE_ENV === 'production' 
       //   ? process.env.PUPPETEER_EXECUTABLE_PATH
@@ -42,7 +42,7 @@ async function globals() {
     
     // Open a new page
     sharedData.page = await sharedData.browser.newPage();
-    sharedData.page.setDefaultNavigationTimeout(60000);
+    sharedData.page.setDefaultNavigationTimeout(120000);
 
     return sharedData;
 }
