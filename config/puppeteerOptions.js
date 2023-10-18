@@ -28,8 +28,8 @@ async function globals() {
         "--no-sandbox",
         "--no-zygote",
       ],
-      // headless: true, 
-      headless: 'new',
+      headless: false, 
+      // headless: 'new',
       userDataDir: customProfileDir
     });
     
