@@ -208,8 +208,6 @@ async function selectElements(resortID, suiteType){
       suiteSelector
     );
 
-    console.log("naabot pa sha diri")
-
     const optionExists = await page.evaluate((suiteSelector, suiteType) => {
       const select = document.querySelector(`${suiteSelector}`);
       if (select) {
@@ -363,6 +361,7 @@ async function getResortAddress(resortID, sElement){
 
     url = `https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results`;
     await pageForAddress.goto(url);
+    await pageForAddress.waitForTimeout(10000);
 
     const placeholderText = 'Enter a location';
     const inputSelector = `input[placeholder="${placeholderText}"]`;

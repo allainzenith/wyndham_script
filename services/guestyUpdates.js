@@ -11,9 +11,9 @@ async function executeUpdates(resortFoundorCreated, token, address, updatedAvail
         var listingIDs = [], listingNames = [];
         let listingID, listingName; 
 
-        var resortJSON = resortFoundorCreated.toJSON()
+        var resortJSON = await resortFoundorCreated.toJSON()
         var resortJSONlistingID = resortJSON.listingID
-        if (resortJSONlistingID !== null){
+        if (resortJSONlistingID !== undefined){
 
             console.log("Listing found!");
 

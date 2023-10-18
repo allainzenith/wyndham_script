@@ -1,3 +1,26 @@
-2023/10/17-14:03:48.395 2124 Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/MANIFEST-000001
-2023/10/17-14:03:48.415 2124 Recovering log #5
-2023/10/17-14:03:48.420 2124 Reusing old log C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/000005.log 
+2023/10/18-12:13:09.388 33d0 Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/MANIFEST-000001
+2023/10/18-12:13:09.396 33d0 Recovering log #35
+2023/10/18-12:13:09.406 33d0 Level-0 table #38: started
+2023/10/18-12:13:09.505 33d0 Level-0 table #38: 469704 bytes OK
+2023/10/18-12:13:09.507 33d0 Recovering log #37
+2023/10/18-12:13:09.519 33d0 Level-0 table #39: started
+2023/10/18-12:13:09.692 33d0 Level-0 table #39: 713756 bytes OK
+2023/10/18-12:13:09.787 33d0 Delete type=0 #35
+2023/10/18-12:13:09.787 33d0 Delete type=0 #37
+2023/10/18-12:13:09.790 1184 Compacting 4@0 + 1@1 files
+2023/10/18-12:13:10.099 1184 Generated table #41@0: 113 keys, 1639993 bytes
+2023/10/18-12:13:10.099 1184 Compacted 4@0 + 1@1 files => 1639993 bytes
+2023/10/18-12:13:10.152 1184 compacted to: files[ 0 1 0 0 0 0 0 ]
+2023/10/18-12:13:10.153 1184 Delete type=2 #32
+2023/10/18-12:13:10.153 1184 Delete type=2 #34
+2023/10/18-12:13:10.153 1184 Delete type=2 #36
+2023/10/18-12:13:10.153 1184 Delete type=2 #38
+2023/10/18-12:13:10.153 1184 Delete type=2 #39
+2023/10/18-12:13:17.126 1184 Level-0 table #43: started
+2023/10/18-12:13:17.180 1184 Level-0 table #43: 445981 bytes OK
+2023/10/18-12:13:17.197 1184 Delete type=0 #40
+2023/10/18-12:14:16.375 33d0 Level-0 table #45: started
+2023/10/18-12:14:16.487 33d0 Level-0 table #45: 36143 bytes OK
+2023/10/18-12:14:16.514 33d0 Delete type=0 #42
+2023/10/18-12:14:17.493 1184 Level-0 table #47: started
+2023/10/18-12:14:17.891 1184 Level-0 table #47: 469596 bytes IO error: C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Session Storage/000047.ldb: OS or hardware error. (ChromeMethodBFE: 8::NewRandomAccessFile::16)
