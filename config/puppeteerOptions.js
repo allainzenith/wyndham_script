@@ -30,8 +30,8 @@ async function globals() {
         "--no-zygote",
       ],
       // headless: true, 
-      // headless: 'new',
-      headless:false,
+      headless: 'new',
+      // headless:false,
       userDataDir: customProfileDir
       // executablePath: process.env.NODE_ENV === 'production' 
       //   ? process.env.PUPPETEER_EXECUTABLE_PATH
