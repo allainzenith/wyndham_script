@@ -152,7 +152,6 @@ async function loginSecondTime () {
     } catch (error) {
       console.log("No need for OTP verification")
       console.log('Logged in successfullyyyy!!');
-      await page.waitForTimeout(30000);
       return true;
     } 
 
@@ -160,7 +159,9 @@ async function loginSecondTime () {
     console.error('Error logging in using the login credentials');
     console.error('Error:', error.message);
     return false;   
-  } 
+  } finally{
+    await page.waitForTimeout(30000);
+  }
 }
 
 
@@ -171,6 +172,8 @@ async function selectElements(resortID, suiteType){
     var calendarUrl = `https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`;
 
     await page.goto(calendarUrl); 
+
+    await page.waitForTimeout(10000);
 
     const resortSelector = "#ResortSelect";
     await page.waitForSelector(resortSelector);
