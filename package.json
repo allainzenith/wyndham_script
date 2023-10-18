@@ -23,8 +23,5 @@
   },
   "devDependencies": {
     "@npmcli/run-script": "^7.0.1"
-  },
-  "engines": {
-    "node": "18.17.1"
   }
 }
