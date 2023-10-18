@@ -12,31 +12,10 @@ async function executeUpdates(resortFoundorCreated, token, address, updatedAvail
         let listingID, listingName; 
 
         var resortJSON = await resortFoundorCreated.toJSON()
-        var resortJSONlistingID = resortJSON.listingID
-        if (resortJSONlistingID !== undefined){
+        var resortJSONlistingID = await resortJSON.listingID;
+        console.log("resortJSONlistingID: " + resortJSONlistingID);
+        if (resortJSONlistingID === undefined || resortJSONlistingID === null){
 
-            console.log("Listing found!");
-
-            var listingIDObj = resortJSONlistingID.split(","); 
-            const listingJsonArray = listingIDObj.map(item => ({ _id: item.trim() })); 
-
-
-            console.log("Printing calendar availability scraped from wyndham...")
-            for (const avail of updatedAvail) {
-                console.log(avail);
-            }
-
-            for (const listing of listingJsonArray) {
-                console.log(await updateAvailability(listing, updatedAvail, token));
-                console.log("listing._id: " + listing._id);
-                console.log("listing.title: " + listing.title);
-                listingIDs.push(listing._id);
-            }
-
-
-            return "okay";
-
-        } else {
             console.log("There is no existing records for this listing. Searching one now..")
 
             try {             
@@ -75,6 +54,29 @@ async function executeUpdates(resortFoundorCreated, token, address, updatedAvail
                 console.error('Error:', error.message);
                 return null;
             }
+
+        } else {
+            console.log("Listing found!");
+
+            var listingIDObj = resortJSONlistingID.split(","); 
+            const listingJsonArray = listingIDObj.map(item => ({ _id: item.trim() })); 
+
+
+            console.log("Printing calendar availability scraped from wyndham...")
+            for (const avail of updatedAvail) {
+                console.log(avail);
+            }
+
+            for (const listing of listingJsonArray) {
+                console.log(await updateAvailability(listing, updatedAvail, token));
+                console.log("listing._id: " + listing._id);
+                console.log("listing.title: " + listing.title);
+                listingIDs.push(listing._id);
+            }
+
+
+            return "okay";
+            
         }
     } else {
         console.log("Token not found");

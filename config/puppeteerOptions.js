@@ -26,19 +26,11 @@ async function globals() {
       args: [
         "--disable-setuid-sandbox",
         "--no-sandbox",
-        // "--single-process",
         "--no-zygote",
       ],
       // headless: true, 
       headless: 'new',
-      // headless:false,
       userDataDir: customProfileDir
-      // executablePath: process.env.NODE_ENV === 'production' 
-      //   ? process.env.PUPPETEER_EXECUTABLE_PATH
-      //   : puppeteer.executablePath(),
-      // userDataDir: process.env.NODE_ENV === 'production' 
-      //   ? process.env.CHROMIUM_USER_DATA
-      //   : customProfileDir,
     });
     
     // Open a new page

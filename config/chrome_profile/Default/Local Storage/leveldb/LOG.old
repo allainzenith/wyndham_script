@@ -1,3 +1,14 @@
-2023/10/18-12:13:09.394 1184 Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Local Storage\leveldb/MANIFEST-000001
-2023/10/18-12:13:09.396 1184 Recovering log #4
-2023/10/18-12:13:09.402 1184 Reusing old log C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Local Storage\leveldb/000004.log 
+2023/10/18-12:58:19.624 39fc Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Local Storage\leveldb/MANIFEST-000001
+2023/10/18-12:58:19.653 39fc Recovering log #10
+2023/10/18-12:58:19.659 39fc Reusing old log C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_profile\Default\Local Storage\leveldb/000010.log 
+2023/10/18-12:59:19.689 39fc Level-0 table #13: started
+2023/10/18-12:59:19.730 39fc Level-0 table #13: 15333 bytes OK
+2023/10/18-12:59:19.849 39fc Delete type=0 #10
+2023/10/18-12:59:19.850 39fc Compacting 4@0 + 0@1 files
+2023/10/18-12:59:19.961 39fc Generated table #14@0: 19 keys, 2208 bytes
+2023/10/18-12:59:19.961 39fc Compacted 4@0 + 0@1 files => 2208 bytes
+2023/10/18-12:59:19.991 39fc compacted to: files[ 0 1 0 0 0 0 0 ]
+2023/10/18-12:59:19.992 39fc Delete type=2 #3
+2023/10/18-12:59:19.992 39fc Delete type=2 #6
+2023/10/18-12:59:19.992 39fc Delete type=2 #9
+2023/10/18-12:59:19.992 39fc Delete type=2 #13
