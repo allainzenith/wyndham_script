@@ -78,7 +78,6 @@ async function login () {
     const selector = `a[data-se="${dataSeValue}"]`;
 
     try {
-      await page.waitForTimeout(5000);
       await page.waitForSelector(selector);
       await page.click(selector);
       console.log("We need OTP verification!")
@@ -153,7 +152,7 @@ async function loginSecondTime () {
     } catch (error) {
       console.log("No need for OTP verification")
       console.log('Logged in successfullyyyy!!');
-      await page.waitForTimeout(10000);
+      await page.waitForTimeout(3000);
       return true;
     } 
 
@@ -171,9 +170,7 @@ async function selectElements(resortID, suiteType){
   try {
     var calendarUrl = `https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`;
 
-    await page.goto(`https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`); 
-    
-    await page.waitForTimeout(30000);
+    await page.goto(calendarUrl); 
 
     const resortSelector = "#ResortSelect";
     await page.waitForSelector(resortSelector);
@@ -235,7 +232,6 @@ async function selectElements(resortID, suiteType){
 
   } catch ( error ) {
     console.error('Error:', error.message);  
-    await page.waitForTimeout(60000);
     return null;
 
   } finally {
@@ -364,8 +360,6 @@ async function getResortAddress(resortID, sElement){
 
     url = `https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results`;
     await pageForAddress.goto(url);
-    
-    await pageForAddress.waitForTimeout(2000);
 
     const placeholderText = 'Enter a location';
     const inputSelector = `input[placeholder="${placeholderText}"]`;
