@@ -144,9 +144,9 @@ async function retrieveListings(substringAddress, token){
 
     params = {
         q: substringAddress,
-        active: true,
-        pmsActive: true,
-        listed: true,
+        // active: true,
+        // pmsActive: true,
+        // listed: true,
         ignoreFlexibleBlocks: false,
         fields: "_id bedrooms title type address",
         sort: "bedrooms",
