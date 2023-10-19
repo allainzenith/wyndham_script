@@ -11,7 +11,7 @@ async function executeScript(token, resortID, suiteType, months, resortFoundorCr
     // // const eventCreated = ( resortFoundorCreated !== null) ? await createAnEvent(resortRefNum, months) : null;
     let scraped;
     if ( eventCreated !== null) {
-        scraped = await executeScraper(resortID, suiteType, months);
+        scraped = await executeScraper(resortID, suiteType, months, eventCreated);
     } else {
         scraped = null;
         await updateEventStatus(eventCreated, "SCRAPE_FAILED");
@@ -145,5 +145,6 @@ async function updateEventStatus(recordObject, status){
 module.exports = {
     executeScript,
     findOrCreateAResort,
-    createAnEvent
+    createAnEvent,
+    updateEventStatus
 }

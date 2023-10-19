@@ -6,9 +6,10 @@ const path = require('path');
 const { addMonths, addDays } = require('date-fns');
 const { userName, passWord} = require('../config/config')
 const { globals, sharedData } =  require('../config/puppeteerOptions'); 
+const { updateEventStatus } = require('../scripts/oneListing');
 let needtoLogin = true;
 
-async function executeScraper(resortID, suiteType, months){
+async function executeScraper(resortID, suiteType, months, eventCreated){
   await globals();
   const browser = sharedData.browser;
 
@@ -35,6 +36,7 @@ async function executeScraper(resortID, suiteType, months){
       return { address, updatedAvail, sElement };
     } else {
       console.log("One or more of the scraping processes did not execute successfully. Please try again.")
+      await updateEventStatus(eventCreated, "SCRAPE_FAILED");
       return null;
     }
 
