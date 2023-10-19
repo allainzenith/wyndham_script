@@ -36,7 +36,6 @@ async function executeScraper(resortID, suiteType, months, eventCreated){
       return { address, updatedAvail, sElement };
     } else {
       console.log("One or more of the scraping processes did not execute successfully. Please try again.")
-      await updateEventStatus(eventCreated, "SCRAPE_FAILED");
       return null;
     }
 
