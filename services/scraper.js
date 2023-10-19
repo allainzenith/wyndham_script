@@ -373,7 +373,7 @@ async function getResortAddress(resortID, sElement){
     // Simulate pressing the Enter key
     await pageForAddress.keyboard.press('Enter');
 
-    const resortCardSelector = `#${id} .resort-card`;
+    const resortCardSelector = `#${id}.resort-card`;
 
     const waitforResortCardSelect = (selector) => {
       return !!document.querySelector(selector);
