@@ -8,7 +8,7 @@ const { userName, passWord} = require('../config/config')
 const { globals, sharedData } =  require('../config/puppeteerOptions'); 
 let needtoLogin = true;
 
-async function executeScraper(resortID, suiteType, months, eventCreated){
+async function executeScraper(resortID, suiteType, months){
   await globals();
   const browser = sharedData.browser;
 
