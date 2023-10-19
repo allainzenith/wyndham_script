@@ -2,17 +2,12 @@
 // THIS IS A SERVICE FOR SCRAPING DATA FROM THE WYNDHAM WEBSITE
 ////////////////////////////////////////////////////////////////////
 
-const readline = require('readline');
-const fs = require('fs');
 const path = require('path');
 const { addMonths, addDays } = require('date-fns');
 const { userName, passWord} = require('../config/config')
 const { globals, sharedData } =  require('../config/puppeteerOptions'); 
 let needtoLogin = true;
 
-async function launchPuppeteer(){
-  await globals();
-}
 async function executeScraper(resortID, suiteType, months){
   await globals();
   const browser = sharedData.browser;
@@ -60,10 +55,6 @@ async function login () {
     await page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/login');
 
     console.log("I'M ON THE LOGIN PAGE")
-
-    if (process.env.NODE_ENV === 'production' ){
-      console.log("THIS IS THE PRODUCTION ENVIRONMENTTT")
-    }
 
     // Fill out the login form
     await page.waitForSelector('#okta-signin-username');
@@ -129,9 +120,6 @@ async function loginSecondTime () {
 
     console.log("I'M ON THE LOGIN PAGE")
 
-    if (process.env.NODE_ENV === 'production' ){
-      console.log("THIS IS THE PRODUCTION ENVIRONMENTTT")
-    }
 
     // Fill out the login form
     await page.type('#okta-signin-username', userName);
@@ -176,7 +164,16 @@ async function selectElements(resortID, suiteType){
     await page.waitForTimeout(10000);
 
     const resortSelector = "#ResortSelect";
-    await page.waitForSelector(resortSelector);
+
+    const waitForSelectorFunction = (selector) => {
+      return !!document.querySelector(selector);
+    };
+
+    await page.waitForFunction(
+      waitForSelectorFunction,
+      {},
+      resortSelector
+    );
 
     let selectedOptionText = await page.evaluate((selector) => {
       const select = document.querySelector(selector);
@@ -187,17 +184,6 @@ async function selectElements(resortID, suiteType){
     console.log("this is the selected option: " + selectedOptionText);
 
     const suiteSelector = '#suiteType';
-    // await page.waitForSelector(suiteSelector);
-
-    // await page.waitForFunction(
-    //   (selector) => {
-    //     const select = document.querySelector(selector);
-    //     const options = select ? select.options : [];
-    //     return options.length > 1;
-    //   },
-    //   { timeout: 200000 }, 
-    //   suiteSelector
-    // );
 
     await page.waitForFunction(
       (selector) => {
@@ -399,6 +385,5 @@ async function getResortAddress(resortID, sElement){
 module.exports = {
   executeScraper,
   login,
-  sendOTP,
-  launchPuppeteer
+  sendOTP
 };

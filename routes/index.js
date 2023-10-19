@@ -5,7 +5,6 @@ var { joinTwoTables } = require('../sequelizer/controller/controller');
 var { addToQueue, resourceIntensiveTask } = require('../scripts/queueProcessor');
 const { findOrCreateAResort, createAnEvent } = require('../scripts/oneListing');
 var { login, sendOTP } = require('../services/scraper')
-const { globals } =  require('../config/puppeteerOptions'); 
 
 router.get('/', async(req, res, next) => {
   res.render('oneListing');
@@ -64,7 +63,6 @@ router.post('/one', async(req, res, next) => {
 
   res.redirect('/oneListing'); 
   
-
   let resort = await findOrCreateAResort(resortID, suiteType); 
   let eventCreated = ( resort !== null) ? await createAnEvent(resort.resortRefNum, months) : null;
 
