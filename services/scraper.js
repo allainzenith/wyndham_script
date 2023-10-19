@@ -165,70 +165,58 @@ async function selectElements(resortID, suiteType){
 
     const resortSelector = "#ResortSelect";
 
-    const waitforResortSelect = (selector) => {
-      return !!document.querySelector(selector);
-    };
-
-    await page.waitForFunction(
-      waitforResortSelect,
-      {},
-      resortSelector
-    );
-
-    let selectedOptionText = await page.evaluate((selector) => {
-      const select = document.querySelector(selector);
-      const selectedOption = select.options[select.selectedIndex];
-      return selectedOption.text;
-    }, resortSelector);
-
-    console.log("this is the selected option: " + selectedOptionText);
-
-    const suiteSelector = '#suiteType';
-
-    const waitforsuiteSelector = (selector) => {
-      const select = document.querySelector(selector);
-      return select && select.length > 0;
-    };
-    
-    await page.waitForFunction(
-      waitforsuiteSelector,
-      {},
-      suiteSelector
+    const resortNameFound = await page.waitForFunction(
+      (selector) => {
+        const element = document.querySelector(selector);
+        return !!element;
+      },
+      {}, 
+      resortSelector 
     );
     
+    if (resortNameFound) {
+      let selectedOptionText = await page.evaluate((selector) => {
+        const select = document.querySelector(selector);
+        const selectedOption = select.options[select.selectedIndex];
+        return selectedOption.text;
+      }, resortSelector);
 
-    // await page.waitForFunction(
-    //   (selector) => {
-    //     const select = document.querySelector(selector);
-    //     return select && select.options && select.options.length > 1;
-    //   },
-    //   { timeout: 30000 },
-    //   suiteSelector
-    // );
+      console.log("this is the selected option: " + selectedOptionText);
 
+      const suiteSelector = '#suiteType';
+      
+      await page.waitForFunction(
+        (selector) => {
+          const select = document.querySelector(selector);
+          return select && select.length > 0;
+        },
+        {}, 
+        suiteSelector 
+      );
+      
+      
+      const optionExists = await page.evaluate((suiteSelector, suiteType) => {
+        const select = document.querySelector(`${suiteSelector}`);
+        if (select) {
+          const options = Array.from(select.options);
 
-    const optionExists = await page.evaluate((suiteSelector, suiteType) => {
-      const select = document.querySelector(`${suiteSelector}`);
-      if (select) {
-        const options = Array.from(select.options);
+          return options.some(option => option.value === suiteType);
+        }
+        return false;
+      }, suiteSelector, suiteType);
 
-        return options.some(option => option.value === suiteType);
+      if (optionExists) {
+        await page.select(suiteSelector, suiteType);
+
+        const purchaseSelector = '#purchaseType';
+        await page.select(purchaseSelector, "Developer");
+
+        return selectedOptionText;
+      } else {
+        console.log(`The option with value "${suiteType}" does not exist in the select element.`);
+        return null;
       }
-      return false;
-    }, suiteSelector, suiteType);
-
-    if (optionExists) {
-      await page.select(suiteSelector, suiteType);
-
-      const purchaseSelector = '#purchaseType';
-      await page.select(purchaseSelector, "Developer");
-
-      return selectedOptionText;
-    } else {
-      console.log(`The option with value "${suiteType}" does not exist in the select element.`);
-      return null;
     }
-
 
   } catch ( error ) {
     console.error('Error:', error.message);  
