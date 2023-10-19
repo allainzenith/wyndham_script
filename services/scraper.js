@@ -373,10 +373,32 @@ async function getResortAddress(resortID, sElement){
     // Simulate pressing the Enter key
     await pageForAddress.keyboard.press('Enter');
 
-    const resortCardSelector = `#${id}.resort-card`;
-    const resortCardElement = await pageForAddress.waitForSelector(resortCardSelector, { timeout: 10000 });
+    const resortCardSelector = `#${id} .resort-card`;
+
+    const waitforResortCardSelect = (selector) => {
+      return !!document.querySelector(selector);
+    };
+
+    const resortCardElement = await pageForAddress.waitForFunction(
+      waitforResortCardSelect,
+      {},
+      resortCardSelector
+    );
+    
+    //find the resort card address within the resort card element
     const resortCardAddressSelector = '.resort-card__address';
-    await resortCardElement.waitForSelector(resortCardAddressSelector, { timeout: 10000 });
+
+    const waitforResortAddressSelect = (selector) => {
+      return !!resortCardElement.querySelector(selector);
+    };
+
+    await pageForAddress.waitForFunction(
+      waitforResortAddressSelect,
+      {},
+      resortCardAddressSelector
+    );
+
+    // await resortCardElement.waitForSelector(resortCardAddressSelector, { timeout: 10000 });
 
     let resortAddress = await resortCardElement.$eval(resortCardAddressSelector, (element) => {
       return element.textContent;
