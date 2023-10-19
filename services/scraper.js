@@ -165,12 +165,12 @@ async function selectElements(resortID, suiteType){
 
     const resortSelector = "#ResortSelect";
 
-    const waitForSelectorFunction = (selector) => {
+    const waitforResortSelect = (selector) => {
       return !!document.querySelector(selector);
     };
 
     await page.waitForFunction(
-      waitForSelectorFunction,
+      waitforResortSelect,
       {},
       resortSelector
     );
@@ -185,14 +185,27 @@ async function selectElements(resortID, suiteType){
 
     const suiteSelector = '#suiteType';
 
+    const waitforsuiteSelector = (selector) => {
+      const select = document.querySelector(selector);
+      return select && select.length > 0;
+    };
+    
     await page.waitForFunction(
-      (selector) => {
-        const select = document.querySelector(selector);
-        return select && select.options && select.options.length > 1;
-      },
-      { timeout: 30000 },
+      waitforsuiteSelector,
+      {},
       suiteSelector
     );
+    
+
+    // await page.waitForFunction(
+    //   (selector) => {
+    //     const select = document.querySelector(selector);
+    //     return select && select.options && select.options.length > 1;
+    //   },
+    //   { timeout: 30000 },
+    //   suiteSelector
+    // );
+
 
     const optionExists = await page.evaluate((suiteSelector, suiteType) => {
       const select = document.querySelector(`${suiteSelector}`);
