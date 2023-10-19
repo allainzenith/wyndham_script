@@ -91,6 +91,8 @@ async function findListing(address, token, suiteType){
     let len = words.length;
 
     while(len >= 1){
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
         var substringAddress = words.slice(0, len).join(" ");
         console.log("substringAddress: " + substringAddress);
         let queListings = await retrieveListings(substringAddress, token);
