@@ -6,7 +6,6 @@ const path = require('path');
 const { addMonths, addDays } = require('date-fns');
 const { userName, passWord} = require('../config/config')
 const { globals, sharedData } =  require('../config/puppeteerOptions'); 
-const { updateEventStatus } = require('../scripts/oneListing');
 let needtoLogin = true;
 
 async function executeScraper(resortID, suiteType, months, eventCreated){
@@ -14,20 +13,20 @@ async function executeScraper(resortID, suiteType, months, eventCreated){
   const browser = sharedData.browser;
 
   try {
-    doneLogin = needtoLogin ? await loginSecondTime(eventCreated) : true;
+    doneLogin = needtoLogin ? await loginSecondTime() : true;
     console.log("Done login: " + doneLogin);
     
-    sElement = (doneLogin) ? await selectElements(resortID, suiteType, eventCreated) : null;
+    sElement = (doneLogin) ? await selectElements(resortID, suiteType) : null;
     console.log('Selected Option Text:', sElement);
     doneSelecting = (sElement !== null);
     console.log("Done selecting: " + doneSelecting);
 
-    address = (doneSelecting) ? await getResortAddress(resortID, sElement, eventCreated): null;
+    address = (doneSelecting) ? await getResortAddress(resortID, sElement): null;
     doneGettingAddress = (address !== null);
     console.log("Done getting address: " + doneGettingAddress);
     console.log("address: " + address);
 
-    updatedAvail = (doneGettingAddress) ? await checkAvailability(months, eventCreated): null;
+    updatedAvail = (doneGettingAddress) ? await checkAvailability(months): null;
     doneScraping = (updatedAvail !== null);
     console.log("Done scraping: " + doneScraping);
 
@@ -112,7 +111,7 @@ async function sendOTP(verOTP) {
 
 }
 
-async function loginSecondTime (eventCreated) {
+async function loginSecondTime () {
   const page = sharedData.page;
 
   try {    
@@ -147,7 +146,6 @@ async function loginSecondTime (eventCreated) {
   } catch ( error ) {
     console.error('Error logging in using the login credentials');
     console.error('Error:', error.message);
-    await updateEventStatus(eventCreated, "SCRAPE_FAILED");
     return false;   
   } finally{
     await page.waitForTimeout(30000);
@@ -155,7 +153,7 @@ async function loginSecondTime (eventCreated) {
 }
 
 
-async function selectElements(resortID, suiteType, eventCreated){
+async function selectElements(resortID, suiteType){
   const page = sharedData.page;
 
   try {
@@ -222,7 +220,6 @@ async function selectElements(resortID, suiteType, eventCreated){
 
   } catch ( error ) {
     console.error('Error:', error.message);  
-    await updateEventStatus(eventCreated, "SCRAPE_FAILED");
     return null;
 
   } finally {
@@ -231,7 +228,7 @@ async function selectElements(resortID, suiteType, eventCreated){
   }
 }
 
-async function checkAvailability(months, eventCreated){
+async function checkAvailability(months){
   const page = sharedData.page;
 
   try{
@@ -328,7 +325,6 @@ async function checkAvailability(months, eventCreated){
 
   } catch ( error ) {
     console.error('Error:', error.message);   
-    await updateEventStatus(eventCreated, "SCRAPE_FAILED");
     return null;
 
   } finally {
@@ -337,7 +333,7 @@ async function checkAvailability(months, eventCreated){
 
 }
 
-function getCurrentAndEndDate(months, eventCreated){
+function getCurrentAndEndDate(months){
   var numberMonths = parseInt(months, 10); 
   var currentDate = new Date();
   var EndDate = addDays(addMonths(currentDate, numberMonths), 1);
@@ -395,7 +391,6 @@ async function getResortAddress(resortID, sElement){
 
   } catch (error) {
     console.error('Error:', error.message);
-    await updateEventStatus(eventCreated, "SCRAPE_FAILED");
     return null;  
   } 
 

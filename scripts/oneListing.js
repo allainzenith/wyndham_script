@@ -6,16 +6,7 @@ var { saveRecord, updateRecord, findRecords } = require('../sequelizer/controlle
 
 async function executeScript(token, resortID, suiteType, months, resortFoundorCreated, eventCreated){
 
-    // const resortRefNum = resortFoundorCreated.resortRefNum;
-
-    // // const eventCreated = ( resortFoundorCreated !== null) ? await createAnEvent(resortRefNum, months) : null;
-    let scraped;
-    if ( eventCreated !== null) {
-        scraped = await executeScraper(resortID, suiteType, months, eventCreated);
-    } else {
-        scraped = null;
-        await updateEventStatus(eventCreated, "SCRAPE_FAILED");
-    }
+    const scraped = eventCreated !== null ? await executeScraper(resortID, suiteType, months, eventCreated) : null;
 
     const success = ( scraped !== null) ? await updateGuestyandRecord(
         resortFoundorCreated, eventCreated, scraped, token, suiteType) : false;
@@ -146,5 +137,4 @@ module.exports = {
     executeScript,
     findOrCreateAResort,
     createAnEvent,
-    updateEventStatus
 }
