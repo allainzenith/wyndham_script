@@ -151,7 +151,7 @@ async function retrieveListings(substringAddress, token){
         // listed: true,
         // ignoreFlexibleBlocks: false,
         fields: "_id bedrooms title type address",
-        sort: "bedrooms",
+        sort: "type",
         limit: 100,
         skip: 0
     };
