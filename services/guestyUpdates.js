@@ -147,7 +147,7 @@ async function retrieveListings(substringAddress, token){
         // active: true,
         // pmsActive: true,
         // listed: true,
-        ignoreFlexibleBlocks: false,
+        // ignoreFlexibleBlocks: false,
         fields: "_id bedrooms title type address",
         sort: "bedrooms",
         limit: 100,
@@ -168,6 +168,8 @@ async function retrieveListings(substringAddress, token){
         const response = await axios.get(apiUrl, {headers : reqHeaders});
         const responseData = response.data;
 
+        console.log("response: ");
+        console.log(responseData);
         return responseData
 
     } catch (error) {
