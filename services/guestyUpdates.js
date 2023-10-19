@@ -170,6 +170,8 @@ async function retrieveListings(substringAddress, token){
         const response = await axios.get(apiUrl, {headers : reqHeaders});
         const responseData = response.data;
 
+        console.log("response: ");
+        console.log(responseData);
         return responseData
 
     } catch (error) {
