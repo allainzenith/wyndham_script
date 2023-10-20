@@ -148,7 +148,7 @@ async function loginSecondTime () {
     console.error('Error:', error.message);
     return false;   
   } finally{
-    await page.waitForTimeout(30000);
+    await page.waitForTimeout(10000);
   }
 }
 
@@ -160,8 +160,6 @@ async function selectElements(resortID, suiteType){
     var calendarUrl = `https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`;
 
     await page.goto(calendarUrl); 
-
-    await page.waitForTimeout(10000);
 
     const resortSelector = "#ResortSelect";
 
@@ -363,7 +361,7 @@ async function getResortAddress(resortID, sElement){
 
     const resortCardSelector = `#${id}.resort-card`;
 
-    await pageForAddress.waitForFunction(
+    const addressFound = await pageForAddress.waitForFunction(
       (outerSelector, innerSelector) => {
         const outerDiv = document.querySelector(outerSelector);
         if (outerDiv) {
@@ -377,17 +375,19 @@ async function getResortAddress(resortID, sElement){
       '.resort-card__address'
     );
   
-    let resortAddress = await pageForAddress.evaluate((innerSelector) => {
-      const innerDiv = document.querySelector(innerSelector);
-      return innerDiv ? innerDiv.textContent.trim() : null;
-    }, '.resort-card__address');
+    if (addressFound) {
+      let resortAddress = await pageForAddress.evaluate((innerSelector) => {
+        const innerDiv = document.querySelector(innerSelector);
+        return innerDiv ? innerDiv.textContent.trim() : null;
+      }, '.resort-card__address');
 
 
-    resortAddress = resortAddress.replace(/\s+/g, ' ').trim();
+      resortAddress = resortAddress.replace(/\s+/g, ' ').trim();
 
-    await pageForAddress.close();
-    
-    return resortAddress;
+      await pageForAddress.close();
+      
+      return resortAddress;
+    }
 
   } catch (error) {
     console.error('Error:', error.message);
