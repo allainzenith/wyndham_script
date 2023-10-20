@@ -193,7 +193,7 @@ async function selectElements(resortID, suiteType){
           const select = document.querySelector(selector);
           return select && select.length > 0;
         },
-        {}, 
+        {timeout: 60000}, 
         suiteSelector 
       );
       
@@ -378,7 +378,7 @@ async function getResortAddress(resortID, sElement){
         }
         return false;
       },
-      {},
+      {timeout: 60000},
       resortCardSelector,
       '.resort-card__address'
     );
