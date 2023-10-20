@@ -354,8 +354,6 @@ async function getResortAddress(resortID, sElement){
       waitUntil: ['domcontentloaded', 'networkidle0'],
     });
 
-    await page.waitForTimeout(10000);
-
     const placeholderText = 'Enter a location';
     const inputSelector = `input[placeholder="${placeholderText}"]`;
     const textToEnter = sElement;
@@ -366,6 +364,8 @@ async function getResortAddress(resortID, sElement){
   
     // Simulate pressing the Enter key
     await pageForAddress.keyboard.press('Enter');
+
+    await pageForAddress.waitForTimeout(10000);
 
     const resortCardSelector = `#${id}.resort-card`;
 
