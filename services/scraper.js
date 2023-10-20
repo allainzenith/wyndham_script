@@ -351,7 +351,6 @@ async function getResortAddress(resortID, sElement){
 
     url = `https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results`;
     await pageForAddress.goto(url);
-    await pageForAddress.waitForTimeout(10000);
 
     const placeholderText = 'Enter a location';
     const inputSelector = `input[placeholder="${placeholderText}"]`;
@@ -363,6 +362,7 @@ async function getResortAddress(resortID, sElement){
   
     // Simulate pressing the Enter key
     await pageForAddress.keyboard.press('Enter');
+    await pageForAddress.waitForTimeout(10000);
 
     const resortCardSelector = `#${id}.resort-card`;
 
@@ -375,7 +375,7 @@ async function getResortAddress(resortID, sElement){
         }
         return false;
       },
-      {timeout:60000},
+      {},
       resortCardSelector,
       '.resort-card__address'
     );
