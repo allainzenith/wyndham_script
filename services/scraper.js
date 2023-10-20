@@ -126,6 +126,7 @@ async function loginSecondTime () {
     await page.type('#okta-signin-password', passWord);
 
     // Submit the form
+    await page.waitForTimeout(4000);
     await page.click('input[type="submit"]');
 
     // Click the <a> tag with a specific data-se attribute value
@@ -148,7 +149,7 @@ async function loginSecondTime () {
     console.error('Error:', error.message);
     return false;   
   } finally{
-    await page.waitForTimeout(10000);
+    await page.waitForTimeout(20000);
   }
 }
 
@@ -160,6 +161,8 @@ async function selectElements(resortID, suiteType){
     var calendarUrl = `https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`;
 
     await page.goto(calendarUrl); 
+
+    await page.waitForTimeout(10000);
 
     const resortSelector = "#ResortSelect";
 
@@ -192,16 +195,18 @@ async function selectElements(resortID, suiteType){
         suiteSelector 
       );
       
+      console.log(suiteType)
       
       const optionExists = await page.evaluate((suiteSelector, suiteType) => {
         const select = document.querySelector(`${suiteSelector}`);
         if (select) {
           const options = Array.from(select.options);
-
+          console.log("options: " + options)
           return options.some(option => option.value === suiteType);
         }
         return false;
       }, suiteSelector, suiteType);
+
 
       if (optionExists) {
         await page.select(suiteSelector, suiteType);
