@@ -126,7 +126,7 @@ async function loginSecondTime () {
     await page.type('#okta-signin-password', passWord);
 
     // Submit the form
-    await page.waitForTimeout(4000);
+    await page.waitForTimeout(2000);
     await page.click('input[type="submit"]');
 
     // Click the <a> tag with a specific data-se attribute value
@@ -149,7 +149,7 @@ async function loginSecondTime () {
     console.error('Error:', error.message);
     return false;   
   } finally{
-    await page.waitForTimeout(20000);
+    await page.waitForTimeout(10000);
   }
 }
 
@@ -164,9 +164,6 @@ async function selectElements(resortID, suiteType){
     await page.goto(calendarUrl, {
       waitUntil: ['domcontentloaded', 'networkidle0'],
     });
-
-
-    await page.waitForTimeout(10000);
 
     const resortSelector = "#ResortSelect";
 
@@ -229,10 +226,7 @@ async function selectElements(resortID, suiteType){
     console.error('Error:', error.message);  
     return null;
 
-  } finally {
-    await page.waitForTimeout(2000);
-
-  }
+  } 
 }
 
 async function checkAvailability(months){
@@ -369,7 +363,6 @@ async function getResortAddress(resortID, sElement){
   
     // Simulate pressing the Enter key
     await pageForAddress.keyboard.press('Enter');
-    await pageForAddress.waitForTimeout(10000);
 
     const resortCardSelector = `#${id}.resort-card`;
 
@@ -388,10 +381,19 @@ async function getResortAddress(resortID, sElement){
     );
   
     if (addressFound) {
-      let resortAddress = await pageForAddress.evaluate((innerSelector) => {
-        const innerDiv = document.querySelector(innerSelector);
-        return innerDiv ? innerDiv.textContent.trim() : null;
-      }, '.resort-card__address');
+      // let resortAddress = await pageForAddress.evaluate((innerSelector) => {
+      //   const innerDiv = document.querySelector(innerSelector);
+      //   return innerDiv ? innerDiv.textContent.trim() : null;
+      // }, '.resort-card__address');
+
+      let resortAddress = await pageForAddress.evaluate((outerSelector, innerSelector) => {
+          const outerDiv = document.querySelector(outerSelector);
+          if (outerDiv) {
+            const innerDiv = outerDiv.querySelector(innerSelector);
+            return innerDiv ? innerDiv.textContent.trim() : null;
+          }
+          return false;
+      }, resortCardSelector, '.resort-card__address');
 
 
       resortAddress = resortAddress.replace(/\s+/g, ' ').trim();
