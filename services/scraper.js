@@ -165,6 +165,7 @@ async function selectElements(resortID, suiteType){
       waitUntil: ['domcontentloaded', 'networkidle0'],
     });
 
+    await page.waitForTimeout(10000);
     const resortSelector = "#ResortSelect";
 
     const resortNameFound = await page.waitForFunction(
@@ -352,6 +353,8 @@ async function getResortAddress(resortID, sElement){
     await pageForAddress.goto(url, {
       waitUntil: ['domcontentloaded', 'networkidle0'],
     });
+
+    await page.waitForTimeout(10000);
 
     const placeholderText = 'Enter a location';
     const inputSelector = `input[placeholder="${placeholderText}"]`;
