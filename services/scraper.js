@@ -160,7 +160,11 @@ async function selectElements(resortID, suiteType){
   try {
     var calendarUrl = `https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`;
 
-    await page.goto(calendarUrl); 
+    // await page.goto(calendarUrl); 
+    await page.goto(calendarUrl, {
+      waitUntil: ['domcontentloaded', 'networkidle0'],
+    });
+
 
     await page.waitForTimeout(10000);
 
@@ -349,8 +353,11 @@ async function getResortAddress(resortID, sElement){
   try {
     const pageForAddress = await browser.newPage();
 
-    url = `https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results`;
-    await pageForAddress.goto(url);
+    let url = `https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results`;
+    
+    await pageForAddress.goto(url, {
+      waitUntil: ['domcontentloaded', 'networkidle0'],
+    });
 
     const placeholderText = 'Enter a location';
     const inputSelector = `input[placeholder="${placeholderText}"]`;
