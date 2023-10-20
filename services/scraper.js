@@ -149,7 +149,7 @@ async function loginSecondTime () {
     console.error('Error:', error.message);
     return false;   
   } finally{
-    await page.waitForTimeout(10000);
+    await page.waitForTimeout(30000);
   }
 }
 
