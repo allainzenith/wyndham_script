@@ -73,31 +73,15 @@ const execution = sequelize.define('execution', {
   timestamps: true
 });
 
-// const token = sequelize.define('token', {
-//   tokenID: {
-//     type: DataTypes.UUID,
-//     defaultValue: DataTypes.UUIDV4,
-//     allowNull: false,
-//     primaryKey: true
-//   },
-
-//   tokenType: {
-//     type: DataTypes.DATE,
-//     defaultValue: DATE.now
-//   },
-// });
-
-  
-
 
 // Define the association between User and Post
 resorts.hasMany(execution, { foreignKey: 'resortRefNum' });
 execution.belongsTo(resorts, { foreignKey: 'resortRefNum' });
 
-// (async () => {
-//     await sequelize.sync({force:true});
-//     // Code here
-//   })();
+(async () => {
+    await sequelize.sync();
+    // Code here
+  })();
 
 
 module.exports = {

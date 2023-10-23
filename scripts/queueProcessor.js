@@ -1,29 +1,43 @@
-const { executeScript, findOrCreateAResort } = require('./oneListing');
+const { executeScript } = require('./oneListing');
+const { sharedData } =  require('../config/puppeteerOptions'); 
+const { launchPuppeteer } = require('../services/scraper');
 
 const taskQueue = [];
 let isProcessing = false;
+let needtolaunchPuppeteer = true;
 
-function processQueue() {
+async function processQueue() {
   if (isProcessing) return;
-  if (taskQueue.length === 0) return;
+  if (taskQueue.length === 0) {
+    const browser = sharedData.browser;
+    await browser.close();
+    needtolaunchPuppeteer = true;
+    return;
+  }
 
   isProcessing = true;
-  const { task, args, callback } = taskQueue.shift(); // Get the first task from the queue
+  const { task, args, callback } = taskQueue.shift(); 
 
   // Execute the task (assuming it's a function)
   task(...args, () => {
     isProcessing = false;
-    processQueue(); // Continue processing the queue
+    processQueue(); 
     callback();
   });
 }
 
-function addToQueue(task, callback, ...args) {
+async function addToQueue(task, callback, ...args) {
+  if (needtolaunchPuppeteer) {
+    needtolaunchPuppeteer = false;
+    console.log("launching puppeteer now");
+    await launchPuppeteer();
+  } else {
+    console.log("puppeteer is already launched. execution of prior task is ongoing.")
+  } 
   taskQueue.push({ task, args, callback });
-  processQueue(); // Start processing the queue
+  await processQueue(); 
 }
 
-// Example usage:
 async function resourceIntensiveTask(token, resortID, suiteType, months, resort, eventCreated, callback) {
   // Perform resource-intensive work
   console.log('resortID: ' + resortID);
@@ -38,5 +52,5 @@ async function resourceIntensiveTask(token, resortID, suiteType, months, resort,
 
 module.exports = {
   addToQueue,
-  resourceIntensiveTask
+  resourceIntensiveTask,
 }

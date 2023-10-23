@@ -70,7 +70,6 @@ async function executeUpdates(resortFoundorCreated, token, address, updatedAvail
             for (const listing of listingJsonArray) {
                 console.log(await updateAvailability(listing, updatedAvail, token));
                 console.log("listing._id: " + listing._id);
-                console.log("listing.title: " + listing.title);
                 listingIDs.push(listing._id);
             }
 
@@ -184,9 +183,6 @@ async function retrieveListings(substringAddress, token){
 async function updateAvailability(listing, updatedAvail, token){
 
     arrayOfAvailability = []
-
-    // console.log("bedrooms: " + listing.bedrooms);
-    // console.log("address: " + listing.address.full);
 
     for (const item of updatedAvail) {
 
