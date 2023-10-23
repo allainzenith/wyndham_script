@@ -6,7 +6,12 @@ var { saveRecord, updateRecord, findRecords } = require('../sequelizer/controlle
 
 async function executeScript(token, resortID, suiteType, months, resortFoundorCreated, eventCreated){
 
-    const scraped = eventCreated !== null ? await executeScraper(resortID, suiteType, months) : null;
+    var resortJSON = await resortFoundorCreated.toJSON()
+    var resortJSONlistingID = await resortJSON.listingID;
+    var resortHasNoRecord = (resortJSONlistingID === undefined || resortJSONlistingID === null);
+
+    const scraped = eventCreated !== null ? await executeScraper(
+        resortID, suiteType, months, resortHasNoRecord) : null;
 
     let success;
     if ( scraped !== null) {

@@ -76,8 +76,6 @@ router.post('/one', async(req, res, next) => {
     console.log("Creating a resort or execution record failed.")
   }
 
-  
-  // console.log("executed: " + executed);
 });
 
 
@@ -107,7 +105,7 @@ router.get('/sse/oneListing', (req, res) => {
     }));
 
     res.write(`data: ${JSON.stringify(formattedRecords)}\n\n`);
-  }, 10000);
+  }, 1000);
 });
 
 module.exports = router;

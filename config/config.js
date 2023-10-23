@@ -11,18 +11,26 @@ userName = "SJO111"
 passWord = "zgw5qbc@xpw2JEQ@ypy"
 
 // For database connection
-// database = "wyndham_script";
-// dbUsername = "root";
-// dbPassword = "asdasd";
+database = "wyndham_script";
+dbUsername = "root";
+dbPassword = "Skilledbrink1259!";
 
-// database, username, password
-const sequelize = new Sequelize("bhrqmtj8akypattytak1", "u6sxdyl3j2awklux", "NWQ1CyBKlOdY0vX426MP", {
-    host: 'bhrqmtj8akypattytak1-mysql.services.clever-cloud.com',
+const sequelize = new Sequelize(database, dbUsername, dbPassword, {
+    host: 'localhost',
     dialect: 'mysql',
     dialectModule: mysql2,
     define : { freezeTableName: true },
     logging: false
 });
+
+// database, username, password
+// const sequelize = new Sequelize("bhrqmtj8akypattytak1", "u6sxdyl3j2awklux", "NWQ1CyBKlOdY0vX426MP", {
+//     host: 'bhrqmtj8akypattytak1-mysql.services.clever-cloud.com',
+//     dialect: 'mysql',
+//     dialectModule: mysql2,
+//     define : { freezeTableName: true },
+//     logging: false
+// });
 
 
 // Guesty Application (name: 'scraper-allain-dev')
