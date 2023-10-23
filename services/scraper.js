@@ -324,7 +324,7 @@ async function getResortAddress(resortID, sElement){
 
     const resortCardSelector = `#${id}.resort-card`;
 
-    let addressFound = await page.waitForSelector(resortCardSelector, { timeout : 10000 });
+    let addressFound = await pageForAddress.waitForSelector(resortCardSelector, { timeout : 10000 });
 
     // const addressFound = await pageForAddress.waitForFunction(
     //   (outerSelector, innerSelector) => {
