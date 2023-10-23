@@ -324,19 +324,21 @@ async function getResortAddress(resortID, sElement){
 
     const resortCardSelector = `#${id}.resort-card`;
 
-    const addressFound = await pageForAddress.waitForFunction(
-      (outerSelector, innerSelector) => {
-        const outerDiv = document.querySelector(outerSelector);
-        if (outerDiv) {
-          const innerDiv = outerDiv.querySelector(innerSelector);
-          return innerDiv !== null && innerDiv.textContent.trim() !== '';
-        }
-        return false;
-      },
-      {timeout: 60000},
-      resortCardSelector,
-      '.resort-card__address'
-    );
+    let addressFound = await page.waitForSelector(resortCardSelector, { timeout : 10000 });
+
+    // const addressFound = await pageForAddress.waitForFunction(
+    //   (outerSelector, innerSelector) => {
+    //     const outerDiv = document.querySelector(outerSelector);
+    //     if (outerDiv) {
+    //       const innerDiv = outerDiv.querySelector(innerSelector);
+    //       return innerDiv !== null && innerDiv.textContent.trim() !== '';
+    //     }
+    //     return false;
+    //   },
+    //   {timeout: 60000},
+    //   resortCardSelector,
+    //   '.resort-card__address'
+    // );
   
     if (addressFound) {
       let resortAddress = await pageForAddress.evaluate((outerSelector, innerSelector) => {
