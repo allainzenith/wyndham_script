@@ -91,7 +91,6 @@ async function loginVerified () {
     } catch (error) {
       console.log("No need for OTP verification")
       console.log('Logged in successfullyyyy!!');
-      await page.waitForNetworkIdle();
       needtoLogin = false;
       return true;
     } 
@@ -103,6 +102,7 @@ async function loginVerified () {
     return false;   
   } finally {
     await page.waitForTimeout(10000);
+    await page.waitForSelector(`.resortAvailabilityWidgetV3-title-text-color-default`);
   }
 }
 
@@ -111,7 +111,6 @@ async function selectElements(resortID, suiteType){
   const page = sharedData.page;
 
   try {
-
     var calendarUrl = `https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`;
 
     // await page.goto(calendarUrl); 
