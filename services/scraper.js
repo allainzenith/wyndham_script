@@ -67,7 +67,7 @@ async function loginVerified () {
   try {    
 
     const [response] = await Promise.all([
-      page.waitForNetworkIdle(), 
+      page.waitForNavigation(), 
       page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/login'),
     ]);
 
