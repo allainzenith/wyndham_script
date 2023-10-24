@@ -322,8 +322,6 @@ async function getResortAddress(resortID, sElement){
   const browser = sharedData.browser;
   const pageForAddress = await browser.newPage();
   try {
-
-    let url = `https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results`;
     
     const [response] = await Promise.all([
       pageForAddress.waitForNetworkIdle(), 
@@ -333,9 +331,6 @@ async function getResortAddress(resortID, sElement){
     if (response !== null) {
       console.log("resorts fully loaded.")
     }
-    // await pageForAddress.goto(url, {
-    //   waitUntil: ['domcontentloaded', 'networkidle0'],
-    // });
 
     const placeholderText = 'Enter a location';
     const inputSelector = `input[placeholder="${placeholderText}"]`;
@@ -367,15 +362,21 @@ async function getResortAddress(resortID, sElement){
     // );
   
     if (addressFound) {
-      let resortAddress = await pageForAddress.evaluate((outerSelector, innerSelector) => {
+      let resortAddress;
+
+      await pageForAddress
+      .waitForSelector(resortCardSelector)
+      .then(async() =>    
+        resortAddress = await pageForAddress.evaluate((outerSelector, innerSelector) => {
           const outerDiv = document.querySelector(outerSelector);
           if (outerDiv) {
             const innerDiv = outerDiv.querySelector(innerSelector);
             return innerDiv ? innerDiv.textContent.trim() : null;
           }
           return false;
-      }, resortCardSelector, '.resort-card__address');
-
+        }, 
+        resortCardSelector, '.resort-card__address'
+      ));
 
       resortAddress = resortAddress.replace(/\s+/g, ' ').trim();
 
