@@ -156,7 +156,7 @@ async function selectElements(resortID, suiteType){
 
       const suiteSelector = '#suiteType';
       
-      await page.waitForFunction(
+      const selectFilled = await page.waitForFunction(
         (selector) => {
           const select = document.querySelector(selector);
           return select && select.length > 0;
@@ -165,27 +165,29 @@ async function selectElements(resortID, suiteType){
         suiteSelector 
       );
       
-      const optionExists = await page.evaluate((suiteSelector, suiteType) => {
-        const select = document.querySelector(`${suiteSelector}`);
-        if (select) {
-          const options = Array.from(select.options);
-          console.log("options: " + options)
-          return options.some(option => option.value === suiteType);
+      if (selectFilled) {
+        const optionExists = await page.evaluate((suiteSelector, suiteType) => {
+          const select = document.querySelector(`${suiteSelector}`);
+          if (select) {
+            const options = Array.from(select.options);
+            console.log("options: " + options)
+            return options.some(option => option.value === suiteType);
+          }
+          return false;
+        }, suiteSelector, suiteType);
+
+
+        if (optionExists) {
+          await page.select(suiteSelector, suiteType);
+
+          const purchaseSelector = '#purchaseType';
+          await page.select(purchaseSelector, "Developer");
+
+          return selectedOptionText;
+        } else {
+          console.log(`The option with value "${suiteType}" does not exist in the select element.`);
+          return null;
         }
-        return false;
-      }, suiteSelector, suiteType);
-
-
-      if (optionExists) {
-        await page.select(suiteSelector, suiteType);
-
-        const purchaseSelector = '#purchaseType';
-        await page.select(purchaseSelector, "Developer");
-
-        return selectedOptionText;
-      } else {
-        console.log(`The option with value "${suiteType}" does not exist in the select element.`);
-        return null;
       }
     } else {
       console.log("resort name not found.")
