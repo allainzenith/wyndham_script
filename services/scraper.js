@@ -362,8 +362,9 @@ async function getResortAddress(resortID, sElement){
     // );
   
     if (addressFound) {
-
-      let resortAddress = await pageForAddress
+      let resortAddress;
+      
+      await pageForAddress
       .waitForSelector('.resort-card__address')
       .then(async() =>    
         resortAddress = await pageForAddress.evaluate((outerSelector, innerSelector) => {
