@@ -345,7 +345,7 @@ async function getResortAddress(resortID, sElement){
 
     const resortCardSelector = `#${id}.resort-card`;
 
-    let addressFound = await pageForAddress.waitForSelector(resortCardSelector, { timeout : 10000 });
+    let addressFound = await pageForAddress.waitForSelector(resortCardSelector, { timeout : 120000 });
 
     // const addressFound = await pageForAddress.waitForFunction(
     //   (outerSelector, innerSelector) => {
@@ -362,12 +362,8 @@ async function getResortAddress(resortID, sElement){
     // );
   
     if (addressFound) {
-      let resortAddress;
-      
-      await pageForAddress
-      .waitForSelector('.resort-card__address')
-      .then(async() =>    
-        resortAddress = await pageForAddress.evaluate((outerSelector, innerSelector) => {
+
+      let resortAddress = await pageForAddress.evaluate((outerSelector, innerSelector) => {
           const outerDiv = document.querySelector(outerSelector);
           if (outerDiv) {
             const innerDiv = outerDiv.querySelector(innerSelector);
@@ -376,7 +372,7 @@ async function getResortAddress(resortID, sElement){
           return false;
         }, 
         resortCardSelector, '.resort-card__address'
-      ));
+      );
 
       resortAddress = resortAddress.replace(/\s+/g, ' ').trim();
 
