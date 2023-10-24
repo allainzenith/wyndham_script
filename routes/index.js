@@ -56,9 +56,9 @@ router.get('/events', function(req, res, next) {
 // FOR CALLING SERVICES AND SCRIPTS
 router.post('/one', async(req, res, next) => {
 
-  var resortID = req.body.resort_id;
-  var suiteType = req.body.suite_type;
-  var months = req.body.months;
+  var resortID = (req.body.resort_id).trim();
+  var suiteType = (req.body.suite_type).trim();
+  var months = (req.body.months).trim();
   var token = await req.token;   
 
   res.redirect('/oneListing'); 
