@@ -65,10 +65,15 @@ async function loginVerified () {
   const page = sharedData.page;
 
   try {    
-    // Navigate to the login page
-    await page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/login');
 
-    console.log("I'M ON THE LOGIN PAGE")
+    const [response] = await Promise.all([
+      page.waitForNetworkIdle(), 
+      page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/login'),
+    ]);
+
+    if (response !== null) {
+      console.log("I'M ON THE LOGIN PAGE")
+    }
 
 
     // Fill out the login form
@@ -78,6 +83,11 @@ async function loginVerified () {
     // Submit the form
     await page.waitForTimeout(2000);
     await page.click('input[type="submit"]');
+
+    const [submit] = await Promise.all([
+      page.waitForNavigation(), 
+      page.click('input[type="submit"]')
+    ]);
 
     // Click the <a> tag with a specific data-se attribute value
     const dataSeValue = 'sms-send-code'; 
@@ -92,6 +102,10 @@ async function loginVerified () {
       console.log("No need for OTP verification")
       console.log('Logged in successfullyyyy!!');
       needtoLogin = false;
+      if (submit !== null) {
+        await page.waitForTimeout(10000)
+        await page.waitForSelector(`.resortAvailabilityWidgetV3-title-text-color-default`, {timeout:120000});
+      }
       return true;
     } 
 
@@ -100,10 +114,7 @@ async function loginVerified () {
     console.error('Error logging in using the login credentials');
     console.error('Error:', error.message);
     return false;   
-  } finally {
-    await page.waitForTimeout(10000);
-    await page.waitForSelector(`.resortAvailabilityWidgetV3-title-text-color-default`);
-  }
+  } 
 }
 
 
@@ -113,21 +124,26 @@ async function selectElements(resortID, suiteType){
   try {
     var calendarUrl = `https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`;
 
-    // await page.goto(calendarUrl); 
+
     await page.goto(calendarUrl, {
       waitUntil: ['domcontentloaded', 'networkidle0'],
     });
 
     const resortSelector = "#ResortSelect";
+    let resortNameFound;
 
-    const resortNameFound = await page.waitForFunction(
-      (selector) => {
-        const element = document.querySelector(selector);
-        return !!element;
-      },
-      {timeout:60000}, 
-      resortSelector 
-    );
+    await page
+    .waitForSelector(resortSelector)
+    .then(async() =>    
+      resortNameFound = await page.waitForFunction(
+        (selector) => {
+          const element = document.querySelector(selector);
+          return !!element;
+        },
+        {timeout:60000}, 
+        resortSelector 
+      ));
+
     
     if (resortNameFound) {
       let selectedOptionText = await page.evaluate((selector) => {
@@ -171,6 +187,8 @@ async function selectElements(resortID, suiteType){
         console.log(`The option with value "${suiteType}" does not exist in the select element.`);
         return null;
       }
+    } else {
+      console.log("resort name not found.")
     }
 
   } catch ( error ) {
@@ -307,9 +325,17 @@ async function getResortAddress(resortID, sElement){
 
     let url = `https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results`;
     
-    await pageForAddress.goto(url, {
-      waitUntil: ['domcontentloaded', 'networkidle0'],
-    });
+    const [response] = await Promise.all([
+      pageForAddress.waitForNetworkIdle(), 
+      pageForAddress.goto(`https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results`),
+    ]);
+
+    if (response !== null) {
+      console.log("resorts fully loaded.")
+    }
+    // await pageForAddress.goto(url, {
+    //   waitUntil: ['domcontentloaded', 'networkidle0'],
+    // });
 
     const placeholderText = 'Enter a location';
     const inputSelector = `input[placeholder="${placeholderText}"]`;
