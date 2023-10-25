@@ -321,7 +321,7 @@ async function getResortAddress(resortID, sElement){
     
     const [response] = await Promise.all([
       pageForAddress.goto(`https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results`),
-      pageForAddress.waitForSelector(`.resort-card__address`), 
+      pageForAddress.waitForSelector(`.resort-card__address`, {timeout:60000}), 
     ]);
 
     if (response !== null) {
