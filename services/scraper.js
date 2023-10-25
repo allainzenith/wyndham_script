@@ -13,7 +13,7 @@ let pageForAddress;
 async function executeScraper(resortID, suiteType, months, resortHasNoRecord){
   try {
     console.log("I need to log in: " + needtoLogin);
-    let doneLogin = needtoLogin ? await loginVerified(resortID) : true;
+    let doneLogin = needtoLogin ? await loginVerified() : true;
     console.log("Done login: " + doneLogin);
 
     let sElement = (doneLogin) ? await selectElements(resortID, suiteType) : null;
@@ -62,7 +62,7 @@ async function launchPuppeteer(){
 }
 
 
-async function loginVerified (resortID) {
+async function loginVerified () {
   const page = sharedData.page;
   const browser = sharedData.browser;
   pageForAddress = await browser.newPage();
@@ -71,15 +71,13 @@ async function loginVerified (resortID) {
     await page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/login');
     await pageForAddress.goto(`https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results`);
 
-    const id = resortID.replace("|","");
-    const resortCardSelector = `#${id}.resort-card`;
 
     let addressSelectorFound = true;
 
     while (addressSelectorFound){
       try{
         await pageForAddress.waitForSelector(`.resort-card`, { timeout : 10000 });
-        await pageForAddress.waitForSelector(resortCardSelector, { timeout : 10000 });
+        await pageForAddress.waitForSelector(`.resort-card__address`, {timeout:10000}),
         console.log("resorts fully loaded.");
         addressSelectorFound = false;
       } catch (error) {
@@ -342,19 +340,27 @@ async function getResortAddress(resortID, sElement){
     const inputSelector = `input[placeholder="${placeholderText}"]`;
     const textToEnter = sElement;
     const id = resortID.replace("|","");
-  
-    // Type text into the input field
-    await pageForAddress.type(inputSelector, textToEnter);
-  
-    // Simulate pressing the Enter key
-    await pageForAddress.keyboard.press('Enter');
-
     const resortCardSelector = `#${id}.resort-card`;
 
-    let addressFound = await pageForAddress.waitForSelector(resortCardSelector, { timeout : 120000 });
+    let addressSelectorFound = true;
+    let addressFound;
+    while (addressSelectorFound){
+      try{
+        await pageForAddress.type(inputSelector, textToEnter);
+        await pageForAddress.keyboard.press('Enter');
+
+        addressFound = await pageForAddress.waitForSelector(resortCardSelector, { timeout : 120000 });
+
+        addressSelectorFound = false;
+      } catch (error) {
+        console.log("Timed out. Reloading the page.");
+        await pageForAddress.reload();
+      }
+    }
+
+
   
     if (addressFound) {
-
       let resortAddress = await pageForAddress.evaluate((outerSelector, innerSelector) => {
           const outerDiv = document.querySelector(outerSelector);
           if (outerDiv) {
