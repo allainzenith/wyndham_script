@@ -326,7 +326,7 @@ async function getResortAddress(resortID, sElement){
   try {
     
     const [response] = await Promise.all([
-      pageForAddress.waitForNetworkIdle(), 
+      pageForAddress.waitForNavigation(), 
       pageForAddress.goto(`https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results`),
     ]);
 
@@ -348,20 +348,6 @@ async function getResortAddress(resortID, sElement){
     const resortCardSelector = `#${id}.resort-card`;
 
     let addressFound = await pageForAddress.waitForSelector(resortCardSelector, { timeout : 120000 });
-
-    // const addressFound = await pageForAddress.waitForFunction(
-    //   (outerSelector, innerSelector) => {
-    //     const outerDiv = document.querySelector(outerSelector);
-    //     if (outerDiv) {
-    //       const innerDiv = outerDiv.querySelector(innerSelector);
-    //       return innerDiv !== null && innerDiv.textContent.trim() !== '';
-    //     }
-    //     return false;
-    //   },
-    //   {timeout: 60000},
-    //   resortCardSelector,
-    //   '.resort-card__address'
-    // );
   
     if (addressFound) {
 
