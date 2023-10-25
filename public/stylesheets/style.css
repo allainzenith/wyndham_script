@@ -15,9 +15,8 @@ body{
 }
 
 .w3-table td {
-  max-width: 250px; 
+  max-width: 200px; 
   white-space: nowrap; 
   overflow: hidden; 
   text-overflow: ellipsis; 
-  font-size: small;
 }
