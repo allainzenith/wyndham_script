@@ -145,10 +145,6 @@ async function retrieveListings(substringAddress, token){
 
     params = {
         q: substringAddress,
-        // active: true,
-        // pmsActive: true,
-        // listed: true,
-        // ignoreFlexibleBlocks: false,
         fields: "_id bedrooms title type address",
         sort: "type",
         limit: 100,
@@ -207,14 +203,14 @@ async function updateAvailability(listing, updatedAvail, token){
     };
 
 
-    await axios.put(url, arrayOfAvailability, { headers })
-    .then(response => {
-        console.log('PUT request successful');
-        console.log('Response data:', response.data);
-    })
-    .catch(error => {
-        console.error('PUT request failed:', error);
-    });
+    // await axios.put(url, arrayOfAvailability, { headers })
+    // .then(response => {
+    //     console.log('PUT request successful');
+    //     console.log('Response data:', response.data);
+    // })
+    // .catch(error => {
+    //     console.error('PUT request failed:', error);
+    // });
 
     return "moving on to next listingID...";
 }
