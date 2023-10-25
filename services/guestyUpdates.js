@@ -96,21 +96,15 @@ async function findListing(address, token, suiteType){
         console.log("substringAddress: " + substringAddress);
         let queListings = await retrieveListings(substringAddress, token);
 
-        for (const listing of queListings.results){
+        let specialSuiteString = suiteType === 5 ? 'Presidential' 
+        : suiteType === 6 ? 'Hotel' 
+        : suiteType === 0 ? 'Studio' : '';
 
-            let specialSuiteString = suiteType === 5 ? 'Presidential' 
-                : suiteType === 6 ? 'Hotel' 
-                : suiteType === 0 ? 'Studio' : '';
+        for (const listing of queListings.results){
 
             let firstCondition = specialSuiteString === '' 
                 ? (listing.bedrooms === suiteType) 
                 : ((listing.title).includes(specialSuiteString))
-            
-            if (specialSuiteString === ''){
-                console.log("This is a normal suite type. Using the first condition now..")
-            }  else {
-                console.log("This is a special suite type. Using the second condition now..")
-            }
 
             if (firstCondition && (listing.type === "MTL" || listing.type === "SINGLE")){
                 let {wynLat, wynLong} = await getLatLongAddress(address);

@@ -13,7 +13,7 @@ let pageForAddress;
 async function executeScraper(resortID, suiteType, months, resortHasNoRecord){
   try {
     console.log("I need to log in: " + needtoLogin);
-    let doneLogin = needtoLogin ? await loginVerified() : true;
+    let doneLogin = needtoLogin ? await loginVerified(resortID) : true;
     console.log("Done login: " + doneLogin);
 
     let sElement = (doneLogin) ? await selectElements(resortID, suiteType) : null;
@@ -62,22 +62,24 @@ async function launchPuppeteer(){
 }
 
 
-async function loginVerified () {
+async function loginVerified (resortID) {
   const page = sharedData.page;
   const browser = sharedData.browser;
   pageForAddress = await browser.newPage();
 
   try {    
     await page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/login');
-  
-
     await pageForAddress.goto(`https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results`);
+
+    const id = resortID.replace("|","");
+    const resortCardSelector = `#${id}.resort-card`;
 
     let addressSelectorFound = true;
 
     while (addressSelectorFound){
       try{
-        await pageForAddress.waitForSelector(`.resort-card__address`, {timeout:10000}),
+        await pageForAddress.waitForSelector(`.resort-card`, { timeout : 10000 });
+        await pageForAddress.waitForSelector(resortCardSelector, { timeout : 10000 });
         console.log("resorts fully loaded.");
         addressSelectorFound = false;
       } catch (error) {
@@ -347,7 +349,7 @@ async function getResortAddress(resortID, sElement){
     // Simulate pressing the Enter key
     await pageForAddress.keyboard.press('Enter');
 
-    const resortCardSelector = `#${id}`;
+    const resortCardSelector = `#${id}.resort-card`;
 
     let addressFound = await pageForAddress.waitForSelector(resortCardSelector, { timeout : 120000 });
   
