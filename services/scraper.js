@@ -65,15 +65,9 @@ async function loginVerified () {
   const page = sharedData.page;
 
   try {    
+    await page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/login');
 
-    const [response] = await Promise.all([
-      page.waitForNavigation(), 
-      page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/login'),
-    ]);
-
-    if (response !== null) {
-      console.log("I'M ON THE LOGIN PAGE")
-    }
+    console.log("I'M ON THE LOGIN PAGE");
 
 
     // Fill out the login form
@@ -326,8 +320,8 @@ async function getResortAddress(resortID, sElement){
   try {
     
     const [response] = await Promise.all([
-      pageForAddress.waitForNavigation(), 
       pageForAddress.goto(`https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results`),
+      pageForAddress.waitForSelector(`.resort-card__address`), 
     ]);
 
     if (response !== null) {
