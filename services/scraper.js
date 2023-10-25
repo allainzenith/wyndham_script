@@ -8,11 +8,12 @@ const { userName, passWord} = require('../config/config')
 const { globals, sharedData } =  require('../config/puppeteerOptions'); 
 
 let needtoLogin;
+let pageForAddress;
 
 async function executeScraper(resortID, suiteType, months, resortHasNoRecord){
   try {
     console.log("I need to log in: " + needtoLogin);
-    let doneLogin = needtoLogin ? await loginVerified(needtoLogin) : true;
+    let doneLogin = needtoLogin ? await loginVerified() : true;
     console.log("Done login: " + doneLogin);
 
     let sElement = (doneLogin) ? await selectElements(resortID, suiteType) : null;
@@ -63,10 +64,24 @@ async function launchPuppeteer(){
 
 async function loginVerified () {
   const page = sharedData.page;
+  const browser = sharedData.browser;
+  pageForAddress = await browser.newPage();
 
   try {    
     await page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/login');
+  
+    const [response] = await Promise.all([
+      pageForAddress.goto(`https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results`),
+      pageForAddress.waitForSelector(`.resort-card__address`, {timeout:60000}), 
+    ]);
+  
+    if (response !== null) {
+      console.log("resorts fully loaded.");
+    } else {
+      console.log("An error occured going to the resorts page. Please try again.")
+    }
 
+    await page.bringToFront();
     console.log("I'M ON THE LOGIN PAGE");
 
 
@@ -76,7 +91,6 @@ async function loginVerified () {
 
     // Submit the form
     await page.waitForTimeout(2000);
-    await page.click('input[type="submit"]');
 
     const [submit] = await Promise.all([
       page.waitForNavigation(), 
@@ -92,12 +106,13 @@ async function loginVerified () {
       await page.click(selector);
       console.log("We need OTP verification!")
       return false;
+
     } catch (error) {
       console.log("No need for OTP verification")
       console.log('Logged in successfullyyyy!!');
       needtoLogin = false;
       if (submit !== null) {
-        await page.waitForTimeout(10000)
+        await page.waitForTimeout(5000)
         await page.waitForSelector(`.resortAvailabilityWidgetV3-title-text-color-default`, {timeout:120000});
       }
       return true;
@@ -111,13 +126,11 @@ async function loginVerified () {
   } 
 }
 
-
 async function selectElements(resortID, suiteType){
   const page = sharedData.page;
-
+  await page.bringToFront();
   try {
     var calendarUrl = `https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`;
-
 
     await page.goto(calendarUrl, {
       waitUntil: ['domcontentloaded', 'networkidle0'],
@@ -196,7 +209,7 @@ async function selectElements(resortID, suiteType){
 
 async function checkAvailability(months){
   const page = sharedData.page;
-
+  
   try{
     var { currentDate, EndDate } = getCurrentAndEndDate(months);
     var dates = [];
@@ -315,19 +328,9 @@ function getCurrentAndEndDate(months){
 }
 
 async function getResortAddress(resortID, sElement){
-  const browser = sharedData.browser;
-  const pageForAddress = await browser.newPage();
   try {
     
-    const [response] = await Promise.all([
-      pageForAddress.goto(`https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results`),
-      pageForAddress.waitForSelector(`.resort-card__address`, {timeout:60000}), 
-    ]);
-
-    if (response !== null) {
-      console.log("resorts fully loaded.")
-    }
-
+    await pageForAddress.bringToFront();
     const placeholderText = 'Enter a location';
     const inputSelector = `input[placeholder="${placeholderText}"]`;
     const textToEnter = sElement;
@@ -358,14 +361,14 @@ async function getResortAddress(resortID, sElement){
 
       resortAddress = resortAddress.replace(/\s+/g, ' ').trim();
 
-      await pageForAddress.close();
+      // await pageForAddress.close();
       
       return resortAddress;
     }
 
   } catch (error) {
     console.error('Error:', error.message);
-    await pageForAddress.close();
+    // await pageForAddress.close();
     return null;  
   } 
 
