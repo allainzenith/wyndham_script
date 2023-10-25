@@ -88,6 +88,8 @@ async function updateGuestyandRecord(resortFoundorCreated, eventCreated, scraped
         '2 Bedroom': 2,
         '3 Bedroom': 3,
         '4 Bedroom': 4,
+        'Presidential': 5,
+        'Hotel Room': 6
     } 
 
     const address = scraped.address;

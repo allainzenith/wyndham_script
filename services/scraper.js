@@ -347,7 +347,7 @@ async function getResortAddress(resortID, sElement){
     // Simulate pressing the Enter key
     await pageForAddress.keyboard.press('Enter');
 
-    const resortCardSelector = `#${id}.resort-card`;
+    const resortCardSelector = `#${id}`;
 
     let addressFound = await pageForAddress.waitForSelector(resortCardSelector, { timeout : 120000 });
   

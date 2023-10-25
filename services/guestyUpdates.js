@@ -97,7 +97,22 @@ async function findListing(address, token, suiteType){
         let queListings = await retrieveListings(substringAddress, token);
 
         for (const listing of queListings.results){
-            if ((listing.bedrooms === suiteType) && (listing.type === "MTL" || listing.type === "SINGLE")){
+
+            let specialSuiteString = suiteType === 5 ? 'Presidential' 
+                : suiteType === 6 ? 'Hotel' 
+                : suiteType === 0 ? 'Studio' : '';
+
+            let firstCondition = specialSuiteString === '' 
+                ? (listing.bedrooms === suiteType) 
+                : ((listing.title).includes(specialSuiteString))
+            
+            if (specialSuiteString === ''){
+                console.log("This is a normal suite type. Using the first condition now..")
+            }  else {
+                console.log("This is a special suite type. Using the second condition now..")
+            }
+
+            if (firstCondition && (listing.type === "MTL" || listing.type === "SINGLE")){
                 let {wynLat, wynLong} = await getLatLongAddress(address);
                 guestLat = Math.abs(parseFloat(listing.address.lat).toFixed(2));
                 guestLong = Math.abs(parseFloat(listing.address.lng).toFixed(2));
@@ -203,14 +218,14 @@ async function updateAvailability(listing, updatedAvail, token){
     };
 
 
-    // await axios.put(url, arrayOfAvailability, { headers })
-    // .then(response => {
-    //     console.log('PUT request successful');
-    //     console.log('Response data:', response.data);
-    // })
-    // .catch(error => {
-    //     console.error('PUT request failed:', error);
-    // });
+    await axios.put(url, arrayOfAvailability, { headers })
+    .then(response => {
+        console.log('PUT request successful');
+        console.log('Response data:', response.data);
+    })
+    .catch(error => {
+        console.error('PUT request failed:', error);
+    });
 
     return "moving on to next listingID...";
 }
