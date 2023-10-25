@@ -69,17 +69,8 @@ async function loginVerified () {
 
   try {    
     await page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/login');
-  
-    const [response] = await Promise.all([
-      pageForAddress.goto(`https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results`),
-      pageForAddress.waitForSelector(`.resort-card__address`, {timeout:60000}), 
-    ]);
-  
-    if (response !== null) {
-      console.log("resorts fully loaded.");
-    } else {
-      console.log("An error occured going to the resorts page. Please try again.")
-    }
+
+    await pageForAddress.goto(`https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results`);
 
     await page.bringToFront();
     console.log("I'M ON THE LOGIN PAGE");
@@ -209,7 +200,7 @@ async function selectElements(resortID, suiteType){
 
 async function checkAvailability(months){
   const page = sharedData.page;
-  
+
   try{
     var { currentDate, EndDate } = getCurrentAndEndDate(months);
     var dates = [];
