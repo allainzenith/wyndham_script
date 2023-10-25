@@ -99,6 +99,7 @@ router.get('/sse/oneListing', (req, res) => {
         listingName: item.resort.listingName === null? "To be updated": item.resort.listingName, 
         resortName: item.resort.resortName === null? "To be updated": item.resort.resortName, 
         unitType: item.resort.unitType === null? "To be updated": item.resort.unitType, 
+        resortID: item.resort.resortID === null? "To be updated": item.resort.resortID, 
       },  
       createdAt: format(item.createdAt, 'MM-dd-yyyy HH:mm:ss', { timeZone: 'America/New_York' }),
       updatedAt: format(item.updatedAt, 'MM-dd-yyyy HH:mm:ss', { timeZone: 'America/New_York' }),

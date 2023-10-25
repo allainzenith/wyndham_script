@@ -20,8 +20,8 @@ block content
     .w3-padding-64
       table.w3-table.w3-card.w3-centered
         tr
+          th Resort ID
           th Guesty Listing Name
-          th Wyndham Resort Name
           th Unit Type
           th Status
           th Months
@@ -38,8 +38,8 @@ block content
           data.forEach(item => {
             const row = document.createElement("tr");
             row.innerHTML = `
+              <td>${item.resort.resortID}</td>
               <td>${item.resort.listingName}</td>
-              <td>${item.resort.resortName}</td>
               <td>${item.resort.unitType}</td>
               <td>${item.execStatus}</td>
               <td>${item.monthstoScrape}</td>
