@@ -69,8 +69,22 @@ async function loginVerified () {
 
   try {    
     await page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/login');
+  
 
     await pageForAddress.goto(`https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results`);
+
+    let addressSelectorFound = true;
+
+    while (addressSelectorFound){
+      try{
+        await pageForAddress.waitForSelector(`.resort-card__address`, {timeout:10000}),
+        console.log("resorts fully loaded.");
+        addressSelectorFound = false;
+      } catch (error) {
+        console.log("Timed out. Reloading the page.");
+        await pageForAddress.reload();
+      }
+    }
 
     await page.bringToFront();
     console.log("I'M ON THE LOGIN PAGE");
@@ -200,7 +214,7 @@ async function selectElements(resortID, suiteType){
 
 async function checkAvailability(months){
   const page = sharedData.page;
-
+  
   try{
     var { currentDate, EndDate } = getCurrentAndEndDate(months);
     var dates = [];
