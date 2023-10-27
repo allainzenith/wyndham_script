@@ -1,5 +1,5 @@
 body{
-  font-family: Montserrat Light;
+  font-family: 'Montserrat Light';
 }
 
 .w3-input:focus {
@@ -14,9 +14,19 @@ body{
   box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2); 
 }
 
+
 .w3-table td {
   max-width: 220px; 
   white-space: nowrap; 
   overflow: hidden; 
   text-overflow: ellipsis; 
+}
+
+#resorts-table td {
+  max-width: 350px; 
+}
+
+.listingName {
+  color: #337AB7;
+  text-decoration: underline;
 }

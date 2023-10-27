@@ -1,13 +1,61 @@
 var express = require('express');
 var router = express.Router();
 const { format } = require('date-fns-tz');
-var { joinTwoTables } = require('../sequelizer/controller/controller');
+var { joinTwoTables, countRecords, countRecords, findAllRecords, findRecords } = require('../sequelizer/controller/controller');
 var { addToQueue, resourceIntensiveTask } = require('../scripts/queueProcessor');
 const { findOrCreateAResort, createAnEvent } = require('../scripts/oneListing');
 var { login, sendOTP } = require('../services/scraper')
 
 router.get('/', async(req, res, next) => {
-  res.render('oneListing');
+  const amount = await countRecords("execution", {execType:"ONE_RESORT"});
+  res.render('oneListing', {records:amount});
+});
+
+router.get('/oneListing', async(req, res, next) => {
+  res.redirect('/');
+});
+
+router.get('/allListings', function(req, res, next) {
+  res.render('allListings');
+
+});
+
+router.get('/scheduledUpdates', function(req, res, next) {
+  res.render('scheduledUpdates');
+
+});
+
+router.get('/resorts', async(req, res, next) => {
+  // let limit = parseInt(req.query.limit);
+  // let offset = parseInt(req.query.offset);
+
+  // res.setHeader('Content-Type', 'text/event-stream');
+  // res.setHeader('Cache-Control', 'no-cache');
+  // res.setHeader('Connection', 'keep-alive');
+
+
+  // let data = await findRecords({}, "resorts", "resortID", 10, 0);
+
+  // const formattedRecords = data.map(item => ({
+  //   ...item.toJSON(),  
+  //   resortID: item.resortID === null? "To be updated": item.resortID,
+  //   resortName: item.resortName === null? "To be updated": item.resortName,
+  //   listingName: item.listingName === null? "To be updated": item.listingName,
+  //   unitType: item.unitType === null? "To be updated": item.unitType,
+
+  // }));
+
+  // console.log(JSON.stringify(formattedRecords, null, 2))
+
+  // res.write(`data: ${JSON.stringify(formattedRecords)}\n\n`);
+  const amount = await countRecords("resorts", {});
+  res.render('resorts', {records:amount});
+
+});
+
+router.get('/events', function(req, res, next) {
+  res.render('events');
+
 });
 
 router.get('/verify', async(req, res, next) => {
@@ -29,31 +77,15 @@ router.post('/sendOTP', async(req, res, next) => {
 
 });
 
-router.get('/oneListing', function(req, res, next) {
-  res.render('oneListing');
+router.get('/duplicateListingLinks', (req, res) => {
+  const links = JSON.parse(req.query.links);
+  res.render('duplicateListingLinks', { links });
 });
 
-router.get('/allListings', function(req, res, next) {
-  res.render('allListings');
+///////////////////////////////////////////////////////////////////////////////
+// For calling services and scripts
+///////////////////////////////////////////////////////////////////////////////
 
-});
-
-router.get('/scheduledUpdates', function(req, res, next) {
-  res.render('scheduledUpdates');
-
-});
-
-router.get('/resorts', function(req, res, next) {
-  res.render('resorts');
-
-});
-
-router.get('/events', function(req, res, next) {
-  res.render('events');
-
-});
-
-// FOR CALLING SERVICES AND SCRIPTS
 router.post('/one', async(req, res, next) => {
 
   var resortID = (req.body.resort_id).trim();
@@ -78,9 +110,14 @@ router.post('/one', async(req, res, next) => {
 
 });
 
-
+///////////////////////////////////////////////////////////////////////////////
 // SSE ENDPOINTS
+///////////////////////////////////////////////////////////////////////////////
+
 router.get('/sse/oneListing', (req, res) => {
+  let limit = parseInt(req.query.limit);
+  let offset = parseInt(req.query.offset);
+
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
@@ -90,8 +127,7 @@ router.get('/sse/oneListing', (req, res) => {
       execType: "ONE_RESORT"
     }
 
-    
-    let data = await joinTwoTables("execution", "resorts", eventCond, "createdAt");
+    let data = await joinTwoTables("execution", "resorts", eventCond, "createdAt", limit, offset);
 
     const formattedRecords = data.map(item => ({
       ...item.toJSON(), 
@@ -108,6 +144,31 @@ router.get('/sse/oneListing', (req, res) => {
     res.write(`data: ${JSON.stringify(formattedRecords)}\n\n`);
   }, 1000);
 });
+
+
+router.get('/sse/resorts', async(req, res) => {
+  let limit = parseInt(req.query.limit);
+  let offset = parseInt(req.query.offset);
+
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  let data = await findRecords({}, "resorts", "resortID", limit, offset);
+
+  const formattedRecords = data.map(item => ({
+    ...item.toJSON(),  
+    listingID: item.listingID === null? "To be updated": item.listingID,
+    resortID: item.resortID === null? "To be updated": item.resortID,
+    resortName: item.resortName === null? "To be updated": item.resortName,
+    listingName: item.listingName === null? "To be updated": item.listingName,
+    unitType: item.unitType === null? "To be updated": item.unitType,
+
+  }));
+
+  res.write(`data: ${JSON.stringify(formattedRecords)}\n\n`);
+});
+
 
 module.exports = router;
 
