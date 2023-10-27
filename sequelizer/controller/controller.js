@@ -12,8 +12,7 @@ async function saveRecord(recordJson, objectType){
 
     // create() function instantiates the object and saves it to the database
     try {
-        const record = await typeofObject.create(recordJson);
-        // console.log(JSON.stringify(record, null, 4)); 
+        const record = await typeofObject.create(recordJson); 
         return record;
     } catch (error) {
         console.error("Error saving record: " + error);
@@ -26,14 +25,24 @@ async function findAllRecords(objectType){
     return await typeofObject.findAll();
 }
 
-async function findRecords(condJson, objectType, order){
+async function countRecords(objectType, condJson){
+    const typeofObject = (objectType == "execution") ? execution : resorts;
+    const amount = await typeofObject.count({
+        where: condJson
+      });
+
+    return amount;
+}
+
+async function findRecords(condJson, objectType, order, limit, offset){
     const typeofObject = (objectType == "execution") ? execution : resorts;
     var records = await typeofObject.findAll({
         where: condJson,
         order: [
             [sequelize.col(order), 'DESC']
           ],
-          
+        limit: limit,
+        offset: offset
         });
 
     return records;
@@ -46,7 +55,7 @@ async function findByPk(primaryKey, objectType){
     return record;
 }
 
-async function joinTwoTables(fModel, sModel, condJson, order){
+async function joinTwoTables(fModel, sModel, condJson, order, limit, offset){
     const firstModel = (fModel == "execution") ? execution : resorts;
     const secondModel = (sModel == "execution") ? execution : resorts;
 
@@ -61,6 +70,9 @@ async function joinTwoTables(fModel, sModel, condJson, order){
         order: [
             [sequelize.col(order), 'DESC']
           ],
+        
+        limit: limit,
+        offset: offset, 
     })
 
     return records
@@ -101,6 +113,7 @@ module.exports = {
     findByPk,
     joinTwoTables,
     deleteRecord,
-    updateRecord
+    updateRecord,
+    countRecords
 }
 

@@ -1,7 +1,8 @@
 extends layout
+include layout
 
 block content
-  .w3-row-padding.w3-padding-48
+  .w3-row-padding.w3-padding-32
     form(action='/one', method='post')
       .w3-col.s4.w3-padding-small
         input.w3-input(type='text', placeholder='Resort ID', id='resort_id', name='resort_id', required)
@@ -19,7 +20,8 @@ block content
         input.w3-input(type='number', placeholder='Months', id='months', name='months', required)
       .w3-col.s2.w3-padding-small
         input(type='submit', value='Run', class='w3-btn w3-round w3-green w3-block')
-    .w3-padding-64
+      .w3-padding-32
+    .w3-padding-16
       table.w3-table.w3-card.w3-centered
         tr
           th Resort ID
@@ -31,25 +33,124 @@ block content
           th Finished At
           
         tbody(id="table-body")
+
+    div.w3-center
+      div.w3-bar(id="pagination")
+
+      script(src='/javascripts/showRecords.js')
       script.
-        const tableBody = document.getElementById("table-body");
-        const eventSource = new EventSource('/sse/oneListing');
-        eventSource.onmessage = (event) => {
-          const data = JSON.parse(event.data);
-          tableBody.innerHTML = '';
-          data.forEach(item => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-              <td>${item.resort.resortID}</td>
-              <td>${item.resort.listingName}</td>
-              <td>${item.resort.unitType}</td>
-              <td>${item.execStatus}</td>
-              <td>${item.monthstoScrape}</td>
-              <td>${item.createdAt}</td>
-              <td>${item.updatedAt}</td>
-            `;
-            tableBody.appendChild(row);
-          });
-        };
+        var limit = 10, offset = 0;
+        var records = !{JSON.stringify(records)};
+        let endpoint = `/sse/oneListing`;
+        let eventSource = new EventSource(`/sse/oneListing?limit=${limit}&offset=${offset}`);
+        showRecords(eventSource, "events");
+        updatePagination(eventSource, limit, offset, "events", 1, records, endpoint)
+
+
+      //- script.
+      //-   var limit = 10;
+      //-   var offset = 0;
+
+      //-   let eventSource = new EventSource(`/sse/oneListing?limit=${limit}&offset=${offset}`);
+
+      //-   // Define a function to create the EventSource
+      //-   function createEventSource(limit, offset) {
+      //-     return new EventSource(`/sse/oneListing?limit=${limit}&offset=${offset}`);
+      //-   }
+
+      //-   function showRecords(eventSource){
+      //-     const tableBody = document.getElementById("table-body");
+      //-     //- eventSource = createEventSource(limit, offset);
+      //-     //- const eventSource = new EventSource(`/sse/oneListing?limit=${limit}&offset=${offset}`);
+      //-     eventSource.onmessage = (event) => {
+      //-       const data = JSON.parse(event.data);
+      //-       tableBody.innerHTML = '';
+      //-       data.forEach(item => {
+      //-         const row = document.createElement("tr");
+      //-         row.innerHTML = `
+      //-           <td>${item.resort.resortID}</td>
+      //-           <td>${item.resort.listingName}</td>
+      //-           <td>${item.resort.unitType}</td>
+      //-           <td>${item.execStatus}</td>
+      //-           <td>${item.monthstoScrape}</td>
+      //-           <td>${item.createdAt}</td>
+      //-           <td>${item.updatedAt}</td>
+      //-         `;
+      //-         tableBody.appendChild(row);
+      //-       });
+      //-     };
+
+      //-   }
+
+      //-   function updateEventSource(newOffset) {
+      //-     if (eventSource) { eventSource.close(); }
+      //-     eventSource = createEventSource(limit, newOffset);
+      //-     showRecords(eventSource);
+      //-   }
+
+
+      //-   function updatePagination(currentPage) {
+      //-     console.log("this function is called");
+      //-     // Updates the offset
+      //-     offset = limit * (currentPage - 1)
+      //-     updateEventSource(offset);
+
+      //-     var records = !{JSON.stringify(records)};
+      //-     var totalPages = Math.ceil(parseInt(records, 10) / 10); // Use the base 10
+      //-     var pagesToShow = 4;
+      //-     var paginationElement = document.getElementById('pagination');
+
+      //-     // Clear the existing content of paginationElement
+      //-     paginationElement.innerHTML = '';
+
+      //-     // Add the "Previous" button
+      //-     if (currentPage > 1) {
+      //-       var prevButton = document.createElement('button');
+      //-       prevButton.className = 'w3-button';
+      //-       prevButton.innerHTML = '&laquo;';
+      //-       prevButton.addEventListener('click', function () {
+      //-         updatePagination(currentPage - 1);
+      //-       });
+      //-       paginationElement.appendChild(prevButton);
+      //-     }
+
+      //-     // Calculate the range of pages to display
+      //-     var startPage = Math.max(1, currentPage - Math.floor(pagesToShow / 2));
+      //-     var endPage = Math.min(totalPages, startPage + pagesToShow - 1);
+
+      //-     // Add the page links
+      //-     for (var i = startPage; i <= endPage; i++) {
+      //-       var pageButton = document.createElement('button');
+      //-       pageButton.className = 'w3-button';
+      //-       pageButton.id = i;
+      //-       pageButton.textContent = i;
+      //-       pageButton.addEventListener('click', function() {
+      //-         var clickedId = this.id;
+      //-         updatePagination(parseInt(clickedId, 10));
+      //-       });
+      //-       paginationElement.appendChild(pageButton);
+      //-     }
+
+      //-     // Add the "Next" button
+      //-     if (currentPage < totalPages) {
+      //-       var nextButton = document.createElement('button');
+      //-       nextButton.className = 'w3-button';
+      //-       nextButton.innerHTML = '&raquo;';
+      //-       nextButton.addEventListener('click', function () {
+      //-         updatePagination(currentPage + 1);
+      //-       });
+      //-       paginationElement.appendChild(nextButton);
+      //-     }
+
+      //-     document.getElementById(currentPage).classList.add('w3-green');
+
+      //-   }
+
+      //-   showRecords(eventSource);
+      //-   updatePagination(1);
+
+
+
+
 
 

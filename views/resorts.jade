@@ -1,4 +1,34 @@
 extends layout
 
 block content
-    h1 This is the page for all resorts.
+    .w3-row-padding.w3-padding-32
+        .w3-col.s4.w3-padding-small
+            input.w3-input(type='text', placeholder='Search', id='search', name='search')
+        .w3-padding-16
+        .w3-padding-32
+            table.w3-table.w3-card(id="resorts-table")
+                tr
+                    th Resort ID
+                    th Resort Name
+                    th Guesty Listing Name
+                    th Unit Type
+                tbody(id="table-body")
+            
+        div.w3-center
+            div.w3-bar(id="pagination")
+
+            script(src='/javascripts/showRecords.js')
+            script.
+                var limit = 10, offset = 0;
+                //gets the number of records
+                var records = !{JSON.stringify(records)}; 
+                let endpoint = `/sse/resorts`;
+                let eventSource = new EventSource(`/sse/resorts?limit=${limit}&offset=${offset}`);
+                showRecords(eventSource, "resorts");
+                updatePagination(eventSource, limit, offset, "resorts", 1, records, endpoint)
+
+
+
+
+
+
