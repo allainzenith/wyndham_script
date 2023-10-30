@@ -3,9 +3,12 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 let updatedEventSource = null;
+let searchInput = null;
+let searchTimeout;
 
-function createEventSource(limit, offset, endpoint) {
-    return new EventSource(`${endpoint}?limit=${limit}&offset=${offset}`);
+function createEventSource(limit, offset, endpoint, searchInput) {
+    console.log("new event source created");
+    return new EventSource(`${endpoint}?limit=${limit}&offset=${offset}&search=${searchInput}`);
 }
 
 function showRecords(eventSource, tableType){
@@ -55,23 +58,38 @@ function openLinks(listingID){
 
 }
 
-function updateEventSource(eventSource, limit, newOffset, tableType, endpoint) {
+function updateEventSource(eventSource, limit, newOffset, tableType, endpoint, searchInput) {
     if (eventSource) { eventSource.close(); }
-    updatedEventSource = createEventSource(limit, newOffset, endpoint);
+    updatedEventSource = createEventSource(limit, newOffset, endpoint, searchInput);
     showRecords(updatedEventSource, tableType);
 }
 
 
-function updatePagination(eventSource, limit, offset, tableType, currentPage, records, endpoint) {
+function updatePagination(eventSource, limit, offset, tableType, currentPage, records, endpoint, search) {
+    console.log("this function is called");
     // Updates the offset
     offset = limit * (currentPage - 1)
-    let currentEventSource = updatedEventSource === null ? eventSource : updatedEventSource;
-    updateEventSource(currentEventSource, limit, offset, tableType, endpoint);
+    // let currentEventSource = updatedEventSource === null ? eventSource : updatedEventSource;
+    updatedEventSource = updatedEventSource === null ? eventSource : updatedEventSource;
+    searchInput = searchInput === null ? search : searchInput;
+    updateEventSource(updatedEventSource, limit, offset, tableType, endpoint, searchInput);
 
-    //- var records = !{JSON.stringify(records)};
     var totalPages = Math.ceil(parseInt(records, 10) / 10); 
-    var pagesToShow = 4;
     var paginationElement = document.getElementById('pagination');
+
+    // Calculate the range of pages to display
+    var startPage = Math.max(1, currentPage - Math.floor(4 / 2));
+    var endPage = Math.min(totalPages, startPage + 4 - 1);
+    
+    document.getElementById('searchString').addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+
+        searchTimeout = setTimeout(() => {
+            searchInput = document.getElementById('searchString').value;
+            updatePagination(updatedEventSource, limit, offset, tableType, 1, records, endpoint, searchInput);
+        }, 1000); 
+    });
+    
 
     // Clear the existing content of paginationElement
     paginationElement.innerHTML = '';
@@ -82,14 +100,10 @@ function updatePagination(eventSource, limit, offset, tableType, currentPage, re
     prevButton.className = 'w3-button';
     prevButton.innerHTML = '&laquo;';
     prevButton.addEventListener('click', function () {
-        updatePagination(currentEventSource, limit, offset, tableType, currentPage - 1, records, endpoint);
+        updatePagination(updatedEventSource, limit, offset, tableType, currentPage - 1, records, endpoint, searchInput);
     });
     paginationElement.appendChild(prevButton);
     }
-
-    // Calculate the range of pages to display
-    var startPage = Math.max(1, currentPage - Math.floor(pagesToShow / 2));
-    var endPage = Math.min(totalPages, startPage + pagesToShow - 1);
 
     // Add the page links
     for (var i = startPage; i <= endPage; i++) {
@@ -99,7 +113,7 @@ function updatePagination(eventSource, limit, offset, tableType, currentPage, re
     pageButton.textContent = i;
     pageButton.addEventListener('click', function() {
         var clickedId = this.id;
-        updatePagination(currentEventSource, limit, offset, tableType, parseInt(clickedId, 10), records, endpoint);
+        updatePagination(updatedEventSource, limit, offset, tableType, parseInt(clickedId, 10), records, endpoint, searchInput);
     });
     paginationElement.appendChild(pageButton);
     }
@@ -110,7 +124,7 @@ function updatePagination(eventSource, limit, offset, tableType, currentPage, re
     nextButton.className = 'w3-button';
     nextButton.innerHTML = '&raquo;';
     nextButton.addEventListener('click', function () {
-        updatePagination(currentEventSource, limit, offset, tableType, currentPage + 1, records, endpoint);
+        updatePagination(updatedEventSource, limit, offset, tableType, currentPage + 1, records, endpoint, searchInput);
     });
     paginationElement.appendChild(nextButton);
     }
@@ -119,8 +133,7 @@ function updatePagination(eventSource, limit, offset, tableType, currentPage, re
 
 }
 
-
 // test function
 function test(){
-    console.log('This is a test');
+    console.log('hello');
 }

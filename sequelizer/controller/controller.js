@@ -6,6 +6,7 @@
 //// USE THE SUBSCRIBE FUNCTION TOMORROW
 const { execution, resorts } = require('../models/model')
 const { sequelize } = require('../../config/config');
+const { Op } = require("sequelize");
 
 async function saveRecord(recordJson, objectType){
     const typeofObject = (objectType == "execution") ? execution : resorts;
@@ -34,10 +35,17 @@ async function countRecords(objectType, condJson){
     return amount;
 }
 
-async function findRecords(condJson, objectType, order, limit, offset){
+async function findLikeRecords(search, objectType, order, limit, offset){
     const typeofObject = (objectType == "execution") ? execution : resorts;
     var records = await typeofObject.findAll({
-        where: condJson,
+        where: {
+            [Op.or]: [
+                { resortID: { [Op.substring]: search } }, 
+                { resortName: { [Op.substring]: search } }, 
+                { listingName: { [Op.substring]: search } }, 
+                { unitType: { [Op.substring]: search } }, 
+            ]
+        },
         order: [
             [sequelize.col(order), 'DESC']
           ],
@@ -55,6 +63,7 @@ async function findByPk(primaryKey, objectType){
     return record;
 }
 
+// For events and execution joined
 async function joinTwoTables(fModel, sModel, condJson, order, limit, offset){
     const firstModel = (fModel == "execution") ? execution : resorts;
     const secondModel = (sModel == "execution") ? execution : resorts;
@@ -109,7 +118,7 @@ async function deleteRecord(recordObject){
 module.exports = {
     saveRecord,
     findAllRecords,
-    findRecords,
+    findLikeRecords,
     findByPk,
     joinTwoTables,
     deleteRecord,

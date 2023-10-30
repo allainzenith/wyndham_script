@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 const { format } = require('date-fns-tz');
-var { joinTwoTables, countRecords, countRecords, findAllRecords, findRecords } = require('../sequelizer/controller/controller');
+var { joinTwoTables, countRecords, countRecords, findAllRecords, findLikeRecords } = require('../sequelizer/controller/controller');
 var { addToQueue, resourceIntensiveTask } = require('../scripts/queueProcessor');
 const { findOrCreateAResort, createAnEvent } = require('../scripts/oneListing');
 var { login, sendOTP } = require('../services/scraper')
@@ -26,28 +26,6 @@ router.get('/scheduledUpdates', function(req, res, next) {
 });
 
 router.get('/resorts', async(req, res, next) => {
-  // let limit = parseInt(req.query.limit);
-  // let offset = parseInt(req.query.offset);
-
-  // res.setHeader('Content-Type', 'text/event-stream');
-  // res.setHeader('Cache-Control', 'no-cache');
-  // res.setHeader('Connection', 'keep-alive');
-
-
-  // let data = await findRecords({}, "resorts", "resortID", 10, 0);
-
-  // const formattedRecords = data.map(item => ({
-  //   ...item.toJSON(),  
-  //   resortID: item.resortID === null? "To be updated": item.resortID,
-  //   resortName: item.resortName === null? "To be updated": item.resortName,
-  //   listingName: item.listingName === null? "To be updated": item.listingName,
-  //   unitType: item.unitType === null? "To be updated": item.unitType,
-
-  // }));
-
-  // console.log(JSON.stringify(formattedRecords, null, 2))
-
-  // res.write(`data: ${JSON.stringify(formattedRecords)}\n\n`);
   const amount = await countRecords("resorts", {});
   res.render('resorts', {records:amount});
 
@@ -111,7 +89,7 @@ router.post('/one', async(req, res, next) => {
 });
 
 ///////////////////////////////////////////////////////////////////////////////
-// SSE ENDPOINTS
+// SSE ENDPOINTS                
 ///////////////////////////////////////////////////////////////////////////////
 
 router.get('/sse/oneListing', (req, res) => {
@@ -154,7 +132,9 @@ router.get('/sse/resorts', async(req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
 
-  let data = await findRecords({}, "resorts", "resortID", limit, offset);
+  let search = req.query.search;
+
+  let data = await findLikeRecords(search, "resorts", "resortID", limit, offset);
 
   const formattedRecords = data.map(item => ({
     ...item.toJSON(),  
