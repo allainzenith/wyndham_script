@@ -1,0 +1,14 @@
+The token expiration date has passed. Creating access token now..
+{
+  token_type: 'Bearer',
+  expires_in: 86400,
+  access_token: 'eyJraWQiOiJaRHJMRkN6Zm1hQlFDby02ODI3U2M4ZlpPZmV3SHVxTWVNZ0J3cXVHWUhRIiwiYWxnIjoiUlMyNTYifQ.eyJ2ZXIiOjEsImp0aSI6IkFULkJRR0FET0E3WFZrLXgxMm5PMG1weXhXWXUxdFJyNWN4eGV3eFJIV1BINEEiLCJpc3MiOiJodHRwczovL2xvZ2luLmd1ZXN0eS5jb20vb2F1dGgyL2F1czFwOHFyaDUzQ2NRVEk5NWQ3IiwiYXVkIjoiaHR0cHM6Ly9vcGVuLWFwaS5ndWVzdHkuY29tIiwiaWF0IjoxNjk4NjUyMzIwLCJleHAiOjE2OTg3Mzg3MjAsImNpZCI6IjBvYWJsbzRmaDVLNW00R3lONWQ3Iiwic2NwIjpbIm9wZW4tYXBpIl0sInJlcXVlc3RlciI6IkVYVEVSTkFMIiwiYWNjb3VudElkIjoiNjI0NzYxODBlOWZkYmEwMDM2NmY3ZjQyIiwic3ViIjoiMG9hYmxvNGZoNUs1bTRHeU41ZDciLCJ1c2VyUm9sZXMiOlt7InJvbGVJZCI6eyJwZXJtaXNzaW9ucyI6WyJhZG1pbiJdfX1dLCJyb2xlIjoidXNlciIsImNsaWVudFR5cGUiOiJvcGVuYXBpIiwiaWFtIjoidjMiLCJhY2NvdW50TmFtZSI6IkxpdmUgU3VpdGUiLCJuYW1lIjoic2NyYXBlci1hbGxhaW4tZGV2In0.EoNidUDF_LT5ziOZcHP7bte-NGABCSTktrPJ3ZMdfzVm3JNvau8HkS8_uQnfP_-uaHsvuRr9xsJrScAYrY2Gtao2Ipq5tQDFkD-d-SOy9eFh3t87y_BLJg9SbLG4vGaN6r8ig5igXSP3wyGP5luNrLmXTskbws9KRxXe6bE6AT-E1y1hILO5VYi4W4XDLUuhK09lMeR3bRvHTLwQIFHSKXZVJ7-IH_G3upb3-pBP3AIt-4MIZOODh__H8I3RkztgZgOGgy7_yg8VulaYjD4N8WCLI9h92QPcd0VPbbfdV_Z2RC883zsKxLcG8UNtYSsdhSeugV3OH3JXL82MZJu7wA',
+  scope: 'open-api'
+}
+[0mGET / [36m304 [0m3434.979 ms - -[0m
+[0mGET /stylesheets/style.css [36m304 [0m6.021 ms - -[0m
+[0mGET /images/logo.png [36m304 [0m4.540 ms - -[0m
+[0mGET /javascripts/showRecords.js [36m304 [0m1.031 ms - -[0m
+The token expiration date is in the future.
+The token expiration date is in the future.
+[0mGET /favicon.ico [33m404 [0m40.839 ms - 4793[0m
