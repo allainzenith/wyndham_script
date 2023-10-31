@@ -68,9 +68,23 @@ async function executeUpdates(resortFoundorCreated, token, address, updatedAvail
             }
 
             for (const listing of listingJsonArray) {
-                console.log(await updateAvailability(listing, updatedAvail, token));
-                console.log("listing._id: " + listing._id);
-                listingIDs.push(listing._id);
+                
+                let listingObj = await retrieveAListing(listing._id, token)
+
+                if((listingObj.calendarRules.bookingWindow.defaultSettings.days) !== 0) {
+                    console.log("This listing calendar needs to be updated.")
+                    let updatedAvailabilitySettings = await updateAvailabilitySettings(listing._id, token);
+
+                    if (updatedAvailabilitySettings) {
+                        console.log("Calendar availability settings updated successfully.");
+                        console.log(await updateAvailability(listing, updatedAvail, token));
+                        console.log("listing._id: " + listing._id);
+                        listingIDs.push(listing._id);
+                    } else {
+                        console.log("Calendar availability settings update failed.");
+                    }
+                }
+
             }
 
 
@@ -124,6 +138,17 @@ async function findListing(address, token, suiteType){
                 
                 if ( (wynLat === guestLat || difLat <= .10) && (wynLong === guestLong || difLong <= .10) ){
                     console.log("the two coordinate sets match");
+
+                    if((listing.calendarRules.bookingWindow.defaultSettings.days) !== 0) {
+                        console.log("This listing calendar needs to be updated.")
+                        let updatedAvailabilitySettings = updateAvailabilitySettings(listing._id, token);
+
+                        if (updatedAvailabilitySettings) {
+                            console.log("Calendar availability settings updated successfully.");
+                        } else {
+                            console.log("Calendar availability settings update failed.");
+                        }
+                    }
             
                     finalListings.push(listing)
                 }
@@ -154,7 +179,7 @@ async function retrieveListings(substringAddress, token){
 
     params = {
         q: substringAddress,
-        fields: "_id bedrooms title type address",
+        fields: "_id bedrooms title type address calendarRules.bookingWindow.defaultSettings",
         sort: "type",
         limit: 100,
         skip: 0
@@ -181,6 +206,60 @@ async function retrieveListings(substringAddress, token){
         console.error('Error:', error.message);
         console.error('Reason:', error.response.data);
         return null;
+    }
+
+}
+
+async function retrieveAListing(listingID, token){
+    fields = "_id bedrooms title type address calendarRules.bookingWindow.defaultSettings";
+    const url = `https://open-api.guesty.com/v1/listings/${listingID}?fields=${fields}`;
+
+    const headers = {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application json",
+        "Accept": "application/json"
+    };
+
+    
+    try {
+        const response = await axios.get(url, { headers });
+        console.log('GET request successful');
+        return response.data;
+    } catch (error) {
+        console.error('GET request failed:', error);
+        return null;
+    }
+
+}
+
+async function updateAvailabilitySettings(listingID, token){
+
+    const url = `https://open-api.guesty.com/v1/listings/${listingID}/availability-settings`;
+
+    const headers = {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+    };
+
+    const rawBody = JSON.stringify({
+    calendarRules: {
+        defaultAvailability: "AVAILABLE",
+        bookingWindow: {
+            defaultSettings: {
+                days: 0
+            }
+        }
+    }
+    })  
+
+    try {
+        await axios.put(url, rawBody, { headers });
+        console.log('PUT request successful');
+        return true;
+    } catch (error) {
+        console.error('PUT request failed:', error);
+        return false;
     }
 
 }

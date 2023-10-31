@@ -57,6 +57,21 @@ async function findLikeRecords(search, objectType, order, limit, offset){
 
 }
 
+async function findRecords(condJson, objectType, order, limit, offset){
+    const typeofObject = (objectType == "execution") ? execution : resorts;
+    var records = await typeofObject.findAll({
+        where: condJson,
+        order: [
+            [sequelize.col(order), 'DESC']
+          ],
+        limit: limit,
+        offset: offset
+        });
+
+    return records;
+
+}
+
 async function findByPk(primaryKey, objectType){
     const typeofObject = (objectType == "execution") ? execution : resorts;
     const record = await typeofObject.findByPk(primaryKey);
@@ -118,6 +133,7 @@ async function deleteRecord(recordObject){
 module.exports = {
     saveRecord,
     findAllRecords,
+    findRecords,
     findLikeRecords,
     findByPk,
     joinTwoTables,

@@ -4,10 +4,9 @@
 
 let updatedEventSource = null;
 let searchInput = null;
-let searchTimeout;
+let searchTimeout = null;
 
 function createEventSource(limit, offset, endpoint, searchInput) {
-    console.log("new event source created");
     return new EventSource(`${endpoint}?limit=${limit}&offset=${offset}&search=${searchInput}`);
 }
 
@@ -66,7 +65,6 @@ function updateEventSource(eventSource, limit, newOffset, tableType, endpoint, s
 
 
 function updatePagination(eventSource, limit, offset, tableType, currentPage, records, endpoint, search) {
-    console.log("this function is called");
     // Updates the offset
     offset = limit * (currentPage - 1)
     // let currentEventSource = updatedEventSource === null ? eventSource : updatedEventSource;
