@@ -1,4 +1,30 @@
 extends layout
+include layout
 
 block content
-    h1 This is the update page for the scheduled updates.
+  .w3-row-padding.w3-padding-32
+    input.w3-input(type='text', placeholder='Search', id='searchString', name='searchString', style='display: none;')
+    .w3-padding-16
+      table.w3-table.w3-card.w3-centered
+        tr
+          th Resort ID
+          th Guesty Listing Name
+          th Unit Type
+          th Status
+          th Months
+          th Started At
+          th Finished At
+          
+        tbody(id="table-body")
+
+    div.w3-center
+      div.w3-bar(id="pagination")
+
+      script(src='/javascripts/showRecords.js')
+      script.
+        var limit = 10, offset = 0, search='';
+        var records = !{JSON.stringify(records)};
+        let endpoint = `/sse/scheduledUpdates`;
+        let eventSource = new EventSource(`/sse/scheduledUpdates?limit=${limit}&offset=${offset}&search=${search}`);
+        showRecords(eventSource, "events");
+        updatePagination(eventSource, limit, offset, "events", 1, records, endpoint, search)

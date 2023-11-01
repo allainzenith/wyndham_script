@@ -21,9 +21,13 @@ async function saveRecord(recordJson, objectType){
     }
 }
 
-async function findAllRecords(objectType){
+async function findAllRecords(objectType, order){
     const typeofObject = (objectType == "execution") ? execution : resorts;
-    return await typeofObject.findAll();
+    return await typeofObject.findAll({
+        order: [
+            [sequelize.col(order), 'DESC']
+          ],
+    });
 }
 
 async function countRecords(objectType, condJson){
