@@ -6,6 +6,12 @@ var { saveRecord, updateRecord, findRecords } = require('../sequelizer/controlle
 
 async function executeScript(token, resortID, suiteType, months, resortFoundorCreated, eventCreated){
 
+    console.log("current task executed: ");
+    console.log("Resort ID: " + resortID);
+    console.log("Unit Type: " + suiteType);
+    console.log("Months: " + months);
+
+
     var resortJSON = await resortFoundorCreated.toJSON()
     var resortJSONlistingID = await resortJSON.listingID;
     var resortHasNoRecord = (resortJSONlistingID === undefined || resortJSONlistingID === null);
