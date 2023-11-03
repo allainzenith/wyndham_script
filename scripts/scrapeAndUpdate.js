@@ -3,6 +3,7 @@
 var { executeScraper } = require('../services/scraper')
 var { executeUpdates } = require('../services/guestyUpdates')
 var { saveRecord, updateRecord, findRecords } = require('../sequelizer/controller/controller')
+const { sequelize } = require("../config/config");
 
 async function executeScript(token, resortID, suiteType, months, resortFoundorCreated, eventCreated){
 
@@ -38,8 +39,11 @@ async function findOrCreateAResort(resortID, suiteType){
         unitType: suiteType
     }
 
+    const order = [
+        [sequelize.col("resortID"), 'DESC'], 
+    ];
 
-    const foundRecords = await findRecords(resortCond, "resorts", "resortID")
+    const foundRecords = await findRecords(resortCond, "resorts", order, 1, 0)
 
     if (foundRecords.length === 0) {
         let recordObject;

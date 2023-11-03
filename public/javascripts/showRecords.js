@@ -5,6 +5,7 @@
 let updatedEventSource = null;
 let searchInput = null;
 let searchTimeout = null;
+let paginationTimeout = null;
 
 function createEventSource(limit, offset, endpoint, searchInput) {
     return new EventSource(`${endpoint}?limit=${limit}&offset=${offset}&search=${searchInput}`);
@@ -98,8 +99,13 @@ function updatePagination(eventSource, limit, offset, tableType, currentPage, re
     prevButton.className = 'w3-button';
     prevButton.innerHTML = '&laquo;';
     prevButton.addEventListener('click', function () {
-        updatePagination(updatedEventSource, limit, offset, tableType, currentPage - 1, records, endpoint, searchInput);
+        clearTimeout(paginationTimeout);
+
+        paginationTimeout = setTimeout(() => {
+            updatePagination(updatedEventSource, limit, offset, tableType, currentPage - 1, records, endpoint, searchInput);
+        }, 300); 
     });
+
     paginationElement.appendChild(prevButton);
     }
 
@@ -109,10 +115,15 @@ function updatePagination(eventSource, limit, offset, tableType, currentPage, re
     pageButton.className = 'w3-button';
     pageButton.id = i;
     pageButton.textContent = i;
-    pageButton.addEventListener('click', function() {
-        var clickedId = this.id;
-        updatePagination(updatedEventSource, limit, offset, tableType, parseInt(clickedId, 10), records, endpoint, searchInput);
+    pageButton.addEventListener('click', function () {
+        clearTimeout(paginationTimeout);
+
+        paginationTimeout = setTimeout(() => {
+            var clickedId = this.id;
+            updatePagination(updatedEventSource, limit, offset, tableType, parseInt(clickedId, 10), records, endpoint, searchInput);
+        }, 300); 
     });
+
     paginationElement.appendChild(pageButton);
     }
 
@@ -122,8 +133,13 @@ function updatePagination(eventSource, limit, offset, tableType, currentPage, re
     nextButton.className = 'w3-button';
     nextButton.innerHTML = '&raquo;';
     nextButton.addEventListener('click', function () {
-        updatePagination(updatedEventSource, limit, offset, tableType, currentPage + 1, records, endpoint, searchInput);
+        clearTimeout(paginationTimeout);
+
+        paginationTimeout = setTimeout(() => {
+            updatePagination(updatedEventSource, limit, offset, tableType, currentPage + 1, records, endpoint, searchInput);
+        }, 300); 
     });
+
     paginationElement.appendChild(nextButton);
     }
 

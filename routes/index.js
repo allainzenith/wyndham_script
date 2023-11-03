@@ -1,10 +1,11 @@
 var express = require('express');
 var router = express.Router();
 const { format } = require('date-fns-tz');
-var { joinTwoTables, countRecords, countRecords, findAllRecords, findLikeRecords } = require('../sequelizer/controller/controller');
+var { joinTwoTables, countRecords, countRecords, findLikeRecords } = require('../sequelizer/controller/controller');
 var { addToQueue, resourceIntensiveTask } = require('../scripts/queueProcessor');
-const { findOrCreateAResort, createAnEvent } = require('../scripts/oneListing');
+const { findOrCreateAResort, createAnEvent } = require('../scripts/scrapeAndUpdate');
 var { login, sendOTP } = require('../services/scraper')
+const { sequelize } = require("../config/config");
 
 router.get('/', async(req, res, next) => {
   const amount = await countRecords("execution", {execType:"ONE_RESORT"});
@@ -21,7 +22,7 @@ router.get('/allListings', function(req, res, next) {
 });
 
 router.get('/scheduledUpdates', async(req, res, next) => {
-  const amount = await countRecords("execution", {execType:"ALL_RESORTS"});
+  const amount = await countRecords("execution", {execType:"SCHEDULED"});
   res.render('scheduledUpdates', {records:amount});
 });
 
@@ -105,7 +106,11 @@ router.get('/sse/oneListing', (req, res) => {
       execType: "ONE_RESORT"
     }
 
-    let data = await joinTwoTables("execution", "resorts", eventCond, "createdAt", limit, offset);
+    const order = [
+      [sequelize.col("createdAt"), 'DESC'],  
+    ];
+
+    let data = await joinTwoTables("execution", "resorts", eventCond, order, limit, offset);
 
     const formattedRecords = data.map(item => ({
       ...item.toJSON(), 
@@ -133,10 +138,16 @@ router.get('/sse/scheduledUpdates', (req, res) => {
 
   setInterval(async () => {
     const eventCond = {
-      execType: "ALL_RESORTS"
+      execType: "SCHEDULED"
     }
 
-    let data = await joinTwoTables("execution", "resorts", eventCond, "createdAt", limit, offset);
+    const order = [
+      [sequelize.col("createdAt"), 'DESC'],  
+      [sequelize.col("resortID"), 'ASC'],  
+      [sequelize.col("resort.unitType"), 'ASC'],  
+    ];
+
+    let data = await joinTwoTables("execution", "resorts", eventCond, order, limit, offset);
 
     const formattedRecords = data.map(item => ({
       ...item.toJSON(), 
@@ -165,7 +176,11 @@ router.get('/sse/resorts', async(req, res) => {
 
   let search = req.query.search;
 
-  let data = await findLikeRecords(search, "resorts", "resortID", limit, offset);
+  const order = [
+    [sequelize.col("resortID"), 'DESC'], 
+  ];
+
+  let data = await findLikeRecords(search, "resorts", order, limit, offset);
 
   const formattedRecords = data.map(item => ({
     ...item.toJSON(),  

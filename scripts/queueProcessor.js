@@ -1,6 +1,6 @@
-const { executeScript } = require('./oneListing');
-const { sharedData } =  require('../config/puppeteerOptions'); 
-const { launchPuppeteer } = require('../services/scraper');
+const { executeScript } = require("./scrapeAndUpdate");
+const { sharedData } = require("../config/puppeteerOptions");
+const { launchPuppeteer } = require("../services/scraper");
 
 const taskQueue = [];
 let isProcessing = false;
@@ -16,12 +16,12 @@ async function processQueue() {
   }
 
   isProcessing = true;
-  const { task, args, callback } = taskQueue.shift(); 
+  const { task, args, callback } = taskQueue.shift();
 
   // Execute the task (assuming it's a function)
   task(...args, () => {
     isProcessing = false;
-    processQueue(); 
+    processQueue();
     callback();
   });
 }
@@ -32,25 +32,42 @@ async function addToQueue(task, callback, ...args) {
     console.log("launching puppeteer now");
     await launchPuppeteer();
   } else {
-    console.log("puppeteer is already launched. execution of prior task is ongoing.")
-  } 
+    console.log(
+      "puppeteer is already launched. execution of prior task is ongoing."
+    );
+  }
   taskQueue.push({ task, args, callback });
-  await processQueue(); 
+  await processQueue();
 }
 
-async function resourceIntensiveTask(token, resortID, suiteType, months, resort, eventCreated, callback) {
+async function resourceIntensiveTask(
+  token,
+  resortID,
+  suiteType,
+  months,
+  resort,
+  eventCreated,
+  callback
+) {
   // Perform resource-intensive work
-  console.log('resortID: ' + resortID);
-  console.log('suiteType: ' + suiteType);
-  console.log('months: ' + months);
-  
-  let executedScript = await executeScript(token, resortID, suiteType, months, resort, eventCreated);
-  console.log("Executed Script Successfully: " + executedScript)
-  await new Promise(resolve => setTimeout(resolve, 5000));
+  console.log("resortID: " + resortID);
+  console.log("suiteType: " + suiteType);
+  console.log("months: " + months);
+
+  let executedScript = await executeScript(
+    token,
+    resortID,
+    suiteType,
+    months,
+    resort,
+    eventCreated
+  );
+  console.log("Executed Script Successfully: " + executedScript);
+  await new Promise((resolve) => setTimeout(resolve, 5000));
   callback();
 }
 
 module.exports = {
   addToQueue,
   resourceIntensiveTask,
-}
+};

@@ -6,6 +6,7 @@ require("dotenv").config();
 let sharedData = {
     browser: null,
     page: null,
+    pageForAddress: null
   };
 
 // Make the module an async module
@@ -21,21 +22,36 @@ async function globals() {
       fs.mkdirSync(customProfileDir);
     }
     
-    // Launch Puppeteer with the custom profile directory
-    sharedData.browser = await puppeteer.launch({
-      args: [
-        "--disable-setuid-sandbox",
-        "--no-sandbox",
-        "--no-zygote",
-      ],
-      // headless: false, 
-      headless: 'new',
-      userDataDir: customProfileDir
-    });
-    
-    // Open a new page
-    sharedData.page = await sharedData.browser.newPage();
-    sharedData.page.setDefaultNavigationTimeout(120000);
+    let puppeteerHasToBeLaunched = true;
+
+    while (puppeteerHasToBeLaunched) {
+      try {
+        // Launch Puppeteer with the custom profile directory
+        sharedData.browser = await puppeteer.launch({
+          args: [
+            "--disable-setuid-sandbox",
+            "--no-sandbox",
+            "--no-zygote",
+          ],
+          // headless: false, 
+          headless: 'new',
+          userDataDir: customProfileDir
+        });
+        
+        // Open a new page
+        sharedData.page = await sharedData.browser.newPage();
+        sharedData.pageForAddress = await sharedData.browser.newPage();
+        sharedData.page.setDefaultNavigationTimeout(120000);
+        puppeteerHasToBeLaunched = false;
+      } catch (error) {
+        console.log("Launching of puppeteer failed: " + error);
+        console.log("Launching puppeteer again.");
+        if(sharedData.browser !== null){
+          await sharedData.browser.close();
+        }
+      }
+
+    }
 
     return sharedData;
 }
