@@ -57,9 +57,9 @@ app.use(function (err, req, res, next) {
 });
 
 // Schedule the update every 6 hours
-schedule.scheduleJob("0 */6 * * *", async () => {
+schedule.scheduleJob("0 */12 * * *", async () => {
   console.log("this schedule function is called");
-  await testScheduledUpdates(thisToken);
+  // await testScheduledUpdates(thisToken);
 });
 
 module.exports = app;
