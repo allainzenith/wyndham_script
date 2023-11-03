@@ -1,41 +1,44 @@
 var { findAllRecords } = require('../sequelizer/controller/controller');
 var { addToQueue, resourceIntensiveTask } = require('../scripts/queueProcessor');
-var { saveRecord, findRecords } = require('../sequelizer/controller/controller')
-const { findOrCreateAResort } = require('../scripts/oneListing');
-
+var { saveRecord } = require('../sequelizer/controller/controller')
+const { sequelize } = require("../config/config");
 async function testScheduledUpdates(token) {
 
-    console.log("this is the token: "+ token);
+    const order = [
+        [sequelize.col("resortID"), 'DESC'], 
+        [sequelize.col("unitType"), 'DESC'], 
+    ];
 
-    // const allResorts = await findAllRecords("resorts", "resortID");
-    // let resortID, suiteType, resort, eventCreated;
-    // let months = 12;
-    // for(const res of allResorts){
+    const allResorts = await findAllRecords("resorts", order);
 
-    //     resortID = res.resortID;
-    //     suiteType = res.unitType;  
+    let resortID, suiteType, eventCreated;
+    let months = 12;
+    for(const res of allResorts){
 
-    //     eventCreated = await createAnEvent(res.resortRefNum, months);
+        resortID = res.resortID;
+        suiteType = res.unitType;  
+
+        eventCreated = await createAnEvent(res.resortRefNum, months);
     
-    //     if (eventCreated !== null){
-    //     //first parameter is a callback function
-    //     addToQueue(resourceIntensiveTask, () => {
-    //         console.log('Moving on to another resort');
-    //     }, token, resortID, suiteType, months, res, eventCreated);
-    //     } else {
-    //     console.log("Creating a resort or execution record failed.")
-    //     }
+        if (eventCreated !== null){
+        //first parameter is a callback function
+        addToQueue(resourceIntensiveTask, () => {
+            console.log('Moving on to another resort');
+        }, token, resortID, suiteType, months, res, eventCreated);
+        } else {
+        console.log("Creating a resort or execution record failed.")
+        }
 
-    // }
+    }
 
-    console.log("All scheduled updates finished..")
+    console.log("All tasks added to the queue..")
 }
 
 async function createAnEvent(resortRefNum, months){
     try {
         const event = {
             resortRefNum: resortRefNum,
-            execType: "ALL_RESORTS",
+            execType: "SCHEDULED",
             execStatus: "SCRAPING",
             monthstoScrape: parseInt(months)
         }
