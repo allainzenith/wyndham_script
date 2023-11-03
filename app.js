@@ -33,7 +33,7 @@ app.use(async (req, res, next) => {
 
   if (updateOnce) {
     updateOnce = false;
-    // await testScheduledUpdates(thisToken);
+    await testScheduledUpdates(thisToken);
   }
   next();
 });
