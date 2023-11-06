@@ -20,7 +20,11 @@ const sequelize = new Sequelize(database, dbUsername, dbPassword, {
     dialect: 'mysql',
     dialectModule: mysql2,
     define : { freezeTableName: true },
-    logging: false
+    logging: false,
+    pool: {
+        max: 10, 
+        min: 1
+      },
 });
 
 // database, username, password
