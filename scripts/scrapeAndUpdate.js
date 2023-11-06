@@ -68,6 +68,7 @@ async function findOrCreateAResort(resortID, suiteType){
 
 }
 
+
 async function createAnEvent(resortRefNum, months){
     try {
         const event = {
@@ -147,6 +148,8 @@ async function updateEventStatus(recordObject, status){
 
         await updateRecord(updateEventJson, recordObject);
 
+        return true;
+
     } catch (error) {
         console.log("An error occured while updating the status.", error);
         return false;      
@@ -159,4 +162,5 @@ module.exports = {
     executeScript,
     findOrCreateAResort,
     createAnEvent,
+    updateEventStatus
 }

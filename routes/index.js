@@ -1,9 +1,9 @@
 var express = require('express');
 var router = express.Router();
 const { format } = require('date-fns-tz');
-var { joinTwoTables, countRecords, countRecords, findLikeRecords } = require('../sequelizer/controller/controller');
+var { joinTwoTables, countRecords, countRecords, findLikeRecords, findByPk } = require('../sequelizer/controller/controller');
 var { addToQueue, resourceIntensiveTask } = require('../scripts/queueProcessor');
-const { findOrCreateAResort, createAnEvent } = require('../scripts/scrapeAndUpdate');
+const { findOrCreateAResort, createAnEvent, updateEventStatus } = require('../scripts/scrapeAndUpdate');
 var { login, sendOTP } = require('../services/scraper')
 const { sequelize } = require("../config/config");
 
@@ -90,6 +90,35 @@ router.post('/one', async(req, res, next) => {
 });
 
 ///////////////////////////////////////////////////////////////////////////////
+// For retrying  
+///////////////////////////////////////////////////////////////////////////////
+
+router.get('/retry', async(req, res, next) => {
+
+  var resortID = (req.query.resort_id).trim();
+  var suiteType = (req.query.suite_type).trim();
+  var months = (req.query.months).trim();
+  var token = await req.token;   
+
+  res.redirect('/oneListing'); 
+
+  let resort = await findOrCreateAResort(resortID, suiteType); 
+  let eventCreated = await findByPk((req.query.execID).trim(), "execution");
+  let retryScraping = await updateEventStatus(eventCreated, "SCRAPING");
+  
+  if (retryScraping){
+    //first parameter is a callback function
+    addToQueue(resourceIntensiveTask, () => {
+      console.log('Task completed');
+    }, token, resortID, suiteType, months, resort, eventCreated);
+  } else {
+    console.log("Creating a resort or execution record failed.")
+  }
+
+});
+
+
+///////////////////////////////////////////////////////////////////////////////
 // SSE ENDPOINTS                
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -120,7 +149,8 @@ router.get('/sse/oneListing', (req, res) => {
         resortName: item.resort.resortName === null? "To be updated": item.resort.resortName, 
         unitType: item.resort.unitType === null? "To be updated": item.resort.unitType, 
         resortID: item.resort.resortID === null? "To be updated": item.resort.resortID, 
-      },  
+      }, 
+      execID: item.execID === null? "To be updated": item.execID,  
       createdAt: format(item.createdAt, 'MM-dd-yyyy HH:mm:ss', { timeZone: 'America/New_York' }),
       updatedAt: format(item.updatedAt, 'MM-dd-yyyy HH:mm:ss', { timeZone: 'America/New_York' }),
     }));
