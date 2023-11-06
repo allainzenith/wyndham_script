@@ -26,7 +26,18 @@ body{
   max-width: 350px; 
 }
 
-.listingName {
-  color: #337AB7;
+.linkButton {
   text-decoration: underline;
+  background-color: transparent;
+  border: none; 
+  outline: none; 
+  cursor: pointer;
+}
+
+.navigate {
+  color: #337AB7;
+}
+
+.copy {
+  color: #000;
 }
