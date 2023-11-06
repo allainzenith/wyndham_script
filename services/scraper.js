@@ -257,6 +257,8 @@ async function checkAvailability(months) {
           // Use page.$() to find the element by CSS selector
           var dateElement = await page.$(dayClass);
 
+          await dateElement.scrollIntoView();
+
           if (dateElement) {
             var ariaDisabledValue = await dateElement.evaluate((element) => {
               // Use the element.getAttribute() method to get the value of aria-disabled
