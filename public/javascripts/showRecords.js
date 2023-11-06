@@ -51,6 +51,13 @@ function showRecords(eventSource, tableType){
                 <td>${item.monthstoScrape}</td>
                 <td>${item.createdAt}</td>
                 <td>${item.updatedAt}</td>
+                <td>
+                    <button onclick="retry(this.id)" 
+                        id="${item.execStatus},${item.resort.resortID},${item.resort.unitType},${item.monthstoScrape},${item.execID}" 
+                        class="linkButton navigate">
+                            Retry
+                    </button>
+                </td>
             `;
         }
         tableBody.appendChild(row);
@@ -90,6 +97,20 @@ function openLinks(listingID){
         window.open(`/duplicateListingLinks?links=${JSON.stringify(listingIDarray)}`, '_blank');
     }
 
+}
+
+function retry(fields){
+    let resortFields = fields.split(",");
+    let resortID = resortFields[1];
+    let unitType = resortFields[2];
+    let months = resortFields[3];
+    let execID = resortFields[4];
+
+    if (resortFields[0] === "DONE"){
+        alert("This task is already done executing.");
+    } else {
+        window.location.href =`/retry?resort_id=${resortID}&suite_type=${unitType}&months=${months}&execID=${execID}`;
+    }
 }
 
 function updateEventSource(eventSource, limit, newOffset, tableType, endpoint, searchInput) {

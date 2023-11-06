@@ -26,7 +26,7 @@ async function testScheduledUpdates(token) {
             console.log('Moving on to another resort');
         }, token, resortID, suiteType, months, res, eventCreated);
         } else {
-        console.log("Creating a resort or execution record failed.")
+            console.log("Creating a resort or execution record failed.")
         }
 
     }
