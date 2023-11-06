@@ -21,7 +21,7 @@ function showRecords(eventSource, tableType){
         if (tableType === "resorts") {
             row.innerHTML = `
                 <td>
-                    <button onclick="copyText(this.id)" class="linkButton copy" id="copyResortID" title="Click to copy">
+                <button onclick="copyText(this.id)" class="linkButton copy" id="${item.resort.resortID}" value="${item.resort.resortID}" title="Click to copy">
                         ${item.resortID}
                     </button>
                 </td>
@@ -37,7 +37,7 @@ function showRecords(eventSource, tableType){
         else { 
             row.innerHTML = `
                 <td>
-                    <button onclick="copyText(this.id)" class="linkButton copy" id="copyResortID" title="Click to copy">
+                    <button onclick="copyText(this.id)" class="linkButton copy" id="${item.resort.resortID}" value="${item.resort.resortID}" title="Click to copy">
                         ${item.resort.resortID}
                     </button>
                 </td>
@@ -60,7 +60,7 @@ function showRecords(eventSource, tableType){
 
 function copyText(itemID) {
     const copyLink = document.getElementById(itemID);
-    const textToCopy = copyLink.innerText;
+    const textToCopy = copyLink.value;
 
     // Create a temporary textarea element to hold the text
     const textArea = document.createElement("textarea");
