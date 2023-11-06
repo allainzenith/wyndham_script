@@ -21,77 +21,107 @@ async function saveRecord(recordJson, objectType) {
 }
 
 async function countRecords(objectType, condJson) {
-  const typeofObject = objectType == "execution" ? execution : resorts;
-  const amount = await typeofObject.count({
-    where: condJson,
-  });
+  try {
+    const typeofObject = objectType == "execution" ? execution : resorts;
+    const amount = await typeofObject.count({
+      where: condJson,
+    });
 
-  return amount;
+    return amount;
+  } catch (error) {
+    console.error("Error counting all records: " + error);
+    return false;
+  }
 }
 
 async function findAllRecords(objectType, order) {
-  const typeofObject = objectType == "execution" ? execution : resorts;
-  return await typeofObject.findAll({
-    order: order,
-  });
+  try {
+    const typeofObject = objectType == "execution" ? execution : resorts;
+    return await typeofObject.findAll({
+      order: order,
+    });
+  } catch (error) {
+    console.error("Error fetching all records: " + error);
+    return false;
+  }
 }
 
 async function findLikeRecords(search, objectType, order, limit, offset) {
-  const typeofObject = objectType == "execution" ? execution : resorts;
-  var records = await typeofObject.findAll({
-    where: {
-      [Op.or]: [
-        { resortID: { [Op.substring]: search } },
-        { resortName: { [Op.substring]: search } },
-        { listingName: { [Op.substring]: search } },
-        { unitType: { [Op.substring]: search } },
-      ],
-    },
-    order: order,
-    limit: limit,
-    offset: offset,
-  });
+  try {
+    const typeofObject = objectType == "execution" ? execution : resorts;
+    var records = await typeofObject.findAll({
+      where: {
+        [Op.or]: [
+          { resortID: { [Op.substring]: search } },
+          { resortName: { [Op.substring]: search } },
+          { listingName: { [Op.substring]: search } },
+          { unitType: { [Op.substring]: search } },
+        ],
+      },
+      order: order,
+      limit: limit,
+      offset: offset,
+    });
 
-  return records;
+    return records;
+  } catch (error) {
+    console.error("Error searching: " + error);
+    return false;
+  }
 }
 
 async function findRecords(condJson, objectType, order, limit, offset) {
-  const typeofObject = objectType == "execution" ? execution : resorts;
-  var records = await typeofObject.findAll({
-    where: condJson,
-    order: order,
-    limit: limit,
-    offset: offset,
-  });
+  try {
+    const typeofObject = objectType == "execution" ? execution : resorts;
+    var records = await typeofObject.findAll({
+      where: condJson,
+      order: order,
+      limit: limit,
+      offset: offset,
+    });
 
-  return records;
+    return records;
+  } catch (error) {
+    console.error("Error finding records: " + error);
+    return false;
+  }
 }
 
 async function findByPk(primaryKey, objectType) {
-  const typeofObject = objectType == "execution" ? execution : resorts;
-  const record = await typeofObject.findByPk(primaryKey);
-  return record;
+  try {
+    const typeofObject = objectType == "execution" ? execution : resorts;
+    const record = await typeofObject.findByPk(primaryKey);
+    return record;
+  } catch (error) {
+    console.error("Error finding record by primary key: " + error);
+    return false;
+  }
 }
 
 // For events and execution joined
 async function joinTwoTables(fModel, sModel, condJson, order, limit, offset) {
-  const firstModel = fModel == "execution" ? execution : resorts;
-  const secondModel = sModel == "execution" ? execution : resorts;
+  try {
+    const firstModel = fModel == "execution" ? execution : resorts;
+    const secondModel = sModel == "execution" ? execution : resorts;
 
-  var records = await firstModel.findAll({
-    where: condJson,
-    include: [
-      {
-        model: secondModel,
-        required: true,
-      },
-    ],
-    order: order,
-    limit: limit,
-    offset: offset,
-  });
+    var records = await firstModel.findAll({
+      where: condJson,
+      include: [
+        {
+          model: secondModel,
+          required: true,
+        },
+      ],
+      order: order,
+      limit: limit,
+      offset: offset,
+    });
 
-  return records;
+    return records;
+  } catch (error) {
+    console.error("Error joining records: " + error);
+    return false;
+  }
 }
 async function updateRecord(recordJson, recordObject) {
   // update() function updates fields only specified and makes other fields as-is
