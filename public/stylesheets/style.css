@@ -41,3 +41,7 @@ body{
 .copy {
   color: #000;
 }
+
+.clicked {
+  color: #551A8B; 
+}
