@@ -70,18 +70,21 @@ async function executeUpdates(resortFoundorCreated, token, address, updatedAvail
             for (const listing of listingJsonArray) {
                 
                 let listingObj = await retrieveAListing(listing._id, token)
+                let bookingWindowFound = Object.keys(listingObj.calendarRules.bookingWindow).length === 0;
 
-                if((listingObj.calendarRules.bookingWindow.defaultSettings.days) !== 0) {
-                    console.log("This listing calendar needs to be updated.")
-                    let updatedAvailabilitySettings = await updateAvailabilitySettings(listing._id, token);
+                if(bookingWindowFound) {
+                    if((listingObj.calendarRules.bookingWindow.defaultSettings.days) !== 0) {
+                        console.log("This listing calendar needs to be updated.")
+                        let updatedAvailabilitySettings = await updateAvailabilitySettings(listing._id, token);
 
-                    if (updatedAvailabilitySettings) {
-                        console.log("Calendar availability settings updated successfully.");
-                        console.log(await updateAvailability(listing, updatedAvail, token));
-                        console.log("listing._id: " + listing._id);
-                        listingIDs.push(listing._id);
-                    } else {
-                        console.log("Calendar availability settings update failed.");
+                        if (updatedAvailabilitySettings) {
+                            console.log("Calendar availability settings updated successfully.");
+                            console.log(await updateAvailability(listing, updatedAvail, token));
+                            console.log("listing._id: " + listing._id);
+                            listingIDs.push(listing._id);
+                        } else {
+                            console.log("Calendar availability settings update failed.");
+                        }
                     }
                 }
 
