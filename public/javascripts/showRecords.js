@@ -99,17 +99,23 @@ function openLinks(listingID){
 
 }
 
-function retry(fields){
+async function retry(fields){
     let resortFields = fields.split(",");
     let resortID = resortFields[1];
-    let unitType = resortFields[2];
+    let suiteType = resortFields[2];
     let months = resortFields[3];
     let execID = resortFields[4];
 
+    // Create an XMLHttpRequest object
+    var xhr = new XMLHttpRequest();
+
     if (resortFields[0] === "DONE"){
         alert("This task is already done executing.");
-    } else {
-        window.location.href =`/retry?resort_id=${resortID}&suite_type=${unitType}&months=${months}&execID=${execID}`;
+    } else { 
+        let endpoint = `/retry?resort_id=${resortID}&suite_type=${suiteType}&months=${months}&execID=${execID}`;
+        xhr.open('GET', endpoint, true);
+        xhr.send();     
+        // window.location.href =`/retry?resort_id=${resortID}&suite_type=${suiteType}&months=${months}&execID=${execID}`;
     }
 }
 
