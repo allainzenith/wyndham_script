@@ -27,15 +27,6 @@ const sequelize = new Sequelize(database, dbUsername, dbPassword, {
       },
 });
 
-// database, username, password
-// const sequelize = new Sequelize("bhrqmtj8akypattytak1", "u6sxdyl3j2awklux", "NWQ1CyBKlOdY0vX426MP", {
-//     host: 'bhrqmtj8akypattytak1-mysql.services.clever-cloud.com',
-//     dialect: 'mysql',
-//     dialectModule: mysql2,
-//     define : { freezeTableName: true },
-//     logging: false
-// });
-
 
 // Guesty Application (name: 'scraper-allain-dev')
 clientID = "0oablo4fh5K5m4GyN5d7"
