@@ -116,6 +116,7 @@ router.get('/sse/oneListing', (req, res) => {
       ...item.toJSON(), 
       resort: {
         listingName: item.resort.listingName === null? "To be updated": item.resort.listingName, 
+        listingID: item.resort.listingID === null? "To be updated": item.resort.listingID, 
         resortName: item.resort.resortName === null? "To be updated": item.resort.resortName, 
         unitType: item.resort.unitType === null? "To be updated": item.resort.unitType, 
         resortID: item.resort.resortID === null? "To be updated": item.resort.resortID, 

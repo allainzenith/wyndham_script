@@ -20,16 +20,32 @@ function showRecords(eventSource, tableType){
         const row = document.createElement("tr");
         if (tableType === "resorts") {
             row.innerHTML = `
-                <td>${item.resortID}</td>
-                <td onclick="openLinks(this.id)" id="${item.listingID}" class="listingName">${item.listingName}</td>
+                <td>
+                    <button onclick="copyText(this.id)" class="linkButton copy" id="copyResortID" title="Click to copy">
+                        ${item.resortID}
+                    </button>
+                </td>
+                <td>
+                    <button onclick="openLinks(this.id)" id="${item.listingID}" class="linkButton navigate">
+                        ${item.listingName}
+                    </button>
+                </td>
                 <td>${item.resortName}</td>
                 <td>${item.unitType}</td>
             `;
         }
         else { 
             row.innerHTML = `
-                <td>${item.resort.resortID}</td>
-                <td>${item.resort.listingName}</td>
+                <td>
+                    <button onclick="copyText(this.id)" class="linkButton copy" id="copyResortID" title="Click to copy">
+                        ${item.resort.resortID}
+                    </button>
+                </td>
+                <td>
+                    <button onclick="openLinks(this.id)" id="${item.resort.listingID}" class="linkButton navigate">
+                        ${item.resort.listingName}
+                    </button>
+                </td>
                 <td>${item.resort.unitType}</td>
                 <td>${item.execStatus}</td>
                 <td>${item.monthstoScrape}</td>
@@ -40,6 +56,24 @@ function showRecords(eventSource, tableType){
         tableBody.appendChild(row);
     });
     };
+}
+
+function copyText(itemID) {
+    const copyLink = document.getElementById(itemID);
+    const textToCopy = copyLink.innerText;
+
+    // Create a temporary textarea element to hold the text
+    const textArea = document.createElement("textarea");
+    textArea.value = textToCopy;
+    document.body.appendChild(textArea);
+
+    // Select and copy the text from the textarea
+    textArea.select();
+    document.execCommand("copy");
+    
+    // Remove the temporary textarea
+    document.body.removeChild(textArea);
+
 }
 
 function openLinks(listingID){
@@ -151,3 +185,4 @@ function updatePagination(eventSource, limit, offset, tableType, currentPage, re
 function test(){
     console.log('hello');
 }
+  
