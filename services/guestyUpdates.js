@@ -68,27 +68,31 @@ async function executeUpdates(resortFoundorCreated, token, address, updatedAvail
             }
 
             for (const listing of listingJsonArray) {
-                
-                let listingObj = await retrieveAListing(listing._id, token)
-                // let bookingWindowFound = Object.keys((listingObj.calendarRules.bookingWindow).toJSON()).length === 0;
+                try {
+                    let listingObj = await retrieveAListing(listing._id, token)
+                    // let bookingWindowFound = Object.keys((listingObj.calendarRules.bookingWindow).toJSON()).length === 0;
 
-                let hasDays = listingObj.calendarRules.bookingWindow.hasOwnProperty('defaultSettings') === false ||
-                                (listingObj.calendarRules.bookingWindow.defaultSettings &&
-                                    listingObj.calendarRules.bookingWindow.defaultSettings.days !== 0)
+                    let hasDays = listingObj.calendarRules.bookingWindow.hasOwnProperty('defaultSettings') === false ||
+                                    (listingObj.calendarRules.bookingWindow.defaultSettings &&
+                                        listingObj.calendarRules.bookingWindow.defaultSettings.days !== 0)
 
-                if (hasDays) {
-                    console.log("This listing calendar needs to be updated.")
-                    let updatedAvailabilitySettings = await updateAvailabilitySettings(listing._id, token);
-
-                    if (updatedAvailabilitySettings) {
-                        console.log("Calendar availability settings updated successfully.");
-                        console.log(await updateAvailability(listing, updatedAvail, token));
-                        console.log("listing._id: " + listing._id);
-                        listingIDs.push(listing._id);
-                    } else {
-                        console.log("Calendar availability settings update failed.");
+                    if (hasDays) {
+                        console.log("This listing calendar needs to be updated.")
+                        let updatedAvailabilitySettings = await updateAvailabilitySettings(listing._id, token);
+                        
+                        if (updatedAvailabilitySettings) {
+                            console.log("Calendar availability settings updated successfully.");
+                            console.log(await updateAvailability(listing, updatedAvail, token));
+                        } else {
+                            console.log("Calendar availability settings update failed.");
+                        }
                     }
+                } catch (error) {
+                    console.error("Error: " + error);
                 }
+
+                console.log("listing._id: " + listing._id);
+                listingIDs.push(listing._id);
 
             }
 
@@ -143,15 +147,23 @@ async function findListing(address, token, suiteType){
                 if ( (wynLat === guestLat || difLat <= .10) && (wynLong === guestLong || difLong <= .10) ){
                     console.log("the two coordinate sets match");
 
-                    if((listing.calendarRules.bookingWindow.defaultSettings.days) !== 0) {
-                        console.log("This listing calendar needs to be updated.")
-                        let updatedAvailabilitySettings = updateAvailabilitySettings(listing._id, token);
+                    try {
+                        let hasDays = listingObj.calendarRules.bookingWindow.hasOwnProperty('defaultSettings') === false ||
+                                    (listingObj.calendarRules.bookingWindow.defaultSettings &&
+                                        listingObj.calendarRules.bookingWindow.defaultSettings.days !== 0)
 
-                        if (updatedAvailabilitySettings) {
-                            console.log("Calendar availability settings updated successfully.");
-                        } else {
-                            console.log("Calendar availability settings update failed.");
+                        if(hasDays) {
+                            console.log("This listing calendar needs to be updated.")
+                            let updatedAvailabilitySettings = updateAvailabilitySettings(listing._id, token);
+
+                            if (updatedAvailabilitySettings) {
+                                console.log("Calendar availability settings updated successfully.");
+                            } else {
+                                console.log("Calendar availability settings update failed.");
+                            }
                         }
+                    } catch (error) {
+                        console.error("Error: "+ error);
                     }
             
                     finalListings.push(listing)
@@ -246,16 +258,18 @@ async function updateAvailabilitySettings(listingID, token){
         "Accept": "application/json"
     };
 
-    const rawBody = JSON.stringify({
-    calendarRules: {
-        defaultAvailability: "AVAILABLE",
-        bookingWindow: {
-            defaultSettings: {
-                days: 0
-            }
+    const rawBody = JSON.stringify(
+        {
+            calendarRules: {
+                bookingWindow: {
+                    defaultSettings: {
+                        days: 0
+                    }
+                }
+            },
+            defaultAvailability: "AVAILABLE",
         }
-    }
-    })  
+    )  
 
     try {
         await axios.put(url, rawBody, { headers });

@@ -21,7 +21,7 @@ function showRecords(eventSource, tableType){
         if (tableType === "resorts") {
             row.innerHTML = `
                 <td>
-                <button onclick="copyText(this.id)" class="linkButton copy" id="${item.resort.resortID}" value="${item.resort.resortID}" title="Click to copy">
+                <button onclick="copyText(this.id)" class="linkButton copy" id="${item.resortID}" value="${item.resortID}" title="Click to copy">
                         ${item.resortID}
                     </button>
                 </td>
@@ -52,10 +52,8 @@ function showRecords(eventSource, tableType){
                 <td>${item.createdAt}</td>
                 <td>${item.updatedAt}</td>
                 <td>
-                    <button onclick="retry(this.id)" 
-                        id="${item.execStatus},${item.resort.resortID},${item.resort.unitType},${item.monthstoScrape},${item.execID}" 
-                        class="linkButton navigate">
-                            Retry
+                    <button onclick="retry(this.id)" id="${item.execStatus},${item.resort.resortID},${item.resort.unitType},${item.monthstoScrape},${item.execID}" class="linkButton">
+                        Retry
                     </button>
                 </td>
             `;
@@ -99,7 +97,9 @@ function openLinks(listingID){
 
 }
 
-async function retry(fields){
+function retry(fields){
+
+
     let resortFields = fields.split(",");
     let resortID = resortFields[1];
     let suiteType = resortFields[2];
@@ -109,24 +109,19 @@ async function retry(fields){
     // Create an XMLHttpRequest object
     var xhr = new XMLHttpRequest();
 
+    document.getElementById(fields).style.color = '#551A8B';
+    setTimeout(() => {
+        document.getElementById(fields).style.color = '#000';
+      }, 5000); 
+
     if (resortFields[0] === "DONE"){
         alert("This task is already done executing.");
     } else { 
-        let button = document.getElementById(fields);
-
-        button.classList.remove('navigate');
-        button.classList.add('clicked');
-        
-
-        setTimeout(() => {
-            button.classList.remove('clicked');
-            button.classList.add('navigate');
-        }, 4000); 
 
         let endpoint = `/retry?resort_id=${resortID}&suite_type=${suiteType}&months=${months}&execID=${execID}`;
         xhr.open('GET', endpoint, true);
-        xhr.send();     
-        
+        xhr.send(); 
+
     }
 }
 
