@@ -112,10 +112,21 @@ async function retry(fields){
     if (resortFields[0] === "DONE"){
         alert("This task is already done executing.");
     } else { 
+        let button = document.getElementById(fields);
+
+        button.classList.remove('navigate');
+        button.classList.add('clicked');
+        
+
+        setTimeout(() => {
+            button.classList.remove('clicked');
+            button.classList.add('navigate');
+        }, 4000); 
+
         let endpoint = `/retry?resort_id=${resortID}&suite_type=${suiteType}&months=${months}&execID=${execID}`;
         xhr.open('GET', endpoint, true);
         xhr.send();     
-        // window.location.href =`/retry?resort_id=${resortID}&suite_type=${suiteType}&months=${months}&execID=${execID}`;
+        
     }
 }
 
