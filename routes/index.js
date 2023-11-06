@@ -142,7 +142,7 @@ router.get('/sse/scheduledUpdates', (req, res) => {
     }
 
     const order = [
-      [sequelize.col("createdAt"), 'DESC'],  
+      [sequelize.col("createdAt"), 'ASC'],  
       [sequelize.col("resortID"), 'ASC'],  
       [sequelize.col("resort.unitType"), 'ASC'],  
     ];

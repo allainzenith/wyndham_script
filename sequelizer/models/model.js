@@ -31,7 +31,8 @@ const resorts = sequelize.define('resorts', {
   notes: {
     type: DataTypes.TEXT,
     allowNull: true
-  }
+  },
+  pool: { min: 1, max: 10 }
 });
   
 const execution = sequelize.define('execution', {
@@ -70,19 +71,14 @@ const execution = sequelize.define('execution', {
 
 }, {
   // Other model options go here
-  timestamps: true
+  timestamps: true,
+  pool: { min: 1, max: 10 }
 });
 
 
 // Define the association between User and Post
 resorts.hasMany(execution, { foreignKey: 'resortRefNum' });
 execution.belongsTo(resorts, { foreignKey: 'resortRefNum' });
-
-//(async () => {
-//    await sequelize.sync();
-//    // Code here
-//  })();
-
 
 module.exports = {
     resorts,

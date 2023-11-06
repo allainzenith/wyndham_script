@@ -145,29 +145,30 @@ async function loginVerified() {
 async function selectElements(resortID, suiteType) {
   const page = sharedData.page;
   await page.bringToFront();
-  try {
-    var calendarUrl = `https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`;
 
-    await page.goto(calendarUrl, {
-      waitUntil: ["domcontentloaded", "networkidle0"],
-    });
+  let setupSelect = true;
+  while (setupSelect) {
+    try {
+      var calendarUrl = `https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`;
 
-    const resortSelector = "#ResortSelect";
-    let resortNameFound;
+      await page.goto(calendarUrl, {
+        waitUntil: ["domcontentloaded", "networkidle0"],
+      });
 
-    await page.waitForSelector(resortSelector).then(
-      async () =>
-        (resortNameFound = await page.waitForFunction(
-          (selector) => {
-            const element = document.querySelector(selector);
-            return !!element;
-          },
-          { timeout: 60000 },
-          resortSelector
-        ))
-    );
+      const resortSelector = "#ResortSelect";
 
-    if (resortNameFound) {
+      await page.waitForSelector(resortSelector).then(
+        async () =>
+          (await page.waitForFunction(
+            (selector) => {
+              const element = document.querySelector(selector);
+              return !!element;
+            },
+            { timeout: 60000 },
+            resortSelector
+          ))
+      );
+
       let selectedOptionText = await page.evaluate((selector) => {
         const select = document.querySelector(selector);
         const selectedOption = select.options[select.selectedIndex];
@@ -178,7 +179,7 @@ async function selectElements(resortID, suiteType) {
 
       const suiteSelector = "#suiteType";
 
-      const selectFilled = await page.waitForFunction(
+      await page.waitForFunction(
         (selector) => {
           const select = document.querySelector(selector);
           return select && select.length > 0;
@@ -187,41 +188,44 @@ async function selectElements(resortID, suiteType) {
         suiteSelector
       );
 
-      if (selectFilled) {
-        const optionExists = await page.evaluate(
-          (suiteSelector, suiteType) => {
-            const select = document.querySelector(`${suiteSelector}`);
-            if (select) {
-              const options = Array.from(select.options);
-              console.log("options: " + options);
-              return options.some((option) => option.value === suiteType);
-            }
-            return false;
-          },
-          suiteSelector,
-          suiteType
+
+      const optionExists = await page.evaluate(
+        (suiteSelector, suiteType) => {
+          const select = document.querySelector(`${suiteSelector}`);
+          if (select) {
+            const options = Array.from(select.options);
+            console.log("options: " + options);
+            return options.some((option) => option.value === suiteType);
+          }
+          return false;
+        },
+        suiteSelector,
+        suiteType
+      );
+
+      if (optionExists) {
+        await page.select(suiteSelector, suiteType);
+
+        const purchaseSelector = "#purchaseType";
+        await page.select(purchaseSelector, "Developer");
+
+        setupSelect = false;
+        return selectedOptionText;
+      } else {
+        console.log(
+          `The option with value "${suiteType}" does not exist in the select element.`
         );
-
-        if (optionExists) {
-          await page.select(suiteSelector, suiteType);
-
-          const purchaseSelector = "#purchaseType";
-          await page.select(purchaseSelector, "Developer");
-
-          return selectedOptionText;
-        } else {
-          console.log(
-            `The option with value "${suiteType}" does not exist in the select element.`
-          );
-          return null;
-        }
+        console.log(
+          `Reloading calendar page now..`
+        );
+        await page.reload();
       }
-    } else {
-      console.log("resort name not found.");
+
+    } catch (error) {
+      console.error("Error:", error.message);
+      await page.reload();
+      return null;
     }
-  } catch (error) {
-    console.error("Error:", error.message);
-    return null;
   }
 }
 
