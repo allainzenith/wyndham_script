@@ -99,8 +99,8 @@ router.get('/retry', async(req, res, next) => {
   var suiteType = (req.query.suite_type).trim();
   var months = (req.query.months).trim();
   var token = await req.token;   
-
-  res.redirect('/oneListing'); 
+  
+  res.send("Retrying now..");
 
   let resort = await findOrCreateAResort(resortID, suiteType); 
   let eventCreated = await findByPk((req.query.execID).trim(), "execution");
