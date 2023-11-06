@@ -70,26 +70,27 @@ async function executeUpdates(resortFoundorCreated, token, address, updatedAvail
             for (const listing of listingJsonArray) {
                 
                 let listingObj = await retrieveAListing(listing._id, token)
-                let bookingWindowFound = Object.keys(listingObj.calendarRules.bookingWindow).length === 0;
+                // let bookingWindowFound = Object.keys((listingObj.calendarRules.bookingWindow).toJSON()).length === 0;
 
-                if(bookingWindowFound) {
-                    if((listingObj.calendarRules.bookingWindow.defaultSettings.days) !== 0) {
-                        console.log("This listing calendar needs to be updated.")
-                        let updatedAvailabilitySettings = await updateAvailabilitySettings(listing._id, token);
+                let hasDays = listingObj.calendarRules.bookingWindow.hasOwnProperty('defaultSettings') === false ||
+                                (listingObj.calendarRules.bookingWindow.defaultSettings &&
+                                    listingObj.calendarRules.bookingWindow.defaultSettings.days !== 0)
 
-                        if (updatedAvailabilitySettings) {
-                            console.log("Calendar availability settings updated successfully.");
-                            console.log(await updateAvailability(listing, updatedAvail, token));
-                            console.log("listing._id: " + listing._id);
-                            listingIDs.push(listing._id);
-                        } else {
-                            console.log("Calendar availability settings update failed.");
-                        }
+                if (hasDays) {
+                    console.log("This listing calendar needs to be updated.")
+                    let updatedAvailabilitySettings = await updateAvailabilitySettings(listing._id, token);
+
+                    if (updatedAvailabilitySettings) {
+                        console.log("Calendar availability settings updated successfully.");
+                        console.log(await updateAvailability(listing, updatedAvail, token));
+                        console.log("listing._id: " + listing._id);
+                        listingIDs.push(listing._id);
+                    } else {
+                        console.log("Calendar availability settings update failed.");
                     }
                 }
 
             }
-
 
             return "okay";
             
@@ -214,7 +215,7 @@ async function retrieveListings(substringAddress, token){
 }
 
 async function retrieveAListing(listingID, token){
-    fields = "_id bedrooms title type address calendarRules.bookingWindow.defaultSettings";
+    fields = "_id bedrooms title type address calendarRules.bookingWindow";
     const url = `https://open-api.guesty.com/v1/listings/${listingID}?fields=${fields}`;
 
     const headers = {
