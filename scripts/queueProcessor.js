@@ -54,17 +54,25 @@ async function resourceIntensiveTask(
   console.log("suiteType: " + suiteType);
   console.log("months: " + months);
 
-  let executedScript = await executeScript(
-    token,
-    resortID,
-    suiteType,
-    months,
-    resort,
-    eventCreated
-  );
-  console.log("Executed Script Successfully: " + executedScript);
-  await new Promise((resolve) => setTimeout(resolve, 5000));
-  callback();
+  try {
+    let executedScript = await executeScript(
+      token,
+      resortID,
+      suiteType,
+      months,
+      resort,
+      eventCreated
+    );
+    console.log("Executed Script Successfully: " + executedScript);
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+    callback();
+  } catch (error) {
+    console.log(error);
+    if (taskQueue.length > 0) {
+      console.log("relaunching puppeteer now");
+      await launchPuppeteer();
+    }
+  }
 }
 
 module.exports = {
