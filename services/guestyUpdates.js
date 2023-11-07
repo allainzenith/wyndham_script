@@ -284,8 +284,8 @@ async function updateAvailabilitySettings(listingID, token){
     )  
 
     try {
-        const response = await axios.put(url, rawBody, { headers });
-        console.log('PUT request successful: ', response.data);
+        await axios.put(url, rawBody, { headers });
+        console.log('PUT request successful: ');
         return true;
     } catch (error) {
         console.error('PUT request failed:', error);

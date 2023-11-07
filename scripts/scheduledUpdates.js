@@ -1,5 +1,5 @@
 var { findAllRecords } = require('../sequelizer/controller/controller');
-var { addToQueue, resourceIntensiveTask } = require('../scripts/queueProcessor');
+var { addToScheduledQueue, resourceIntensiveTask } = require('../scripts/queueProcessor');
 var { saveRecord } = require('../sequelizer/controller/controller')
 const { sequelize } = require("../config/config");
 async function testScheduledUpdates(token) {
@@ -22,7 +22,7 @@ async function testScheduledUpdates(token) {
     
         if (eventCreated !== null){
         //first parameter is a callback function
-        addToQueue(resourceIntensiveTask, () => {
+        addToScheduledQueue(resourceIntensiveTask, () => {
             console.log('Moving on to another resort');
         }, token, resortID, suiteType, months, res, eventCreated);
         } else {
