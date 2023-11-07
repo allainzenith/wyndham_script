@@ -80,9 +80,9 @@ async function loginVerified() {
       `https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results`
     );
 
-    let addressSelectorFound = true;
+    let addressSelectorFound = 0;
 
-    while (addressSelectorFound) {
+    while (addressSelectorFound < 5) {
       try {
         await pageForAddress.waitForSelector(`.resort-card`, {
           timeout: 10000,
@@ -91,8 +91,9 @@ async function loginVerified() {
           timeout: 10000,
         });       
         console.log("resorts fully loaded.");
-        addressSelectorFound = false;
+        addressSelectorFound = 5;
       } catch (error) {
+        addressSelectorFound++;
         console.log("Timed out. Reloading the page.");
         await pageForAddress.reload();
       }
@@ -146,8 +147,8 @@ async function selectElements(resortID, suiteType) {
   const page = sharedData.page;
   await page.bringToFront();
 
-  let setupSelect = true;
-  while (setupSelect) {
+  let setupSelect = 0;
+  while (setupSelect < 5) {
     try {
       var calendarUrl = `https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`;
 
@@ -209,7 +210,7 @@ async function selectElements(resortID, suiteType) {
         const purchaseSelector = "#purchaseType";
         await page.select(purchaseSelector, "Developer");
 
-        setupSelect = false;
+        setupSelect = 5;
         return selectedOptionText;
       } else {
         console.log(
@@ -218,11 +219,13 @@ async function selectElements(resortID, suiteType) {
         console.log(
           `Reloading calendar page now..`
         );
+        setupSelect++;
         await page.reload();
       }
 
     } catch (error) {
       console.error("Error:", error.message);
+      setupSelect++;
       await page.reload();
       return null;
     }
@@ -257,9 +260,9 @@ async function checkAvailability(months) {
           // Use page.$() to find the element by CSS selector
           var dateElement = await page.$(dayClass);
 
-          await dateElement.scrollIntoView();
-
           if (dateElement) {
+            await dateElement.scrollIntoView();
+
             var ariaDisabledValue = await dateElement.evaluate((element) => {
               // Use the element.getAttribute() method to get the value of aria-disabled
               return element.getAttribute("aria-disabled");
@@ -372,9 +375,9 @@ async function getResortAddress(resortID, sElement) {
     const id = resortID.replace("|", "");
     const resortCardSelector = `#${id}.resort-card`;
 
-    let addressSelectorFound = true;
+    let addressSelectorFound = 0;
     let addressFound;
-    while (addressSelectorFound) {
+    while (addressSelectorFound < 5) {
       try {
         await pageForAddress.type(inputSelector, textToEnter);
         await pageForAddress.keyboard.press("Enter");
@@ -384,9 +387,10 @@ async function getResortAddress(resortID, sElement) {
           { timeout: 120000 }
         );
 
-        addressSelectorFound = false;
+        addressSelectorFound = 5;
       } catch (error) {
         console.log("Timed out. Reloading the page.");
+        addressSelectorFound++;
         await pageForAddress.reload();
       }
     }
