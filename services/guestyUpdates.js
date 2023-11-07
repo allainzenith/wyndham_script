@@ -82,15 +82,16 @@ async function executeUpdates(resortFoundorCreated, token, address, updatedAvail
                         
                         if (updatedAvailabilitySettings) {
                             console.log("Calendar availability settings updated successfully.");
-                            console.log(await updateAvailability(listing, updatedAvail, token));
                         } else {
                             console.log("Calendar availability settings update failed.");
                         }
-                    }
+                    } 
+
                 } catch (error) {
                     console.error("Error: " + error);
                 }
 
+                console.log(await updateAvailability(listing, updatedAvail, token));
                 console.log("listing._id: " + listing._id);
                 listingIDs.push(listing._id);
 
