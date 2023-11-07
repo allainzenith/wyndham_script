@@ -296,11 +296,11 @@ async function updateAvailabilitySettings(listingID, token){
 
 async function updateAvailability(listing, updatedAvail, token){
 
-    arrayOfAvailability = []
+    const arrayOfAvailability = []
 
     for (const item of updatedAvail) {
 
-        data = {
+        let data = {
             listingId: listing._id,
             startDate: item.start,
             endDate: item.end,
@@ -311,24 +311,33 @@ async function updateAvailability(listing, updatedAvail, token){
         arrayOfAvailability.push(data);
     }
 
+    const chunkSize = 10;
+    const subArrayOfAvailability = [];
+    let success = true;
 
-    const url = 'https://open-api.guesty.com/v1/availability-pricing/api/calendar/listings'; 
-
-    const headers = {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-    };
-
-    try {
-        const response = await axios.put(url, arrayOfAvailability, { headers });
-        console.log('PUT request successful: ', response.data);
-        return true;
-    } catch (error) {
-        console.error('PUT request failed:', error);
-        return false;
+    for (let i = 0; i < arrayOfAvailability.length; i += chunkSize) {
+        subArrayOfAvailability.push(arrayOfAvailability.slice(i, i + chunkSize));
     }
 
+    for (const sub of subArrayOfAvailability) {
+        const url = 'https://open-api.guesty.com/v1/availability-pricing/api/calendar/listings'; 
+
+        const headers = {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        };
+
+        try {
+            const response = await axios.put(url, sub, { headers });
+            console.log('PUT request successful: ', response.data);
+        } catch (error) {
+            console.error('PUT request failed:', error);
+            success = false;
+        }
+    }
+
+    return success;
 
 }
 
