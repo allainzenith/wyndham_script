@@ -96,6 +96,7 @@ async function loginVerified() {
         addressSelectorFound++;
         console.log("Timed out. Reloading the page.");
         await pageForAddress.reload();
+        await pageForAddress.waitForNetworkIdle({idleTime: 10000});
       }
     }
 
@@ -148,7 +149,6 @@ async function selectElements(resortID, suiteType) {
   await page.bringToFront();
 
   let setupSelect = 0;
-  while (setupSelect < 5) {
     try {
       var calendarUrl = `https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`;
 
@@ -156,80 +156,82 @@ async function selectElements(resortID, suiteType) {
         waitUntil: ["domcontentloaded", "networkidle0"],
       });
 
-      const resortSelector = "#ResortSelect";
+      await page.waitForNetworkIdle({idleTime: 10000});
 
-      await page.waitForSelector(resortSelector).then(
-        async () =>
-          (await page.waitForFunction(
-            (selector) => {
-              const element = document.querySelector(selector);
-              return !!element;
-            },
-            { timeout: 60000 },
-            resortSelector
-          ))
-      );
+      while (setupSelect < 5) {
 
-      let selectedOptionText = await page.evaluate((selector) => {
-        const select = document.querySelector(selector);
-        const selectedOption = select.options[select.selectedIndex];
-        return selectedOption.text;
-      }, resortSelector);
+        const resortSelector = "#ResortSelect";
 
-      console.log("this is the selected option: " + selectedOptionText);
+        await page.waitForSelector(resortSelector).then(
+          async () =>
+            (await page.waitForFunction(
+              (selector) => {
+                const element = document.querySelector(selector);
+                return !!element;
+              },
+              { timeout: 60000 },
+              resortSelector
+            ))
+        );
 
-      const suiteSelector = "#suiteType";
-
-      await page.waitForFunction(
-        (selector) => {
+        let selectedOptionText = await page.evaluate((selector) => {
           const select = document.querySelector(selector);
-          return select && select.length > 0;
-        },
-        { timeout: 60000 },
-        suiteSelector
-      );
+          const selectedOption = select.options[select.selectedIndex];
+          return selectedOption.text;
+        }, resortSelector);
 
+        console.log("this is the selected option: " + selectedOptionText);
 
-      const optionExists = await page.evaluate(
-        (suiteSelector, suiteType) => {
-          const select = document.querySelector(`${suiteSelector}`);
-          if (select) {
-            const options = Array.from(select.options);
-            console.log("options: " + options);
-            return options.some((option) => option.value === suiteType);
-          }
-          return false;
-        },
-        suiteSelector,
-        suiteType
-      );
+        const suiteSelector = "#suiteType";
 
-      if (optionExists) {
-        await page.select(suiteSelector, suiteType);
-
-        const purchaseSelector = "#purchaseType";
-        await page.select(purchaseSelector, "Developer");
-
-        setupSelect = 5;
-        return selectedOptionText;
-      } else {
-        console.log(
-          `The option with value "${suiteType}" does not exist in the select element.`
+        await page.waitForFunction(
+          (selector) => {
+            const select = document.querySelector(selector);
+            return select && select.length > 0;
+          },
+          { timeout: 60000 },
+          suiteSelector
         );
-        console.log(
-          `Reloading calendar page now..`
+
+
+        const optionExists = await page.evaluate(
+          (suiteSelector, suiteType) => {
+            const select = document.querySelector(`${suiteSelector}`);
+            if (select) {
+              const options = Array.from(select.options);
+              console.log("options: " + options);
+              return options.some((option) => option.value === suiteType);
+            }
+            return false;
+          },
+          suiteSelector,
+          suiteType
         );
-        setupSelect++;
-        await page.reload();
+
+        if (optionExists) {
+          await page.select(suiteSelector, suiteType);
+
+          const purchaseSelector = "#purchaseType";
+          await page.select(purchaseSelector, "Developer");
+
+          setupSelect = 5;
+          return selectedOptionText;
+        } else {
+          console.log(
+            `The option with value "${suiteType}" does not exist in the select element.`
+          );
+          console.log(
+            `Reloading calendar page now..`
+          );
+          setupSelect++;
+          await page.reload();
+          await page.waitForNetworkIdle({idleTime: 10000});
+        }
       }
-
     } catch (error) {
       console.error("Error:", error.message);
-      setupSelect++;
-      await page.reload();
       return null;
     }
-  }
 }
 
 async function checkAvailability(months) {
