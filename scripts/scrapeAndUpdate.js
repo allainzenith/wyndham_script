@@ -112,7 +112,7 @@ async function updateGuestyandRecord(resortFoundorCreated, eventCreated, scraped
     //call function to update resort and status 
     if (result !== null) {
         try {
-            if (result !== "okay"){
+            if (result !== "update resort"){
                 const updateResJson = {
                     resortName: title,
                     listingID: result.listingID,

@@ -9,7 +9,8 @@ async function executeUpdates(resortFoundorCreated, token, address, updatedAvail
     
     if (token !== null){
         var listingIDs = [], listingNames = [];
-        let listingID, listingName; 
+        let listingID, listingName, updateSuccess; 
+        let updatedAllSuccessfully = true;
 
         var resortJSON = await resortFoundorCreated.toJSON()
         var resortJSONlistingID = await resortJSON.listingID;
@@ -32,15 +33,20 @@ async function executeUpdates(resortFoundorCreated, token, address, updatedAvail
 
                     // performs the update for a listing ID that is multi-unit or single, but not a sub unit
                     for (const listing of listings) {
-                        console.log(await updateAvailability(listing, updatedAvail, token));
-                        listingIDs.push(listing._id);
-                        listingNames.push(listing.title);
+                        updateSuccess = await updateAvailability(listing, updatedAvail, token);
+
+                        if (updateSuccess) {
+                            listingIDs.push(listing._id);
+                            listingNames.push(listing.title);
+                        } else {
+                            updatedAllSuccessfully = false;
+                        }
                     }
 
                     listingID = listingIDs.join(",");
                     listingName = listingNames.join(",");
 
-                    return {listingID, listingName};
+                    return updatedAllSuccessfully ? {listingID, listingName} : null;
 
 
                 } else {
@@ -91,13 +97,18 @@ async function executeUpdates(resortFoundorCreated, token, address, updatedAvail
                     console.error("Error: " + error);
                 }
 
-                console.log(await updateAvailability(listing, updatedAvail, token));
-                console.log("listing._id: " + listing._id);
-                listingIDs.push(listing._id);
+                updateSuccess = await updateAvailability(listing, updatedAvail, token);
+
+                if (updateSuccess) {
+                    console.log("listing._id: " + listing._id);
+                    listingIDs.push(listing._id);
+                } else {
+                    updatedAllSuccessfully = false;
+                }
 
             }
 
-            return "okay";
+            return updatedAllSuccessfully ? "update resort" : null;
             
         }
     } else {
@@ -273,8 +284,8 @@ async function updateAvailabilitySettings(listingID, token){
     )  
 
     try {
-        await axios.put(url, rawBody, { headers });
-        console.log('PUT request successful');
+        const response = await axios.put(url, rawBody, { headers });
+        console.log('PUT request successful: ', response.data);
         return true;
     } catch (error) {
         console.error('PUT request failed:', error);
@@ -309,17 +320,16 @@ async function updateAvailability(listing, updatedAvail, token){
         "Accept": "application/json"
     };
 
-
-    await axios.put(url, arrayOfAvailability, { headers })
-    .then(response => {
-        console.log('PUT request successful');
-        console.log('Response data:', response.data);
-    })
-    .catch(error => {
+    try {
+        const response = await axios.put(url, arrayOfAvailability, { headers });
+        console.log('PUT request successful: ', response.data);
+        return true;
+    } catch (error) {
         console.error('PUT request failed:', error);
-    });
+        return false;
+    }
 
-    return "moving on to next listingID...";
+
 }
 
 async function getLatLongAddress(address){
