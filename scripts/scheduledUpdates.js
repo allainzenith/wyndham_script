@@ -3,7 +3,7 @@ const { addToScheduledQueue, resourceIntensiveTask } = require('../scripts/queue
 const { saveRecord } = require('../sequelizer/controller/controller')
 const { sequelize } = require("../config/config");
 
-async function scheduledUpdates(tierType, token) {
+async function scheduledUpdates(tierType) {
 
     const order = [
         [sequelize.col("resortID"), 'DESC'], 
@@ -28,8 +28,8 @@ async function scheduledUpdates(tierType, token) {
         if (eventCreated !== null){
         //first parameter is a callback function
         addToScheduledQueue(resourceIntensiveTask, () => {
-            console.log('All tasks executed successfully');
-        }, token, resortID, suiteType, months, res, eventCreated);
+            console.log('All scheduled tasks executed successfully');
+        }, resortID, suiteType, months, res, eventCreated);
         } else {
             console.log("Creating a resort or execution record failed.")
         }

@@ -51,7 +51,7 @@ async function addToQueue(task, callback, ...args) {
       "puppeteer is already launched. execution of prior task is ongoing."
     );
   }
-  await taskQueue.push({ task, args, callback });
+  taskQueue.push({ task, args, callback });
   await processQueue();
 }
 
@@ -65,12 +65,11 @@ async function addToScheduledQueue(task, callback, ...args) {
       "puppeteer is already launched. execution of prior task is ongoing."
     );
   }
-  await scheduledtaskQueue.push({ task, args, callback });
+  scheduledtaskQueue.push({ task, args, callback });
   await processQueue();
 }
 
 async function resourceIntensiveTask(
-  token,
   resortID,
   suiteType,
   months,
@@ -85,7 +84,6 @@ async function resourceIntensiveTask(
 
   try {
     let executedScript = await executeScript(
-      token,
       resortID,
       suiteType,
       months,

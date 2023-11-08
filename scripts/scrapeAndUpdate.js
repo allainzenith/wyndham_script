@@ -5,7 +5,8 @@ var { executeUpdates } = require('../services/guestyUpdates')
 var { saveRecord, updateRecord, findRecords } = require('../sequelizer/controller/controller')
 const { sequelize } = require("../config/config");
 
-async function executeScript(token, resortID, suiteType, months, resortFoundorCreated, eventCreated){
+// async function executeScript(token, resortID, suiteType, months, resortFoundorCreated, eventCreated){
+async function executeScript(resortID, suiteType, months, resortFoundorCreated, eventCreated){
 
     console.log("current task executed: ");
     console.log("Resort ID: " + resortID);
@@ -22,7 +23,8 @@ async function executeScript(token, resortID, suiteType, months, resortFoundorCr
 
     let success;
     if ( scraped !== null) {
-        success = await updateGuestyandRecord(resortFoundorCreated, eventCreated, scraped, token, suiteType) 
+        success = await updateGuestyandRecord(resortFoundorCreated, eventCreated, scraped, suiteType) 
+        // success = await updateGuestyandRecord(resortFoundorCreated, eventCreated, scraped, token, suiteType) 
     }  else {
         success = false;
         await updateEventStatus(eventCreated, "SCRAPE_FAILED");
@@ -89,7 +91,8 @@ async function createAnEvent(resortRefNum, months){
 
 
 
-async function updateGuestyandRecord(resortFoundorCreated, eventCreated, scraped, token, suiteType){
+// async function updateGuestyandRecord(resortFoundorCreated, eventCreated, scraped, token, suiteType){
+async function updateGuestyandRecord(resortFoundorCreated, eventCreated, scraped, suiteType){
 
     await updateEventStatus(eventCreated, "UPDATING");
     
@@ -107,7 +110,8 @@ async function updateGuestyandRecord(resortFoundorCreated, eventCreated, scraped
     const updatedAvail = scraped.updatedAvail;
     const title = scraped.sElement;
 
-    let result = await executeUpdates(resortFoundorCreated, token, address, updatedAvail, options[suiteType]);
+    // let result = await executeUpdates(resortFoundorCreated, token, address, updatedAvail, options[suiteType]);
+    let result = await executeUpdates(resortFoundorCreated, address, updatedAvail, options[suiteType]);
 
     //call function to update resort and status 
     if (result !== null) {

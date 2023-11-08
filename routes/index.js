@@ -72,7 +72,7 @@ router.post('/one', async(req, res, next) => {
   var resortID = (req.body.resort_id).trim();
   var suiteType = (req.body.suite_type).trim();
   var months = (req.body.months).trim();
-  var token = await req.token;   
+  // var token = await req.token;   
 
   res.redirect('/oneListing'); 
   
@@ -84,7 +84,8 @@ router.post('/one', async(req, res, next) => {
     //first parameter is a callback function
     addToQueue(resourceIntensiveTask, () => {
       console.log('Task completed');
-    }, token, resortID, suiteType, months, resort, eventCreated);
+    }, resortID, suiteType, months, resort, eventCreated);
+    // }, token, resortID, suiteType, months, resort, eventCreated);
   } else {
     console.log("Creating a resort or execution record failed.")
   }
@@ -119,7 +120,7 @@ router.get('/retry', async(req, res, next) => {
   var resortID = (req.query.resort_id).trim();
   var suiteType = (req.query.suite_type).trim();
   var months = (req.query.months).trim();
-  var token = await req.token;   
+  // var token = await req.token;   
   
   res.send("Retrying now..");
 
@@ -130,8 +131,9 @@ router.get('/retry', async(req, res, next) => {
   if (retryScraping){
     //first parameter is a callback function
     addToQueue(resourceIntensiveTask, () => {
-      console.log('Task completed');
-    }, token, resortID, suiteType, months, resort, eventCreated);
+      console.log('All one-listing tasks executed successfully');
+    }, resortID, suiteType, months, resort, eventCreated);
+    // }, token, resortID, suiteType, months, resort, eventCreated);
   } else {
     console.log("Creating a resort or execution record failed.")
   }
