@@ -6,6 +6,7 @@ let updatedEventSource = null;
 let searchInput = null;
 let searchTimeout = null;
 let paginationTimeout = null;
+let refreshTimeout = null;
 
 function createEventSource(limit, offset, endpoint, searchInput) {
     return new EventSource(`${endpoint}?limit=${limit}&offset=${offset}&search=${searchInput}`);
@@ -33,6 +34,7 @@ function showRecords(eventSource, tableType){
                 </td>
                 <td>${item.resortName}</td>
                 <td>${item.unitType}</td>
+                <td>${item.notes}</td>
             `;
         }
         else { 
@@ -156,59 +158,71 @@ function updatePagination(eventSource, limit, offset, tableType, currentPage, re
             updatePagination(updatedEventSource, limit, offset, tableType, 1, records, endpoint, searchInput);
         }, 1000); 
     });
-    
 
+    const buttons = document.getElementsByName('tierButton');
+
+    for (const button of buttons) {
+        button.addEventListener('click', () => {
+            clearTimeout(refreshTimeout);
+
+            refreshTimeout = setTimeout(() => {
+                updatePagination(updatedEventSource, limit, offset, tableType, currentPage, records, endpoint, searchInput);
+            }, 1000); 
+        });
+    }
+
+    
     // Clear the existing content of paginationElement
     paginationElement.innerHTML = '';
 
     // Add the "Previous" button
     if (currentPage > 1) {
-    var prevButton = document.createElement('button');
-    prevButton.className = 'w3-button';
-    prevButton.innerHTML = '&laquo;';
-    prevButton.addEventListener('click', function () {
-        clearTimeout(paginationTimeout);
+        var prevButton = document.createElement('button');
+        prevButton.className = 'w3-button';
+        prevButton.innerHTML = '&laquo;';
+        prevButton.addEventListener('click', function () {
+            clearTimeout(paginationTimeout);
 
-        paginationTimeout = setTimeout(() => {
-            updatePagination(updatedEventSource, limit, offset, tableType, currentPage - 1, records, endpoint, searchInput);
-        }, 300); 
-    });
+            paginationTimeout = setTimeout(() => {
+                updatePagination(updatedEventSource, limit, offset, tableType, currentPage - 1, records, endpoint, searchInput);
+            }, 300); 
+        });
 
-    paginationElement.appendChild(prevButton);
+        paginationElement.appendChild(prevButton);
     }
 
     // Add the page links
     for (var i = startPage; i <= endPage; i++) {
-    var pageButton = document.createElement('button');
-    pageButton.className = 'w3-button';
-    pageButton.id = i;
-    pageButton.textContent = i;
-    pageButton.addEventListener('click', function () {
-        clearTimeout(paginationTimeout);
+        var pageButton = document.createElement('button');
+        pageButton.className = 'w3-button';
+        pageButton.id = i;
+        pageButton.textContent = i;
+        pageButton.addEventListener('click', function () {
+            clearTimeout(paginationTimeout);
 
-        paginationTimeout = setTimeout(() => {
-            var clickedId = this.id;
-            updatePagination(updatedEventSource, limit, offset, tableType, parseInt(clickedId, 10), records, endpoint, searchInput);
-        }, 300); 
-    });
+            paginationTimeout = setTimeout(() => {
+                var clickedId = this.id;
+                updatePagination(updatedEventSource, limit, offset, tableType, parseInt(clickedId, 10), records, endpoint, searchInput);
+            }, 300); 
+        });
 
-    paginationElement.appendChild(pageButton);
+        paginationElement.appendChild(pageButton);
     }
 
     // Add the "Next" button
     if (currentPage < totalPages) {
-    var nextButton = document.createElement('button');
-    nextButton.className = 'w3-button';
-    nextButton.innerHTML = '&raquo;';
-    nextButton.addEventListener('click', function () {
-        clearTimeout(paginationTimeout);
+        var nextButton = document.createElement('button');
+        nextButton.className = 'w3-button';
+        nextButton.innerHTML = '&raquo;';
+        nextButton.addEventListener('click', function () {
+            clearTimeout(paginationTimeout);
 
-        paginationTimeout = setTimeout(() => {
-            updatePagination(updatedEventSource, limit, offset, tableType, currentPage + 1, records, endpoint, searchInput);
-        }, 300); 
-    });
+            paginationTimeout = setTimeout(() => {
+                updatePagination(updatedEventSource, limit, offset, tableType, currentPage + 1, records, endpoint, searchInput);
+            }, 300); 
+        });
 
-    paginationElement.appendChild(nextButton);
+        paginationElement.appendChild(nextButton);
     }
 
     document.getElementById(currentPage).classList.add('w3-green');

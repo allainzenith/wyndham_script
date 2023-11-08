@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 const { format } = require('date-fns-tz');
-var { joinTwoTables, countRecords, countRecords, findLikeRecords, findByPk } = require('../sequelizer/controller/controller');
+var { joinTwoTables, countRecords, countRecords, findLikeRecords, findByPk, updateRecord } = require('../sequelizer/controller/controller');
 var { addToQueue, resourceIntensiveTask } = require('../scripts/queueProcessor');
 const { findOrCreateAResort, createAnEvent, updateEventStatus } = require('../scripts/scrapeAndUpdate');
 var { login, sendOTP } = require('../services/scraper')
@@ -90,7 +90,20 @@ router.post('/one', async(req, res, next) => {
 });
 
 router.post('/tier/update', async(req, res, next) => {
-  console.log(req.body.checkboxes);
+  let resortRefNums = req.body.checkboxes;
+  let tier = req.query.tier;
+
+
+  for ( const resortRef of resortRefNums ) {
+    let resort = await findByPk(resortRef, "resorts");
+
+    const updateResort = {
+      notes: tier
+    }
+
+    await updateRecord(updateResort, resort);
+  }
+
   console.log("Tiers updated!!");
 
 });
@@ -228,6 +241,7 @@ router.get('/sse/resorts', async(req, res) => {
     resortName: item.resortName === null? "To be updated": item.resortName,
     listingName: item.listingName === null? "To be updated": item.listingName,
     unitType: item.unitType === null? "To be updated": item.unitType,
+    notes: item.notes === null? "": item.notes,
 
   }));
 
