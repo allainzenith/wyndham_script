@@ -1,11 +1,12 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
 const { format } = require('date-fns-tz');
-var { joinTwoTables, countRecords, countRecords, findLikeRecords, findByPk, updateRecord } = require('../sequelizer/controller/controller');
-var { addToQueue, resourceIntensiveTask } = require('../scripts/queueProcessor');
+const { joinTwoTables, countRecords, findLikeRecords, findByPk, updateRecord } = require('../sequelizer/controller/controller');
+const { addToQueue, resourceIntensiveTask } = require('../scripts/queueProcessor');
 const { findOrCreateAResort, createAnEvent, updateEventStatus } = require('../scripts/scrapeAndUpdate');
-var { login, sendOTP } = require('../services/scraper')
+const { login, sendOTP } = require('../services/scraper')
 const { sequelize } = require("../config/config");
+const { Op } = require("sequelize");
 
 router.get('/', async(req, res, next) => {
   const amount = await countRecords("execution", {execType:"ONE_RESORT"});
@@ -32,8 +33,9 @@ router.get('/resorts', async(req, res, next) => {
 
 });
 
-router.get('/events', function(req, res, next) {
-  res.render('events');
+router.get('/events', async(req, res, next) => {
+  const amount = await countRecords("resorts", {});
+  res.render('events', {records:amount});
 
 });
 
@@ -246,6 +248,55 @@ router.get('/sse/resorts', async(req, res) => {
   }));
 
   res.write(`data: ${JSON.stringify(formattedRecords)}\n\n`);
+});
+
+router.get('/sse/events', (req, res) => {
+  let limit = parseInt(req.query.limit);
+  let offset = parseInt(req.query.offset);
+
+  let search = req.query.search;
+
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  setInterval(async () => {
+    const eventCond = {
+      [Op.or]: [
+        // { "resort.resortID": { [Op.substring]: search } },
+        // { "resort.resortName": { [Op.substring]: search } },
+        // { "resort.listingName": { [Op.substring]: search } },
+        // { "resort.unitType": { [Op.substring]: search } },
+        { "execStatus": { [Op.substring]: search } },
+        { "monthstoScrape": { [Op.substring]: search } },
+        { "createdAt": { [Op.substring]: search } },
+        { "updatedAt": { [Op.substring]: search } },
+      ],
+    }
+
+    const order = [
+      [sequelize.col("createdAt"), 'DESC'],  
+    ];
+
+    let data = await joinTwoTables("execution", "resorts", eventCond, order, limit, offset);
+
+    const formattedRecords = data.map(item => ({
+      ...item.toJSON(), 
+      resort: {
+        listingName: item.resort.listingName === null? "To be updated": item.resort.listingName, 
+        listingID: item.resort.listingID === null? "To be updated": item.resort.listingID, 
+        resortName: item.resort.resortName === null? "To be updated": item.resort.resortName, 
+        unitType: item.resort.unitType === null? "To be updated": item.resort.unitType, 
+        resortID: item.resort.resortID === null? "To be updated": item.resort.resortID, 
+      },  
+      createdAt: format(item.createdAt, 'MM-dd-yyyy HH:mm:ss', { timeZone: 'America/New_York' }),
+      updatedAt: format(item.updatedAt, 'MM-dd-yyyy HH:mm:ss', { timeZone: 'America/New_York' }),
+    }));
+
+    // console.log(JSON.stringify(formattedRecords, null, 2));
+
+    res.write(`data: ${JSON.stringify(formattedRecords)}\n\n`);
+  }, 1000);
 });
 
 

@@ -159,9 +159,9 @@ async function findListing(address, token, suiteType){
                     console.log("the two coordinate sets match");
 
                     try {
-                        let hasDays = listingObj.calendarRules.bookingWindow.hasOwnProperty('defaultSettings') === false ||
-                                    (listingObj.calendarRules.bookingWindow.defaultSettings &&
-                                        listingObj.calendarRules.bookingWindow.defaultSettings.days !== 0)
+                        let hasDays = listing.calendarRules.bookingWindow.hasOwnProperty('defaultSettings') === false ||
+                                    (listing.calendarRules.bookingWindow.defaultSettings &&
+                                        listing.calendarRules.bookingWindow.defaultSettings.days !== 0)
 
                         if(hasDays) {
                             console.log("This listing calendar needs to be updated.")
