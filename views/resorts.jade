@@ -1,20 +1,31 @@
 extends layout
 
 block content
-    .w3-padding-48
-        .w3-padding-small.w3-block
+    .w3-container.w3-padding-16
+        .w3-row
             input.w3-input(type='text', placeholder='Search', id='searchString', name='searchString')
-        .w3-padding-32
-            table.w3-table.w3-card(id="resorts-table")
-                tr
-                    th Resort ID
-                    th Resort Name
-                    th Guesty Listing Name
-                    th Unit Type
-                tbody(id="table-body")
-            
+            form#checkboxForm
+                .w3-padding-small
+                    .w3-col.s2.w3-padding-small
+                        input(type='submit', value='Tier 1', class='w3-btn w3-round w3-green w3-block')
+                    .w3-col.s2.w3-padding-small
+                        input(type='submit', value='Tier 2', class='w3-btn w3-round w3-green w3-block')
+                    .w3-col.s2.w3-padding-small
+                        input(type='submit', value='Tier 3', class='w3-btn w3-round w3-green w3-block')
+                .w3-padding-16
+                .w3-padding-16
+                    table.w3-table.w3-card(id="resorts-table")
+                        thead
+                            tr
+                                th Resort ID
+                                th Resort Name
+                                th Guesty Listing Name
+                                th Unit Type
+                        tbody(id="table-body")
+        
         div.w3-center
             div.w3-bar(id="pagination")
+
 
             script(src='/javascripts/showRecords.js')
             script.
@@ -25,3 +36,35 @@ block content
 
                 showRecords(eventSource, "resorts");
                 updatePagination(eventSource, limit, offset, "resorts", 1, records, endpoint, search);
+
+                const form = document.getElementById('checkboxForm');
+                form.addEventListener('submit', function (e) {
+                    e.preventDefault(); 
+
+                    // Get the selected checkboxes
+                    const checkboxes = form.querySelectorAll('input[type="checkbox"]:checked');
+                    const selectedValues = Array.from(checkboxes).map(checkbox => checkbox.value);
+
+                    // Send the selected checkbox values to your server endpoint using AJAX
+                    // Replace 'your_server_endpoint' with your actual endpoint URL
+                    fetch('/tier/update', {
+                        method: 'POST',
+                        body: JSON.stringify({ checkboxes: selectedValues }),
+                        headers: {
+                        'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                        // Handle a successful response from the server
+                        console.log('Form submitted successfully');
+                        } else {
+                        // Handle errors, if any
+                        console.error('Form submission failed');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+                });
+

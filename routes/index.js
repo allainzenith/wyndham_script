@@ -89,6 +89,12 @@ router.post('/one', async(req, res, next) => {
 
 });
 
+router.post('/tier/update', async(req, res, next) => {
+  console.log(req.body.checkboxes);
+  console.log("Tiers updated!!");
+
+});
+
 ///////////////////////////////////////////////////////////////////////////////
 // For retrying  
 ///////////////////////////////////////////////////////////////////////////////
@@ -184,6 +190,7 @@ router.get('/sse/scheduledUpdates', (req, res) => {
       ...item.toJSON(), 
       resort: {
         listingName: item.resort.listingName === null? "To be updated": item.resort.listingName, 
+        listingID: item.resort.listingID === null? "To be updated": item.resort.listingID, 
         resortName: item.resort.resortName === null? "To be updated": item.resort.resortName, 
         unitType: item.resort.unitType === null? "To be updated": item.resort.unitType, 
         resortID: item.resort.resortID === null? "To be updated": item.resort.resortID, 
@@ -215,6 +222,7 @@ router.get('/sse/resorts', async(req, res) => {
 
   const formattedRecords = data.map(item => ({
     ...item.toJSON(),  
+    resortRefNum: item.resortRefNum === null? "To be updated": item.resortRefNum,
     listingID: item.listingID === null? "To be updated": item.listingID,
     resortID: item.resortID === null? "To be updated": item.resortID,
     resortName: item.resortName === null? "To be updated": item.resortName,

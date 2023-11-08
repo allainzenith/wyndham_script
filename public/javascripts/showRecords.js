@@ -21,6 +21,7 @@ function showRecords(eventSource, tableType){
         if (tableType === "resorts") {
             row.innerHTML = `
                 <td>
+                <input type="checkbox" id="${item.resortRefNum}" name="checkbox[]" value="${item.resortRefNum}">
                 <button onclick="copyText(this.id)" class="linkButton copy" id="${item.resortID}" value="${item.resortID}" title="Click to copy">
                         ${item.resortID}
                     </button>

@@ -76,7 +76,6 @@ async function executeUpdates(resortFoundorCreated, token, address, updatedAvail
             for (const listing of listingJsonArray) {
                 try {
                     let listingObj = await retrieveAListing(listing._id, token)
-                    // let bookingWindowFound = Object.keys((listingObj.calendarRules.bookingWindow).toJSON()).length === 0;
 
                     let hasDays = listingObj.calendarRules.bookingWindow.hasOwnProperty('defaultSettings') === false ||
                                     (listingObj.calendarRules.bookingWindow.defaultSettings &&
@@ -319,6 +318,8 @@ async function updateAvailability(listing, updatedAvail, token){
         subArrayOfAvailability.push(arrayOfAvailability.slice(i, i + chunkSize));
     }
 
+    console.log("Subarray size: ", subArrayOfAvailability.length);
+
     for (const sub of subArrayOfAvailability) {
         const url = 'https://open-api.guesty.com/v1/availability-pricing/api/calendar/listings'; 
 
@@ -329,6 +330,7 @@ async function updateAvailability(listing, updatedAvail, token){
         };
 
         try {
+            await new Promise(resolve => setTimeout(resolve, 1000));
             const response = await axios.put(url, sub, { headers });
             console.log('PUT request successful: ', response.data);
         } catch (error) {

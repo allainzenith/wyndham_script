@@ -51,7 +51,7 @@ async function addToQueue(task, callback, ...args) {
       "puppeteer is already launched. execution of prior task is ongoing."
     );
   }
-  taskQueue.push({ task, args, callback });
+  await taskQueue.push({ task, args, callback });
   await processQueue();
 }
 
@@ -65,7 +65,7 @@ async function addToScheduledQueue(task, callback, ...args) {
       "puppeteer is already launched. execution of prior task is ongoing."
     );
   }
-  scheduledtaskQueue.push({ task, args, callback });
+  await scheduledtaskQueue.push({ task, args, callback });
   await processQueue();
 }
 
