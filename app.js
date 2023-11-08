@@ -9,7 +9,7 @@ var router = require("./routes/index");
 var { clientID, clientSecret, returnAValidToken } = require("./config/config");
 
 const schedule = require("node-schedule");
-const { testScheduledUpdates } = require("./scripts/scheduledUpdates");
+const { scheduledUpdates } = require("./scripts/scheduledUpdates");
 var app = express();
 
 let thisToken;
@@ -33,7 +33,7 @@ app.use(async (req, res, next) => {
 
   if (updateOnce) {
     updateOnce = false;
-    //await testScheduledUpdates(thisToken);
+    await scheduledUpdates("TIER 1", thisToken);
   }
   next();
 });
@@ -56,10 +56,20 @@ app.use(function (err, req, res, next) {
   res.render("error");
 });
 
-// Schedule the update every 6 hours
-schedule.scheduleJob("0 */12 * * *", async () => {
+// Schedule the update every 6 hours, 24 hours, and 1 week
+schedule.scheduleJob("0 */6 * * *", async () => {
   console.log("this schedule function is called");
-  // await testScheduledUpdates(thisToken);
+  await scheduledUpdates("TIER 1", thisToken);
+});
+
+schedule.scheduleJob("0 0 */1 * *", async () => {
+  console.log("this schedule function is called");
+  await scheduledUpdates("TIER 2", thisToken);
+});
+
+schedule.scheduleJob("0 0 * * 1", async () => {
+  console.log("this schedule function is called");
+  await scheduledUpdates("TIER 3", thisToken);
 });
 
 module.exports = app;

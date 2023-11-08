@@ -78,7 +78,9 @@ async function loginVerified() {
     const page = sharedData.page;
     const pageForAddress = sharedData.pageForAddress;
 
+    await page.bringToFront();
     await page.goto("https://clubwyndham.wyndhamdestinations.com/us/en/login");
+    await pageForAddress.bringToFront();
     await pageForAddress.goto(
       `https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results`
     );
@@ -218,7 +220,7 @@ async function selectElements(resortID, suiteType) {
         await page.select(purchaseSelector, "Developer");
 
         setupSelect = 5;
-        console.log("SELECTED SUCCESSFULLY");
+  
         return selectedOptionText;
       } else {
         console.log(
