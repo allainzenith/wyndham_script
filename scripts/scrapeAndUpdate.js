@@ -112,7 +112,7 @@ async function updateGuestyandRecord(resortFoundorCreated, eventCreated, scraped
     //call function to update resort and status 
     if (result !== null) {
         try {
-            if (result !== "update resort"){
+            if (result !== "resort already updated"){
                 const updateResJson = {
                     resortName: title,
                     listingID: result.listingID,
@@ -122,12 +122,14 @@ async function updateGuestyandRecord(resortFoundorCreated, eventCreated, scraped
                 await updateRecord(updateResJson, resortFoundorCreated);
             }
 
-            await updateEventStatus(eventCreated, "DONE");
+            let execStatus = result.success || result === "resort already updated" ? "DONE" : "UPDATE_FAILED";
+
+            await updateEventStatus(eventCreated, execStatus);
 
             return true;
         } catch (error) {
             console.log("An error occured while updating the records.", error);
-            await updateEventStatus(eventCreated, "STATUS_UPDATE_FAILED");
+            await updateEventStatus(eventCreated, "UPDATE_FAILED");
             return false;
         }
 

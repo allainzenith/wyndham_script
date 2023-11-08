@@ -1,15 +1,20 @@
-var { findAllRecords } = require('../sequelizer/controller/controller');
-var { addToScheduledQueue, resourceIntensiveTask } = require('../scripts/queueProcessor');
-var { saveRecord } = require('../sequelizer/controller/controller')
+const { findRecords } = require('../sequelizer/controller/controller');
+const { addToScheduledQueue, resourceIntensiveTask } = require('../scripts/queueProcessor');
+const { saveRecord } = require('../sequelizer/controller/controller')
 const { sequelize } = require("../config/config");
-async function testScheduledUpdates(token) {
+
+async function scheduledUpdates(tierType, token) {
 
     const order = [
         [sequelize.col("resortID"), 'DESC'], 
         [sequelize.col("unitType"), 'DESC'], 
     ];
 
-    const allResorts = await findAllRecords("resorts", order);
+    const condJson = {
+        notes: tierType
+    }
+
+    const allResorts = await findRecords(condJson, "resorts", order, null, null);
 
     let resortID, suiteType, eventCreated;
     let months = 12;
@@ -23,7 +28,7 @@ async function testScheduledUpdates(token) {
         if (eventCreated !== null){
         //first parameter is a callback function
         addToScheduledQueue(resourceIntensiveTask, () => {
-            console.log('Moving on to another resort');
+            console.log('All tasks executed successfully');
         }, token, resortID, suiteType, months, res, eventCreated);
         } else {
             console.log("Creating a resort or execution record failed.")
@@ -33,6 +38,7 @@ async function testScheduledUpdates(token) {
 
     console.log("All tasks added to the queue..")
 }
+
 
 async function createAnEvent(resortRefNum, months){
     try {
@@ -50,9 +56,10 @@ async function createAnEvent(resortRefNum, months){
         console.log("Error creating event");
         return null;
     }
+
 }
 
 
 module.exports = {
-    testScheduledUpdates
+    scheduledUpdates
 }

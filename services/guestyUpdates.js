@@ -9,8 +9,8 @@ async function executeUpdates(resortFoundorCreated, token, address, updatedAvail
     
     if (token !== null){
         var listingIDs = [], listingNames = [];
-        let listingID, listingName, updateSuccess; 
-        let updatedAllSuccessfully = true;
+        let listingID, listingName, updateSuccess, success; 
+        let updatedAllSuccessfully = 0;
 
         var resortJSON = await resortFoundorCreated.toJSON()
         var resortJSONlistingID = await resortJSON.listingID;
@@ -35,18 +35,21 @@ async function executeUpdates(resortFoundorCreated, token, address, updatedAvail
                     for (const listing of listings) {
                         updateSuccess = await updateAvailability(listing, updatedAvail, token);
 
-                        if (updateSuccess) {
-                            listingIDs.push(listing._id);
-                            listingNames.push(listing.title);
-                        } else {
-                            updatedAllSuccessfully = false;
+                        listingIDs.push(listing._id);
+                        listingNames.push(listing.title);
+
+                        if (updateSuccess === false) {
+                            updatedAllSuccessfully++;
                         }
+
                     }
 
                     listingID = listingIDs.join(",");
                     listingName = listingNames.join(",");
 
-                    return updatedAllSuccessfully ? {listingID, listingName} : null;
+                    success = updatedAllSuccessfully === 0;
+
+                    return {listingID, listingName, success};
 
 
                 } else {
@@ -102,12 +105,14 @@ async function executeUpdates(resortFoundorCreated, token, address, updatedAvail
                     console.log("listing._id: " + listing._id);
                     listingIDs.push(listing._id);
                 } else {
-                    updatedAllSuccessfully = false;
+                    updatedAllSuccessfully++;
                 }
 
             }
 
-            return updatedAllSuccessfully ? "update resort" : null;
+            success = updatedAllSuccessfully === 0;
+
+            return success ? "resort already updated" : null;
             
         }
     } else {
@@ -156,27 +161,7 @@ async function findListing(address, token, suiteType){
                 console.log("difference between latitudes: " + difLong); 
                 
                 if ( (wynLat === guestLat || difLat <= .10) && (wynLong === guestLong || difLong <= .10) ){
-                    console.log("the two coordinate sets match");
-
-                    try {
-                        let hasDays = listing.calendarRules.bookingWindow.hasOwnProperty('defaultSettings') === false ||
-                                    (listing.calendarRules.bookingWindow.defaultSettings &&
-                                        listing.calendarRules.bookingWindow.defaultSettings.days !== 0)
-
-                        if(hasDays) {
-                            console.log("This listing calendar needs to be updated.")
-                            let updatedAvailabilitySettings = updateAvailabilitySettings(listing._id, token);
-
-                            if (updatedAvailabilitySettings) {
-                                console.log("Calendar availability settings updated successfully.");
-                            } else {
-                                console.log("Calendar availability settings update failed.");
-                            }
-                        }
-                    } catch (error) {
-                        console.error("Error: "+ error);
-                    }
-            
+                    console.log("the two coordinate sets match");          
                     finalListings.push(listing)
                 }
 
@@ -195,6 +180,27 @@ async function findListing(address, token, suiteType){
         }
         return false; 
     });
+
+    for (const listing of finalListings) {
+        try {
+            let hasDays = listing.calendarRules.bookingWindow.hasOwnProperty('defaultSettings') === false ||
+                        (listing.calendarRules.bookingWindow.defaultSettings &&
+                            listing.calendarRules.bookingWindow.defaultSettings.days !== 0)
+
+            if(hasDays) {
+                console.log("This listing calendar needs to be updated.")
+                let updatedAvailabilitySettings = updateAvailabilitySettings(listing._id, token);
+
+                if (updatedAvailabilitySettings) {
+                    console.log("Calendar availability settings updated successfully.");
+                } else {
+                    console.log("Calendar availability settings update failed.");
+                }
+            }
+        } catch (error) {
+            console.error("Error: "+ error);
+        }
+    }
 
 
     return finalListings;
@@ -253,7 +259,7 @@ async function retrieveAListing(listingID, token){
         console.log('GET request successful');
         return response.data;
     } catch (error) {
-        console.error('GET request failed:', error);
+        console.error('GET request failed:', error.message);
         return null;
     }
 
@@ -287,7 +293,7 @@ async function updateAvailabilitySettings(listingID, token){
         console.log('PUT request successful: ');
         return true;
     } catch (error) {
-        console.error('PUT request failed:', error);
+        console.error('PUT request failed:', error.message);
         return false;
     }
 
@@ -334,7 +340,7 @@ async function updateAvailability(listing, updatedAvail, token){
             const response = await axios.put(url, sub, { headers });
             console.log('PUT request successful: ', response.data);
         } catch (error) {
-            console.error('PUT request failed:', error);
+            console.error('PUT request failed:', error.message);
             success = false;
         }
     }
