@@ -7,11 +7,11 @@ block content
             form#checkboxForm
                 .w3-padding-small
                     .w3-col.s2.w3-padding-small
-                        input(type='submit', value='Tier 1', class='w3-btn w3-round w3-green w3-block')
+                        input(type='submit', name='tierButton', value='TIER 1', class='w3-btn w3-round w3-green w3-block')
                     .w3-col.s2.w3-padding-small
-                        input(type='submit', value='Tier 2', class='w3-btn w3-round w3-green w3-block')
+                        input(type='submit', name='tierButton', value='TIER 2', class='w3-btn w3-round w3-green w3-block')
                     .w3-col.s2.w3-padding-small
-                        input(type='submit', value='Tier 3', class='w3-btn w3-round w3-green w3-block')
+                        input(type='submit', name='tierButton', value='TIER 3', class='w3-btn w3-round w3-green w3-block')
                 .w3-padding-16
                 .w3-padding-16
                     table.w3-table.w3-card(id="resorts-table")
@@ -21,6 +21,7 @@ block content
                                 th Resort Name
                                 th Guesty Listing Name
                                 th Unit Type
+                                th Tier Type
                         tbody(id="table-body")
         
         div.w3-center
@@ -40,6 +41,9 @@ block content
                 const form = document.getElementById('checkboxForm');
                 form.addEventListener('submit', function (e) {
                     e.preventDefault(); 
+    
+                    const tierButton = form.querySelector('input[name="tierButton"]:focus');
+                    const tierButtonValue = tierButton.value;
 
                     // Get the selected checkboxes
                     const checkboxes = form.querySelectorAll('input[type="checkbox"]:checked');
@@ -47,7 +51,7 @@ block content
 
                     // Send the selected checkbox values to your server endpoint using AJAX
                     // Replace 'your_server_endpoint' with your actual endpoint URL
-                    fetch('/tier/update', {
+                    fetch(`/tier/update?tier=${tierButtonValue}`, {
                         method: 'POST',
                         body: JSON.stringify({ checkboxes: selectedValues }),
                         headers: {

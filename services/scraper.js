@@ -244,10 +244,6 @@ async function selectElements(resortID, suiteType) {
 
       // try to relaunch page for one last time
       if (setupSelect === 4) {
-        const page = sharedData.page;
-
-        await page.close();
-        console.log("page closed successfully")
         let doneLogin = await loginVerified();
         console.log("logged in successfully", doneLogin);
         gotoPageAgain = true;
