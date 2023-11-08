@@ -4,10 +4,12 @@
 
 const axios = require('axios')
 const { MAP_API_KEY } = require('../config/config')
+var { clientID, clientSecret, returnAValidToken } = require("../config/config");
 
-async function executeUpdates(resortFoundorCreated, token, address, updatedAvail, suiteType){
+// async function executeUpdates(resortFoundorCreated, token, address, updatedAvail, suiteType){
+async function executeUpdates(resortFoundorCreated, address, updatedAvail, suiteType){
     
-    if (token !== null){
+    // if (token !== null){
         var listingIDs = [], listingNames = [];
         let listingID, listingName, updateSuccess, success; 
         let updatedAllSuccessfully = 0;
@@ -20,7 +22,8 @@ async function executeUpdates(resortFoundorCreated, token, address, updatedAvail
             console.log("There is no existing records for this listing. Searching one now..")
 
             try {             
-                let listings = await findListing(address, token, suiteType);
+                // let listings = await findListing(address, token, suiteType);
+                let listings = await findListing(address, suiteType);
 
                 if (listings.length !== 0) { 
 
@@ -33,7 +36,8 @@ async function executeUpdates(resortFoundorCreated, token, address, updatedAvail
 
                     // performs the update for a listing ID that is multi-unit or single, but not a sub unit
                     for (const listing of listings) {
-                        updateSuccess = await updateAvailability(listing, updatedAvail, token);
+                        // updateSuccess = await updateAvailability(listing, updatedAvail, token);
+                        updateSuccess = await updateAvailability(listing, updatedAvail);
 
                         listingIDs.push(listing._id);
                         listingNames.push(listing.title);
@@ -78,7 +82,8 @@ async function executeUpdates(resortFoundorCreated, token, address, updatedAvail
 
             for (const listing of listingJsonArray) {
                 try {
-                    let listingObj = await retrieveAListing(listing._id, token)
+                    // let listingObj = await retrieveAListing(listing._id, token)
+                    let listingObj = await retrieveAListing(listing._id)
 
                     let hasDays = listingObj.calendarRules.bookingWindow.hasOwnProperty('defaultSettings') === false ||
                                     (listingObj.calendarRules.bookingWindow.defaultSettings &&
@@ -86,7 +91,8 @@ async function executeUpdates(resortFoundorCreated, token, address, updatedAvail
 
                     if (hasDays) {
                         console.log("This listing calendar needs to be updated.")
-                        let updatedAvailabilitySettings = await updateAvailabilitySettings(listing._id, token);
+                        // let updatedAvailabilitySettings = await updateAvailabilitySettings(listing._id, token);
+                        let updatedAvailabilitySettings = await updateAvailabilitySettings(listing._id);
                         
                         if (updatedAvailabilitySettings) {
                             console.log("Calendar availability settings updated successfully.");
@@ -99,7 +105,8 @@ async function executeUpdates(resortFoundorCreated, token, address, updatedAvail
                     console.error("Error: " + error);
                 }
 
-                updateSuccess = await updateAvailability(listing, updatedAvail, token);
+                // updateSuccess = await updateAvailability(listing, updatedAvail, token);
+                updateSuccess = await updateAvailability(listing, updatedAvail);
 
                 if (updateSuccess) {
                     console.log("listing._id: " + listing._id);
@@ -115,20 +122,21 @@ async function executeUpdates(resortFoundorCreated, token, address, updatedAvail
             return success ? "resort already updated" : null;
             
         }
-    } else {
-        console.log("Token not found");
-        return null;       
-    }
+    // } else {
+    //     console.log("Token not found");
+    //     return null;       
+    // }
 }
 
-async function findListing(address, token, suiteType){
+async function findListing(address, suiteType){
     let finalListings = [];
     const words = address.split(" "); 
 
     let len = words.length;
 
+    let token = await returnAValidToken(clientID, clientSecret);
+
     while(len >= 1){
-        await new Promise(resolve => setTimeout(resolve, 1000));
         
         var substringAddress = words.slice(0, len).join(" ");
         console.log("substringAddress: " + substringAddress);
@@ -207,7 +215,8 @@ async function findListing(address, token, suiteType){
 
 }
 
-async function retrieveListings(substringAddress, token){
+async function retrieveListings(substringAddress){
+    let token = await returnAValidToken(clientID, clientSecret);
     initial_endpoint = "https://open-api.guesty.com/v1/listings?"
 
     params = {
@@ -243,7 +252,9 @@ async function retrieveListings(substringAddress, token){
 
 }
 
-async function retrieveAListing(listingID, token){
+async function retrieveAListing(listingID){
+
+    let token = await returnAValidToken(clientID, clientSecret);
     fields = "_id bedrooms title type address calendarRules.bookingWindow";
     const url = `https://open-api.guesty.com/v1/listings/${listingID}?fields=${fields}`;
 
@@ -265,7 +276,9 @@ async function retrieveAListing(listingID, token){
 
 }
 
-async function updateAvailabilitySettings(listingID, token){
+async function updateAvailabilitySettings(listingID){
+
+    let token = await returnAValidToken(clientID, clientSecret);
 
     const url = `https://open-api.guesty.com/v1/listings/${listingID}/availability-settings`;
 
@@ -299,7 +312,9 @@ async function updateAvailabilitySettings(listingID, token){
 
 }
 
-async function updateAvailability(listing, updatedAvail, token){
+async function updateAvailability(listing, updatedAvail){
+
+    let token = await returnAValidToken(clientID, clientSecret);
 
     const arrayOfAvailability = []
 
@@ -341,6 +356,7 @@ async function updateAvailability(listing, updatedAvail, token){
             console.log('PUT request successful: ', response.data);
         } catch (error) {
             console.error('PUT request failed:', error.message);
+            console.error('PUT request failed status code', error.code);
             success = false;
         }
     }
