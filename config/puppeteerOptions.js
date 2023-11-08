@@ -13,7 +13,6 @@ let sharedData = {
 async function globals() {
     const scriptDir = __dirname;
     const customProfileRelPath = 'chrome_profile'; 
-    // const customProfileRelPath = 'custom_profile'; 
     const customProfileDir = path.join(scriptDir, customProfileRelPath);
     
     // Check if the custom profile directory exists
@@ -22,36 +21,33 @@ async function globals() {
       fs.mkdirSync(customProfileDir);
     }
     
-    let puppeteerHasToBeLaunched = true;
 
-    while (puppeteerHasToBeLaunched) {
-      try {
-        // Launch Puppeteer with the custom profile directory
-        sharedData.browser = await puppeteer.launch({
-          args: [
-            "--disable-setuid-sandbox",
-            "--no-sandbox",
-            "--no-zygote",
-          ],
-          // headless: false, 
-          headless: 'new',
-          userDataDir: customProfileDir
-        });
-        
-        // Open a new page
-        sharedData.page = await sharedData.browser.newPage();
-        sharedData.pageForAddress = await sharedData.browser.newPage();
-        sharedData.page.setDefaultNavigationTimeout(120000);
-        puppeteerHasToBeLaunched = false;
-      } catch (error) {
-        console.log("Launching of puppeteer failed: " + error);
-        console.log("Launching puppeteer again.");
-        if(sharedData.browser !== null){
-          await sharedData.browser.close();
-        }
+    try {
+      // Launch Puppeteer with the custom profile directory
+      sharedData.browser = await puppeteer.launch({
+        args: [
+          "--disable-setuid-sandbox",
+          "--no-sandbox",
+          "--no-zygote",
+        ],
+        // headless: false, 
+        headless: 'new',
+        userDataDir: customProfileDir
+      });
+      
+      // Open a new page
+      sharedData.page = await sharedData.browser.newPage();
+      sharedData.pageForAddress = await sharedData.browser.newPage();
+      sharedData.page.setDefaultNavigationTimeout(120000);
+    } catch (error) {
+      console.log("Launching of puppeteer failed: " + error);
+      console.log("Launching puppeteer again.");
+      if(sharedData.browser !== null){
+        await sharedData.browser.close();
       }
-
     }
+
+    
 
     return sharedData;
 }

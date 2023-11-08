@@ -69,11 +69,15 @@ async function launchPuppeteer() {
 }
 
 async function loginVerified() {
-  await new Promise((resolve) => setTimeout(resolve, 3000));
-  const page = sharedData.page;
-  const pageForAddress = sharedData.pageForAddress;
+  
+  while (sharedData.page === null || sharedData.pageForAddress === null) {
+    await new Promise(resolve => setTimeout(resolve, 5000));
+  }
 
   try {
+    const page = sharedData.page;
+    const pageForAddress = sharedData.pageForAddress;
+
     await page.goto("https://clubwyndham.wyndhamdestinations.com/us/en/login");
     await pageForAddress.goto(
       `https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results`
@@ -151,8 +155,11 @@ async function selectElements(resortID, suiteType) {
   await page.goto(calendarUrl);
 
   let setupSelect = 0;
+  let gotoPageAgain = false;
   while (setupSelect < 5) {
     try {
+      if (gotoPageAgain) await page.goto(calendarUrl);
+
       const resortSelector = "#ResortSelect";
 
       await page.waitForSelector(resortSelector).then(
@@ -211,6 +218,7 @@ async function selectElements(resortID, suiteType) {
         await page.select(purchaseSelector, "Developer");
 
         setupSelect = 5;
+        console.log("SELECTED SUCCESSFULLY");
         return selectedOptionText;
       } else {
         console.log(
@@ -223,6 +231,7 @@ async function selectElements(resortID, suiteType) {
         await page.reload();
         
         setupSelect++;
+
         if (setupSelect === 5) return null;
       }
     } catch (error) {
@@ -231,6 +240,19 @@ async function selectElements(resortID, suiteType) {
 
       await page.reload();
 
+      console.log("setupselectnow: " + setupSelect)
+
+      // try to relaunch page for one last time
+      if (setupSelect === 4) {
+        const page = sharedData.page;
+
+        await page.close();
+        console.log("page closed successfully")
+        let doneLogin = await loginVerified();
+        console.log("logged in successfully", doneLogin);
+        gotoPageAgain = true;
+      }
+      
       if (setupSelect === 5) return null;
     }
   }
@@ -415,13 +437,10 @@ async function getResortAddress(resortID, sElement) {
 
       resortAddress = resortAddress.replace(/\s+/g, " ").trim();
 
-      // await pageForAddress.close();
-
       return resortAddress;
     }
   } catch (error) {
     console.error("Error:", error.message);
-    // await pageForAddress.close();
     return null;
   }
 }
