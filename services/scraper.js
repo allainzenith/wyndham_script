@@ -282,7 +282,6 @@ async function selectNextButton() {
 async function findDateSelector(initialCurrentDate, month, day, resortID, suiteType) {
   const page = sharedData.page;
   let findDay = 0;
-  let findNextButton = 0;
   let dateElement = null;
   let dayClass = `.react-datepicker__day--0${day}[aria-label*="${month}"]`;
 
@@ -303,29 +302,26 @@ async function findDateSelector(initialCurrentDate, month, day, resortID, suiteT
       if(initialCurrentDate !== null) {
         while (initialCurrentDate.toLocaleDateString(undefined, { month: "long",}) !== month){
           var nextClass = `.react-datepicker__navigation--next[aria-label="Next Month"]`;
-          var nextButton = null;
-
-          while (findNextButton < 5) {
-            try {
-              nextButton = await page.waitForSelector(nextClass, {
-                timeout: 10000,
-              });
-              await nextButton.click();
-              findNextButton = 5;
-              initialCurrentDate = addMonths(initialCurrentDate, 1);
-              console.log("current month now: ", initialCurrentDate.toLocaleDateString(undefined, { month: "long",}));
-            } catch (error) {
-              console.log("Can't find next button. Reloading again.")
-              await page.reload();
-              let doneSelect = await selectElements(resortID, suiteType);
-              console.log("Reselected elements successfully: ", doneSelect);
-              findNextButton++;
-            }
+          try {
+            var nextButton = await page.waitForSelector(nextClass, {
+              timeout: 10000,
+            });
+            await nextButton.click();
+            initialCurrentDate = addMonths(initialCurrentDate, 1);
+            console.log("target moneth: ", month);
+            console.log("current month now: ", initialCurrentDate.toLocaleDateString(undefined, { month: "long",}));
+          } catch (error) {
+            console.log("Can't find next button. Reloading again.")
+            await page.reload();
+            let doneSelect = await selectElements(resortID, suiteType);
+            console.log("Reselected elements successfully: ", doneSelect);
           }
 
         }    
       }
     }
+
+    console.log("find day: ", findDay);
   }
 
   return dateElement;
