@@ -28,7 +28,7 @@ async function scheduledUpdates(tierType) {
         if (eventCreated !== null){
         //first parameter is a callback function
         addToScheduledQueue(resourceIntensiveTask, () => {
-            console.log('All scheduled tasks executed successfully');
+            console.log('Scheduled task executed successfully');
         }, resortID, suiteType, months, res, eventCreated);
         } else {
             console.log("Creating a resort or execution record failed.")

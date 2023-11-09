@@ -21,7 +21,7 @@ async function executeScraper(resortID, suiteType, months, resortHasNoRecord) {
     let doneSelecting = sElement !== null;
     console.log("Done selecting: " + doneSelecting);
 
-    let updatedAvail = doneSelecting ? await checkAvailability(months) : null;
+    let updatedAvail = doneSelecting ? await checkAvailability(months, resortID, suiteType) : null;
     let doneScraping = updatedAvail !== null;
     console.log("Done scraping: " + doneScraping);
 
@@ -78,12 +78,20 @@ async function loginVerified() {
     const page = sharedData.page;
     const pageForAddress = sharedData.pageForAddress;
 
-    await page.bringToFront();
-    await page.goto("https://clubwyndham.wyndhamdestinations.com/us/en/login");
-    await pageForAddress.bringToFront();
-    await pageForAddress.goto(
-      `https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results`
-    );
+    await Promise.all([
+      page.waitForNavigation(), 
+      page.bringToFront(),
+      page.goto("https://clubwyndham.wyndhamdestinations.com/us/en/login")
+    ]);
+
+    await Promise.all([
+      pageForAddress.waitForNavigation(), 
+      pageForAddress.bringToFront(),
+      pageForAddress.goto(
+        `https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results`
+      )
+    ]);
+
 
     let addressSelectorFound = 0;
 
@@ -214,7 +222,18 @@ async function selectElements(resortID, suiteType) {
       }
 
       if (optionExists) {
-        await page.select(suiteSelector, suiteType);
+        let selectedSuiteType = null;
+        while (selectedSuiteType !== suiteType) {
+          await page.select(suiteSelector, suiteType);
+
+          selectedSuiteType = await page.evaluate((selector) => {
+            const select = document.querySelector(selector);
+            const selectedOption = select.options[select.selectedIndex];
+            return selectedOption.text;
+          }, suiteSelector);
+
+          console.log("This is the selected suite type:",selectedSuiteType);
+        }
 
         const purchaseSelector = "#purchaseType";
         await page.select(purchaseSelector, "Developer");
@@ -256,75 +275,162 @@ async function selectElements(resortID, suiteType) {
   }
 }
 
-async function checkAvailability(months) {
+async function selectNextButton() {
+
+}
+
+async function findDateSelector(initialCurrentDate, month, day) {
+  const page = sharedData.page;
+  let findDay = 0;
+  let findNextButton = 0;
+  let dateElement = null;
+  let dayClass = `.react-datepicker__day--0${day}[aria-label*="${month}"]`;
+
+  while (findDay < 5) {
+    try {
+      dateElement = await page.waitForSelector(dayClass, {
+        timeout: 10000,
+      });
+      findDay = 5;
+    } catch (error) {
+      findDay++;
+      console.log("Can't find date element. Reloading again.")
+      await page.reload();
+      let doneSelect = await selectElements(resortID, suiteType);
+      console.log("Reselected elements successfully: ", doneSelect);
+
+      // Executed when during the scraping the date elements couldn't be found
+      if(initialCurrentDate !== null) {
+        while (initialCurrentDate.toLocaleDateString(undefined, { month: "long",}) !== month){
+          var nextClass = `.react-datepicker__navigation--next[aria-label="Next Month"]`;
+          var nextButton = null;
+
+          while (findNextButton < 5) {
+            try {
+              nextButton = await page.waitForSelector(nextClass, {
+                timeout: 10000,
+              });
+              await nextButton.click();
+              findNextButton = 5;
+              initialCurrentDate = addMonths(initialCurrentDate, 1);
+              console.log("current month now: ", initialCurrentDate.toLocaleDateString(undefined, { month: "long",}));
+            } catch (error) {
+              console.log("Can't find next button. Reloading again.")
+              await page.reload();
+              let doneSelect = await selectElements(resortID, suiteType);
+              console.log("Reselected elements successfully: ", doneSelect);
+              findNextButton++;
+            }
+          }
+
+        }    
+      }
+    }
+  }
+
+  return dateElement;
+
+}
+
+async function checkAvailability(months, resortID, suiteType) {
   const page = sharedData.page;
 
   try {
     var { currentDate, EndDate } = getCurrentAndEndDate(months);
+    let initialCurrentDate = currentDate;
     var dates = [];
     var available;
-    var nextClass = `.react-datepicker__navigation--next[aria-label="Next Month"]`;
-    let selectSuccess = await page.waitForSelector(nextClass, {
-      timeout: 10000,
+
+    var month = currentDate.toLocaleDateString(undefined, {
+      month: "long",
+    });
+    var day = currentDate.toLocaleDateString(undefined, {
+      day: "2-digit",
     });
 
-    if (selectSuccess) {
-      while (currentDate <= EndDate) {
-        try {
-          var month = currentDate.toLocaleDateString(undefined, {
-            month: "long",
+    await findDateSelector(null, month, day)
+
+
+    while (currentDate <= EndDate) {
+      try {
+        month = currentDate.toLocaleDateString(undefined, {
+          month: "long",
+        });
+        day = currentDate.toLocaleDateString(undefined, {
+          day: "2-digit",
+        });
+
+        // Construct the CSS selector based on day and month
+        // var dayClass = `.react-datepicker__day--0${day}[aria-label*="${month}"]`;
+
+        var dateElement = await findDateSelector(initialCurrentDate, month, day)
+
+        // var dateElement = await page.waitForSelector(dayClass, {
+        //   timeout: 10000,
+        // });
+
+        if (dateElement !== null) {
+          await dateElement.scrollIntoView();
+
+          var ariaDisabledValue = await dateElement.evaluate((element) => {
+            // Use the element.getAttribute() method to get the value of aria-disabled
+            return element.getAttribute("aria-disabled");
           });
-          var day = currentDate.toLocaleDateString(undefined, {
-            day: "2-digit",
+
+          available =
+            ariaDisabledValue === "true" ? "unavailable" : "available";
+
+          console.log(month + " " + day + ": " + available);
+          dates.push({
+            date: currentDate.toLocaleDateString("en-CA"),
+            availability: available,
           });
+        }
 
-          // Construct the CSS selector based on day and month
-          var dayClass = `.react-datepicker__day--0${day}[aria-label*="${month}"]`;
+        currentDate = addDays(currentDate, 1);
 
-          // Use page.$() to find the element by CSS selector
-          var dateElement = await page.$(dayClass);
+        console.log(currentDate);
 
-          if (dateElement) {
-            await dateElement.scrollIntoView();
-
-            var ariaDisabledValue = await dateElement.evaluate((element) => {
-              // Use the element.getAttribute() method to get the value of aria-disabled
-              return element.getAttribute("aria-disabled");
-            });
-
-            available =
-              ariaDisabledValue === "true" ? "unavailable" : "available";
-            dates.push({
-              date: currentDate.toLocaleDateString("en-CA"),
-              availability: available,
-            });
-          }
-
-          currentDate = addDays(currentDate, 1);
-
-          if (
-            month !=
-            currentDate.toLocaleDateString(undefined, { month: "long" })
-          ) {
-            var nextClass = `.react-datepicker__navigation--next[aria-label="Next Month"]`;
-            var nextButton = await page.$(nextClass);
-            if (nextButton) {
-              await nextButton.click();
-              await page.waitForTimeout(2000);
-            } else {
-              console.log("did not find the button");
+        if (
+          month !=
+          currentDate.toLocaleDateString(undefined, { month: "long" })
+        ) {
+          console.log("This is month tested: ", month);
+          console.log("This is the current month: ", currentDate);
+          let findNextButtonAttempts = 0
+          while (findNextButtonAttempts < 5) {
+            try {
+              var nextClass = `.react-datepicker__navigation--next[aria-label="Next Month"]`;
+              var nextButton = await page.waitForSelector(nextClass, {
+                timeout: 10000,
+              });
+              if (nextButton) {
+                await nextButton.click();
+                await page.waitForTimeout(2000);
+              } else {
+                console.log("did not find the button");
+              }
+              findNextButtonAttempts = 5;
+            } catch (error) {
+              findNextButtonAttempts++;
+              console.log("Can't find next button. Reloading again.")
+              await page.reload();
+              let doneSelect = await selectElements(resortID, suiteType);
+              console.log("Reselected elements successfully: ", doneSelect)
             }
           }
-        } catch (error) {
-          console.error("Error:", error.message);
-          console.log("Day class not found");
         }
+      } catch (error) {
+        console.error("Error:", error.message);
+        console.log("Day class not found");
       }
-    } else {
-      console.log("DID NOT FIND NEXT BUTTON SELECTOR");
     }
 
-    index = 0;
+    // for (const date of dates) {
+    //   console.log(date);
+    // }
+
+    var index = 0;
     var currentItem;
     var nextItem;
     var updatedAvail = [];

@@ -131,7 +131,7 @@ router.get('/retry', async(req, res, next) => {
   if (retryScraping){
     //first parameter is a callback function
     addToQueue(resourceIntensiveTask, () => {
-      console.log('All one-listing tasks executed successfully');
+      console.log('One-listing task executed successfully');
     }, resortID, suiteType, months, resort, eventCreated);
     // }, token, resortID, suiteType, months, resort, eventCreated);
   } else {
