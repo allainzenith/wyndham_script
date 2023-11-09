@@ -10,6 +10,7 @@ let needtolaunchPuppeteer = true;
 async function processQueue() {
   if (isProcessing) return;
   if (taskQueue.length === 0 && scheduledtaskQueue.length === 0) {
+    console.log("All tasks in the queue finished executing..");
     const browser = sharedData.browser;
     await browser.close();
     needtolaunchPuppeteer = true;
