@@ -18,6 +18,22 @@ async function scheduledUpdates(tierType) {
 
     let resortID, suiteType, eventCreated;
     let months = 12;
+
+    const itemCounts = {};
+
+    for (const res in allResorts) {
+        const item = allResorts[res].listingID;
+        if (itemCounts[item]) {
+          // This item is a duplicate
+          console.log(`Duplicate item found: ${item}`);
+        } else {
+          // First occurrence of this item
+          itemCounts[item] = (itemCounts[item] || 0) + 1;
+        }
+    }
+
+    console.log("No duplicates found.")
+
     for(const res of allResorts){
 
         resortID = res.resortID;
