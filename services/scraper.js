@@ -279,7 +279,7 @@ async function selectNextButton() {
 
 }
 
-async function findDateSelector(initialCurrentDate, month, day) {
+async function findDateSelector(initialCurrentDate, month, day, resortID, suiteType) {
   const page = sharedData.page;
   let findDay = 0;
   let findNextButton = 0;
@@ -348,7 +348,7 @@ async function checkAvailability(months, resortID, suiteType) {
       day: "2-digit",
     });
 
-    await findDateSelector(null, month, day)
+    await findDateSelector(null, month, day, resortID, suiteType)
 
 
     while (currentDate <= EndDate) {
@@ -360,7 +360,7 @@ async function checkAvailability(months, resortID, suiteType) {
           day: "2-digit",
         });
 
-        var dateElement = await findDateSelector(initialCurrentDate, month, day)
+        var dateElement = await findDateSelector(initialCurrentDate, month, day, resortID, suiteType)
 
         if (dateElement !== null) {
           await dateElement.scrollIntoView();
