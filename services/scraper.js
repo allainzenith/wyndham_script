@@ -360,14 +360,7 @@ async function checkAvailability(months, resortID, suiteType) {
           day: "2-digit",
         });
 
-        // Construct the CSS selector based on day and month
-        // var dayClass = `.react-datepicker__day--0${day}[aria-label*="${month}"]`;
-
         var dateElement = await findDateSelector(initialCurrentDate, month, day)
-
-        // var dateElement = await page.waitForSelector(dayClass, {
-        //   timeout: 10000,
-        // });
 
         if (dateElement !== null) {
           await dateElement.scrollIntoView();
@@ -379,8 +372,6 @@ async function checkAvailability(months, resortID, suiteType) {
 
           available =
             ariaDisabledValue === "true" ? "unavailable" : "available";
-
-          console.log(month + " " + day + ": " + available);
           dates.push({
             date: currentDate.toLocaleDateString("en-CA"),
             availability: available,
@@ -389,14 +380,10 @@ async function checkAvailability(months, resortID, suiteType) {
 
         currentDate = addDays(currentDate, 1);
 
-        console.log(currentDate);
-
         if (
           month !=
           currentDate.toLocaleDateString(undefined, { month: "long" })
         ) {
-          console.log("This is month tested: ", month);
-          console.log("This is the current month: ", currentDate);
           let findNextButtonAttempts = 0
           while (findNextButtonAttempts < 5) {
             try {
