@@ -33,7 +33,7 @@ app.use(async (req, res, next) => {
 
   if (updateOnce) {
     updateOnce = false;
-    // await scheduledUpdates("TIER 1");
+    await scheduledUpdates("TIER 1");
   }
   next();
 });
@@ -57,19 +57,19 @@ app.use(function (err, req, res, next) {
 });
 
 // Schedule the update every 6 hours, 24 hours, and 1 week
-// schedule.scheduleJob("0 */6 * * *", async () => {
-//   console.log("this schedule function is called");
-//   await scheduledUpdates("TIER 1");
-// });
+schedule.scheduleJob("0 */6 * * *", async () => {
+  console.log("this schedule function is called");
+  await scheduledUpdates("TIER 1");
+});
 
-// schedule.scheduleJob("0 0 */1 * *", async () => {
-//   console.log("this schedule function is called");
-//   await scheduledUpdates("TIER 2");
-// });
+schedule.scheduleJob("0 0 */1 * *", async () => {
+  console.log("this schedule function is called");
+  await scheduledUpdates("TIER 2");
+});
 
-// schedule.scheduleJob("0 0 * * 1", async () => {
-//   console.log("this schedule function is called");
-//   await scheduledUpdates("TIER 3");
-// });
+schedule.scheduleJob("0 0 * * 1", async () => {
+  console.log("this schedule function is called");
+  await scheduledUpdates("TIER 3");
+});
 
 module.exports = app;
