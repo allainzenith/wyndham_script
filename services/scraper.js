@@ -417,6 +417,7 @@ async function findDateSelector(initialCurrentDate, month, day, resortID, suiteT
       dateElement = await page.waitForSelector(dayClass, {
         timeout: 10000,
       });
+      await dateElement.scrollIntoView();
       findDay = 5;
     } catch (error) {
       findDay++;
@@ -486,7 +487,6 @@ async function checkAvailability(months, resortID, suiteType) {
         var dateElement = await findDateSelector(initialCurrentDate, month, day, resortID, suiteType, currentDate);
 
         if (dateElement !== null) {
-          await dateElement.scrollIntoView();
 
           var ariaDisabledValue = await dateElement.evaluate((element) => {
             // Use the element.getAttribute() method to get the value of aria-disabled
