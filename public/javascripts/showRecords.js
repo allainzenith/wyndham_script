@@ -101,16 +101,11 @@ function openLinks(listingID){
 }
 
 function retry(fields){
-
-
     let resortFields = fields.split(",");
     let resortID = resortFields[1];
     let suiteType = resortFields[2];
     let months = resortFields[3];
     let execID = resortFields[4];
-
-    // Create an XMLHttpRequest object
-    var xhr = new XMLHttpRequest();
 
     document.getElementById(fields).style.color = '#551A8B';
     setTimeout(() => {
@@ -120,10 +115,29 @@ function retry(fields){
     if (resortFields[0] === "DONE"){
         alert("This task is already done executing.");
     } else { 
+        fetch(`/retry?resort_id=${resortID}&suite_type=${suiteType}&months=${months}&execID=${execID}`, { 
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          })
+          .then(response => response.json())
+          .then(data => {
+            const loggedIn = data.loggedIn;
 
-        let endpoint = `/retry?resort_id=${resortID}&suite_type=${suiteType}&months=${months}&execID=${execID}`;
-        xhr.open('GET', endpoint, true);
-        xhr.send(); 
+            if (loggedIn === true) {
+                var modal = document.getElementById('myModal');
+                modal.style.display = 'block';
+                setTimeout(() => {
+                if (enableInitial) {
+                    document.getElementById('retry').disabled = false;
+                }
+                }, 60000); 
+            }
+          })
+          .catch(error => {
+            console.error('Error triggering login:', error);
+          });
 
     }
 }

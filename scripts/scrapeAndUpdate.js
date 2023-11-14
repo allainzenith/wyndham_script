@@ -8,12 +8,6 @@ const { sequelize } = require("../config/config");
 // async function executeScript(token, resortID, suiteType, months, resortFoundorCreated, eventCreated){
 async function executeScript(resortID, suiteType, months, resortFoundorCreated, eventCreated){
 
-    console.log("current task executed: ");
-    console.log("Resort ID: " + resortID);
-    console.log("Unit Type: " + suiteType);
-    console.log("Months: " + months);
-
-
     var resortJSON = await resortFoundorCreated.toJSON()
     var resortJSONlistingID = await resortJSON.listingID;
     var resortHasNoRecord = (resortJSONlistingID === undefined || resortJSONlistingID === null);
@@ -23,8 +17,12 @@ async function executeScript(resortID, suiteType, months, resortFoundorCreated, 
 
     let success;
     if ( scraped !== null) {
-        success = await updateGuestyandRecord(resortFoundorCreated, eventCreated, scraped, suiteType) 
-        // success = await updateGuestyandRecord(resortFoundorCreated, eventCreated, scraped, token, suiteType) 
+        if (scraped === "MAINTENANCE") {
+            success = false;
+            await updateEventStatus(eventCreated, "MAINTENANCE");
+        } else {
+            success = await updateGuestyandRecord(resortFoundorCreated, eventCreated, scraped, suiteType);
+        }
     }  else {
         success = false;
         await updateEventStatus(eventCreated, "SCRAPE_FAILED");
