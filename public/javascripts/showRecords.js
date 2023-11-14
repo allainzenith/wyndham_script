@@ -125,7 +125,7 @@ function retry(fields){
           .then(data => {
             const loggedIn = data.loggedIn;
 
-            if (loggedIn === true) {
+            if (loggedIn === false) {
                 var modal = document.getElementById('myModal');
                 modal.style.display = 'block';
                 setTimeout(() => {
