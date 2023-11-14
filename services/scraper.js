@@ -432,6 +432,7 @@ async function findDateSelector(initialCurrentDate, month, day, resortID, suiteT
         monthNumber = parseInt(currentDate.toLocaleDateString(undefined, { month: "2-digit" }), 10);
       
         while (initialMonthNumber < monthNumber){
+          console.log("attempting to retrieve date element");
           console.log("while " + initialMonthNumber + " is less than " + monthNumber);
           const nextClass = '.react-datepicker__navigation--next[aria-label="Next Month"]';
           try {
@@ -527,7 +528,28 @@ async function checkAvailability(months, resortID, suiteType) {
               console.log("Can't find next button. Reloading again.")
               await page.reload();
               let doneSelect = await selectElements(resortID, suiteType);
-              console.log("Reselected elements successfully: ", doneSelect)
+              console.log("Reselected elements successfully: ", doneSelect);
+
+              let initialMonthNumber = parseInt(initialCurrentDate.toLocaleDateString(undefined, { month: "2-digit" }), 10);
+              let monthNumber = parseInt(currentDate.toLocaleDateString(undefined, { month: "2-digit" }), 10);
+              let backtoStart = initialMonthNumber;
+      
+              while (initialMonthNumber < monthNumber){
+                console.log("attempting to retrieve lost next button");
+                console.log("while " + initialMonthNumber + " is less than " + monthNumber);
+                const nextClass = '.react-datepicker__navigation--next[aria-label="Next Month"]';
+                try {
+                  var nextButton = await page.waitForSelector(nextClass, {
+                    timeout: 10000,
+                  });
+                  await nextButton.click();
+                  initialMonthNumber++;
+                } catch (error) {
+                  console.log("Error: ", error.message);
+                  initialMonthNumber = backtoStart;
+                }
+
+              } 
             }
           }
         }

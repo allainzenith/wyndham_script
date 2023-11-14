@@ -37,27 +37,28 @@ async function scheduledUpdates(tierType) {
     console.log("No duplicates found.")
 
     for(const res of allResorts){
-
         resortID = res.resortID;
         suiteType = res.unitType;  
-
+        resortRefNum = res.resortRefNum;  
+    
         eventCreated = await createAnEvent(res.resortRefNum, months);
-        const obj = { res: res, ev: eventCreated };
+        const obj = { res, resortID, suiteType, resortRefNum, eventCreated };
         allEvents.push(obj);
-
     }
+    
 
     console.log("All tasks added to the queue..")
+    
 
     addToScheduledQueue(resourceIntensiveTask, () => {
         console.log('Task completed');
-    }, resortID, suiteType, months, allEvents[0].res, allEvents[0].ev)
+    }, allEvents[0].resortID, allEvents[0].suiteType, months, allEvents[0].res, allEvents[0].eventCreated)
     .then(loggedIn => {
-        for(const { res, ev } of allEvents) {
+        for(const {res, resortID, suiteType, resortRefNum, eventCreated } of allEvents) {
             if (loggedIn === true) {
                 addToScheduledQueue(resourceIntensiveTask, () => {
                     console.log('Task completed');
-                }, resortID, suiteType, months, res, ev);
+                }, resortID, suiteType, months, res, eventCreated);
             } else if (loggedIn === false) {
                 updateEventStatus(ev, "UNVERIFIED");
             } else if (loggedIn === "MAINTENANCE") {
@@ -68,9 +69,9 @@ async function scheduledUpdates(tierType) {
         }
 
       })
-      .catch(error => {
-        console.error('Send OTP error:', error);
-      });
+    .catch(error => {
+    console.error('Send OTP error:', error);
+    });
 
 }
 
