@@ -395,7 +395,7 @@ async function selectElements(resortID, suiteType) {
 
       // try to relaunch page for one last time
       if (setupSelect === 4) {
-        let doneLogin = await loginVerified();
+        let doneLogin = await login();
         console.log("logged in successfully", doneLogin);
         gotoPageAgain = true;
       }
