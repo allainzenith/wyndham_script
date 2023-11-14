@@ -51,7 +51,6 @@ block content
                     const selectedValues = Array.from(checkboxes).map(checkbox => checkbox.value);
 
                     // Send the selected checkbox values to your server endpoint using AJAX
-                    // Replace 'your_server_endpoint' with your actual endpoint URL
                     fetch(`/tier/update?tier=${tierButtonValue}`, {
                         method: 'POST',
                         body: JSON.stringify({ checkboxes: selectedValues }),

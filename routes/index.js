@@ -2,11 +2,13 @@ const express = require('express');
 const router = express.Router();
 const { format } = require('date-fns-tz');
 const { joinTwoTables, countRecords, findLikeRecords, findByPk, updateRecord } = require('../sequelizer/controller/controller');
-const { addToQueue, resourceIntensiveTask } = require('../scripts/queueProcessor');
+const { addToQueue, resourceIntensiveTask, processVerification } = require('../scripts/queueProcessor');
 const { findOrCreateAResort, createAnEvent, updateEventStatus } = require('../scripts/scrapeAndUpdate');
-const { login, sendOTP } = require('../services/scraper')
+const { login, resendSmsCode, sendOTP } = require('../services/scraper')
 const { sequelize } = require("../config/config");
 const { Op } = require("sequelize");
+
+let isVerified = false;
 
 router.get('/', async(req, res, next) => {
   const amount = await countRecords("execution", {execType:"ONE_RESORT"});
@@ -39,56 +41,139 @@ router.get('/events', async(req, res, next) => {
 
 });
 
-router.get('/verify', async(req, res, next) => {
-  res.render('verify');
-  await login();
-});
-
-router.post('/sendOTP', async(req, res, next) => {
-  let verOTP = req.body.OTP;
-
-  let loggedIn = await sendOTP(verOTP);
-  
-  if (loggedIn){
-    res.redirect('/oneListing')
-  } else {
-    //display a modal
-    res.redirect('/allListings')
-  }
-
-});
-
 router.get('/duplicateListingLinks', (req, res) => {
   const links = JSON.parse(req.query.links);
   res.render('duplicateListingLinks', { links });
 });
 
 ///////////////////////////////////////////////////////////////////////////////
-// Endpoints for forms
+// For verification  
 ///////////////////////////////////////////////////////////////////////////////
 
+router.post('/sendOTP', async(req, res, next) => {
+  let verOTP = req.body.OTP;
+  let eventCreated = await findByPk(req.body.execID, "execution");
+
+  if (isVerified === false) {
+    if (verOTP === "") {
+      const verified = false;
+      const message = "empty";
+      res.json({ verified, message });  
+    }
+    else {
+      try {
+        // Trigger the login process asynchronously
+        processVerification(verOTP)
+          .then(loggedIn => {
+            isVerified = loggedIn;  
+            const message = "successOrFail";
+            res.json({ loggedIn, message });
+
+            if (isVerified){
+              updateEventStatus(eventCreated, "SCRAPING");
+            } else {
+              if (loggedIn === "MAINTENANCE") {
+                updateEventStatus(eventCreated, "MAINTENANCE");
+              } else if (loggedIn === null) {
+                updateEventStatus(eventCreated, "OTP_ERROR");
+              } else {
+                updateEventStatus(eventCreated, "UNVERIFIED");
+              }
+            }
+
+          })
+          .catch(error => {
+            console.error('Send OTP error:', error);
+            res.status(500).json({ error: 'Internal Server Error' });
+          });
+      } catch (error) {
+        console.error('Error triggering login:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+      }
+    }
+  } else {
+    const verified = true;
+    const message = "already verified";
+    res.json({ verified, message });
+  }
+
+
+});
+
+router.post('/resendOTP', async(req, res, next) => {
+  if (isVerified === false) {
+    try {
+      // Trigger the login process asynchronously
+      resendSmsCode()
+        .then(needsVerify => {  
+          res.json({ needsVerify });
+
+          if (needsVerify === "MAINTENANCE") {
+            updateEventStatus(eventCreated, "MAINTENANCE");
+          } 
+        })
+        .catch(error => {
+          console.error('Login process error:', error);
+          res.status(500).json({ error: 'Internal Server Error' });
+        });
+    } catch (error) {
+      console.error('Error triggering login:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  } else {
+    const needsVerify = false;
+    res.json({ needsVerify });
+  }
+
+});
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Endpoints for forms
+///////////////////////////////////////////////////////////////////////////////
 router.post('/one', async(req, res, next) => {
 
   var resortID = (req.body.resort_id).trim();
   var suiteType = (req.body.suite_type).trim();
   var months = (req.body.months).trim();
-  // var token = await req.token;   
 
-  res.redirect('/oneListing'); 
-  
   let resort = await findOrCreateAResort(resortID, suiteType); 
   let eventCreated = ( resort !== null) ? await createAnEvent(resort.resortRefNum, months) : null;
-
-
+  
   if (eventCreated !== null){
-    //first parameter is a callback function
-    addToQueue(resourceIntensiveTask, () => {
-      console.log('Task completed');
-    }, resortID, suiteType, months, resort, eventCreated);
-    // }, token, resortID, suiteType, months, resort, eventCreated);
+    try {
+      let execID = eventCreated.execID;
+
+      // Trigger the login process asynchronously
+      addToQueue(resourceIntensiveTask, () => {
+        console.log('Task completed');
+      }, resortID, suiteType, months, resort, eventCreated)
+        .then(loggedIn => {
+
+          isVerified = loggedIn;
+          
+          if (loggedIn === "MAINTENANCE") {
+            updateEventStatus(eventCreated, "MAINTENANCE");
+          } else if (loggedIn === null) {
+            updateEventStatus(eventCreated, "LOGIN_ERROR");
+          }
+
+          res.json({ loggedIn, execID });
+        })
+        .catch(error => {
+          console.error('Login process error:', error);
+          res.status(500).json({ error: 'Internal Server Error' });
+        });
+    } catch (error) {
+      console.error('Error triggering login:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+
   } else {
     console.log("Creating a resort or execution record failed.")
   }
+  
 
 });
 
@@ -120,23 +205,89 @@ router.get('/retry', async(req, res, next) => {
   var resortID = (req.query.resort_id).trim();
   var suiteType = (req.query.suite_type).trim();
   var months = (req.query.months).trim();
-  // var token = await req.token;   
-  
-  res.send("Retrying now..");
 
   let resort = await findOrCreateAResort(resortID, suiteType); 
   let eventCreated = await findByPk((req.query.execID).trim(), "execution");
-  let retryScraping = await updateEventStatus(eventCreated, "SCRAPING");
   
-  if (retryScraping){
-    //first parameter is a callback function
-    addToQueue(resourceIntensiveTask, () => {
-      console.log('One-listing task executed successfully');
-    }, resortID, suiteType, months, resort, eventCreated);
-    // }, token, resortID, suiteType, months, resort, eventCreated);
+  if (eventCreated !== null){
+    try {
+      let execID = eventCreated.execID;
+
+      // Trigger the login process asynchronously
+      addToQueue(resourceIntensiveTask, () => {
+        console.log('Task completed');
+      }, resortID, suiteType, months, resort, eventCreated)
+        .then(loggedIn => {
+
+          isVerified = loggedIn;
+          
+          if (loggedIn === "MAINTENANCE") {
+            updateEventStatus(eventCreated, "MAINTENANCE");
+          } else if (loggedIn === null) {
+            updateEventStatus(eventCreated, "LOGIN_ERROR");
+          }
+
+          res.json({ loggedIn, execID });
+        })
+        .catch(error => {
+          console.error('Login process error:', error);
+          res.status(500).json({ error: 'Internal Server Error' });
+        });
+    } catch (error) {
+      console.error('Error triggering login:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+
   } else {
     console.log("Creating a resort or execution record failed.")
   }
+
+  
+  // if (isVerified === false) {
+  //   try {
+  //     // Trigger the login process asynchronously
+  //     login()
+  //       .then(needsVerify => { 
+  //         let resortRefNum = resort.resortRefNum;
+  //         let execID = eventCreated.execID;
+
+  //         if (needsVerify === false && eventCreated !== null){
+  //           isVerified = true;
+  //           //first parameter is a callback function
+  //           addToQueue(resourceIntensiveTask, () => {
+  //             console.log('Task completed');
+  //           }, resortID, suiteType, months, resort, eventCreated);
+  //         } else {
+  //           if (eventCreated === null) {
+  //             console.log("Creating a resort or execution record failed.")
+  //           } else if (needsVerify === "MAINTENANCE") {
+  //             updateEventStatus(eventCreated, "MAINTENANCE");
+  //           } 
+  //         }
+
+  //         res.json({ needsVerify, resortRefNum, execID });
+  //       })
+  //       .catch(error => {
+  //         console.error('Login process error:', error);
+  //         res.status(500).json({ error: 'Internal Server Error' });
+  //       });
+  //   } catch (error) {
+  //     console.error('Error triggering login:', error);
+  //     res.status(500).json({ error: 'Internal Server Error' });
+  //   }
+  // } else {
+  //   console.log("already verified");
+  //   let retryScraping = await updateEventStatus(eventCreated, "SCRAPING");
+  
+  //   if (retryScraping){
+  //     //first parameter is a callback function
+  //     addToQueue(resourceIntensiveTask, () => {
+  //       console.log('One-listing task executed successfully');
+  //     }, resortID, suiteType, months, resort, eventCreated);
+  //   } else {
+  //     console.log("Creating a resort or execution record failed.")
+  //   }
+  // }
 
 });
 

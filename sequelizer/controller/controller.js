@@ -123,6 +123,19 @@ async function joinTwoTables(fModel, sModel, condJson, order, limit, offset) {
     return false;
   }
 }
+
+async function buildInstance(objectType, jsonObject){
+
+  const typeofObject = objectType == "execution" ? execution : resorts;
+  try {
+    const instance = typeofObject.build(jsonObject);
+    return instance;
+  } catch (error) {
+    console.error("Error building instance: ", error.message);
+    return null;
+  }
+
+}
 async function updateRecord(recordJson, recordObject) {
   // update() function updates fields only specified and makes other fields as-is
   // save() saves the record to the database
@@ -160,4 +173,5 @@ module.exports = {
   deleteRecord,
   updateRecord,
   countRecords,
+  buildInstance
 };

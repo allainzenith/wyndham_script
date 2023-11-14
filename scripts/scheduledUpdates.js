@@ -1,6 +1,7 @@
 const { findRecords } = require('../sequelizer/controller/controller');
 const { addToScheduledQueue, resourceIntensiveTask } = require('../scripts/queueProcessor');
-const { saveRecord } = require('../sequelizer/controller/controller')
+const { saveRecord } = require('../sequelizer/controller/controller');
+const { updateEventStatus } = require('./scrapeAndUpdate');
 const { sequelize } = require("../config/config");
 
 async function scheduledUpdates(tierType) {
@@ -18,6 +19,7 @@ async function scheduledUpdates(tierType) {
 
     let resortID, suiteType, eventCreated;
     let months = 12;
+    let allEvents = [];
 
     const itemCounts = {};
 
@@ -40,19 +42,36 @@ async function scheduledUpdates(tierType) {
         suiteType = res.unitType;  
 
         eventCreated = await createAnEvent(res.resortRefNum, months);
-    
-        if (eventCreated !== null){
-        //first parameter is a callback function
-        addToScheduledQueue(resourceIntensiveTask, () => {
-            console.log('Scheduled task executed successfully');
-        }, resortID, suiteType, months, res, eventCreated);
-        } else {
-            console.log("Creating a resort or execution record failed.")
-        }
+        const obj = { res: res, ev: eventCreated };
+        allEvents.push(obj);
 
     }
 
     console.log("All tasks added to the queue..")
+
+    addToScheduledQueue(resourceIntensiveTask, () => {
+        console.log('Task completed');
+    }, resortID, suiteType, months, allEvents[0].res, allEvents[0].ev)
+    .then(loggedIn => {
+        for(const { res, ev } of allEvents) {
+            if (loggedIn === true) {
+                addToScheduledQueue(resourceIntensiveTask, () => {
+                    console.log('Task completed');
+                }, resortID, suiteType, months, res, ev);
+            } else if (loggedIn === false) {
+                updateEventStatus(ev, "UNVERIFIED");
+            } else if (loggedIn === "MAINTENANCE") {
+                updateEventStatus(ev, "MAINTENANCE");
+            } else if (loggedIn === "LOGIN_ERROR") {
+                updateEventStatus(ev, "LOGIN_ERROR");
+            }
+        }
+
+      })
+      .catch(error => {
+        console.error('Send OTP error:', error);
+      });
+
 }
 
 

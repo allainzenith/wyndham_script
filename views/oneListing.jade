@@ -2,9 +2,40 @@ extends layout
 include layout
 
 block content
+  form(action='/sendOTP', method='post', id='otp')
+    .w3-modal#myModal
+      .w3-modal-content(style="width: 30%") 
+        header.w3-container.w3-sand
+          span.w3-button.w3-display-topright#closeModal &times;
+          h2 OTP verification
+        .w3-container
+          //- Opening message
+          p Please go to the Business Inbox and wait patiently for the OTP sent by Wyndham.
+          p Enter the OTP to verify your device.
+          p After a minute, the OTP in Wyndham expires. If a minute already passed, the "Retry" button will be enabled.
+          
+          //- Retry Responses
+          p(id='retry_attempt', style='display:none;color:green') Please wait for a moment while we retry verification...
+          p(id='retry_success', style='display:none;color:green') Retried successfully! Please wait for the code sent.
+          p(id='retry_fail', style='display:none;color:green') Device already verified. 
+          p(id='retry_error', style='display:none;color:red') Please wait for a while before retrying.
+
+          //- Send Responses
+          p(id='wait_message', style='display:none;color:green') Please wait for a moment while we verify your device...
+          p(id='success_message', style='display:none;color:green') Device verified successfully! You can now close this dialog.
+          p(id='fail_message', style='display:none;color:red') Wrong OTP! Please retry.
+          p(id='error_message', style='display:none;color:red') An error happened while processing the request. Please retry.
+          p(id='already_verified', style='display:none;color:green') Device already verified.
+          p(id='empty_message', style='display:none;color:red') Cannot be empty. Please try again.
+          input.w3-input.w3-padding-small(type="text", id='OTP', name='OTP', placeholder="Enter OTP", value="")         
+        footer.w3-container.w3-padding-large
+            input(type='hidden', id='submitButtonUsed', name='submitButtonUsed', value='')
+            input(id='retry', type='submit', value='Retry', class='w3-btn w3-round w3-dark-gray w3-left', disabled)
+            input(id='send', type='submit', value='Send', class='w3-btn w3-round w3-green w3-right')
+
   .w3-row-padding.w3-padding-32
     input.w3-input(type='text', placeholder='Search', id='searchString', name='searchString', style='display: none;')
-    form(action='/one', method='post')
+    form(action='/one', method='post', id='one')
       .w3-col.s4.w3-padding-small
         input.w3-input(type='text', placeholder='Resort ID', id='resort_id', name='resort_id', required)
       .w3-col.s4.w3-padding-small
@@ -41,115 +72,223 @@ block content
 
       script(src='/javascripts/showRecords.js')
       script.
-        var limit = 10, offset = 0, search='';
+
+        //for showing records
+        var limit = 10, offset = 0, search = '';
         var records = !{JSON.stringify(records)};
         let endpoint = `/sse/oneListing`;
         let eventSource = new EventSource(`/sse/oneListing?limit=${limit}&offset=${offset}&search=${search}`);
+
+        let resortRefNum, execID, resort_id, suite_type, months, enableInitial = true;
         showRecords(eventSource, "events");
         updatePagination(eventSource, limit, offset, "events", 1, records, endpoint, search)
 
+        //for modal buttons
+        var modal = document.getElementById('myModal');
+        document.addEventListener('DOMContentLoaded', function() {
+          var closeModalButton = document.getElementById('closeModal');
 
-      //- script.
-      //-   var limit = 10;
-      //-   var offset = 0;
+          closeModalButton.onclick = function() {
+            modal.style.display = 'none';
+            document.getElementById('retry_success').style.display = 'none';
+            document.getElementById('retry_fail').style.display = 'none';
+            document.getElementById('retry_error').style.display = 'none';
+            document.getElementById('retry_attempt').style.display = 'none';
 
-      //-   let eventSource = new EventSource(`/sse/oneListing?limit=${limit}&offset=${offset}`);
+            document.getElementById('wait_message').style.display = 'none';
+            document.getElementById('success_message').style.display = 'none';
+            document.getElementById('fail_message').style.display = 'none';
+            document.getElementById('error_message').style.display = 'none';
+            document.getElementById('empty_message').style.display = 'none';
 
-      //-   // Define a function to create the EventSource
-      //-   function createEventSource(limit, offset) {
-      //-     return new EventSource(`/sse/oneListing?limit=${limit}&offset=${offset}`);
-      //-   }
+            document.getElementById('retry').disabled = true;
 
-      //-   function showRecords(eventSource){
-      //-     const tableBody = document.getElementById("table-body");
-      //-     //- eventSource = createEventSource(limit, offset);
-      //-     //- const eventSource = new EventSource(`/sse/oneListing?limit=${limit}&offset=${offset}`);
-      //-     eventSource.onmessage = (event) => {
-      //-       const data = JSON.parse(event.data);
-      //-       tableBody.innerHTML = '';
-      //-       data.forEach(item => {
-      //-         const row = document.createElement("tr");
-      //-         row.innerHTML = `
-      //-           <td>${item.resort.resortID}</td>
-      //-           <td>${item.resort.listingName}</td>
-      //-           <td>${item.resort.unitType}</td>
-      //-           <td>${item.execStatus}</td>
-      //-           <td>${item.monthstoScrape}</td>
-      //-           <td>${item.createdAt}</td>
-      //-           <td>${item.updatedAt}</td>
-      //-         `;
-      //-         tableBody.appendChild(row);
-      //-       });
-      //-     };
+          };
 
-      //-   }
+        });
 
-      //-   function updateEventSource(newOffset) {
-      //-     if (eventSource) { eventSource.close(); }
-      //-     eventSource = createEventSource(limit, newOffset);
-      //-     showRecords(eventSource);
-      //-   }
+        //for displaying modal
+        const formOne = document.getElementById('one');
+        formOne.addEventListener('submit', function (e) {
+            e.preventDefault(); 
+
+            resort_id = document.getElementById('resort_id').value;
+            suite_type = document.getElementById('suite_type').value;
+            months = document.getElementById('months').value;
+
+            document.getElementById('resort_id').value = "";
+            document.getElementById('suite_type').value = "";
+            document.getElementById('months').value = "";
+
+            fetch('/one', { 
+                method: 'POST',
+                body: JSON.stringify({ resort_id: resort_id, suite_type: suite_type, months: months }),
+                headers: {
+                  'Content-Type': 'application/json'
+                }
+              })
+              .then(response => response.json())
+              .then(data => {
+                // Update client-side state with the verification value
+                const loggedIn = data.loggedIn;
+                execID = data.execID;
+
+                // Perform additional actions based on the verification value
+                if (loggedIn === false) {
+                  modal.style.display = 'block';
+                  setTimeout(() => {
+                    if (enableInitial) {
+                      document.getElementById('retry').disabled = false;
+                    }
+                  }, 60000); 
+                }
+              })
+              .catch(error => {
+                console.error('Error triggering login:', error);
+              });
+            
+        });
+
+        document.getElementById('retry').addEventListener('click', function() {
+          document.getElementById('submitButtonUsed').value = 'retry';
+        });
+
+        document.getElementById('send').addEventListener('click', function() {
+          document.getElementById('submitButtonUsed').value = 'send';
+        });
+
+        //for sending OTP
+        const formOTP = document.getElementById('otp');
+        formOTP.addEventListener('submit', function (e) {
+            e.preventDefault(); 
+
+            const submitButtonUsed = document.getElementById('submitButtonUsed').value;
+
+            if(submitButtonUsed === 'retry') {
+              enableInitial = false;
+
+              document.getElementById('retry_success').style.display = 'none';
+              document.getElementById('retry_fail').style.display = 'none';
+              document.getElementById('retry_error').style.display = 'none';
+              document.getElementById('retry_attempt').style.display = 'block';
+
+              document.getElementById('success_message').style.display = 'none';
+              document.getElementById('fail_message').style.display = 'none';
+              document.getElementById('error_message').style.display = 'none';
+              document.getElementById('empty_message').style.display = 'none';
+              document.getElementById('already_verified').style.display = 'none';
+
+              document.getElementById('retry').disabled = true;
+              document.getElementById('send').disabled = true;
+
+              fetch('/resendOTP', { 
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                }
+              })
+              .then(response => response.json())
+              .then(data => {
+                // Update client-side state with the verification value
+                const needsVerify = data.needsVerify;
+
+                document.getElementById('retry_attempt').style.display = 'none';
+                // Perform additional actions based on the verification value
+                if (needsVerify) {
+                  document.getElementById('retry_success').style.display = 'block';
+                } else if (needsVerify === null) {
+                  document.getElementById('retry_error').style.display = 'block';
+                } else {
+                  document.getElementById('retry_fail').style.display = 'block';
+                }
+
+                setTimeout(() => {
+                  document.getElementById('retry').disabled = false;
+                }, 60000); 
+
+                document.getElementById('send').disabled = false;
+
+              })
+              .catch(error => {
+                console.error('Error triggering login:', error);
+              });
+            }
+
+            else {
+              var OTP = document.getElementById('OTP').value;
+              document.getElementById('OTP').value = "";
+
+              document.getElementById('retry_attempt').style.display = 'none';
+              document.getElementById('retry_success').style.display = 'none';
+              document.getElementById('retry_fail').style.display = 'none';
+              document.getElementById('retry_error').style.display = 'none';
+
+              document.getElementById('success_message').style.display = 'none';
+              document.getElementById('fail_message').style.display = 'none';
+              document.getElementById('error_message').style.display = 'none';
+              document.getElementById('empty_message').style.display = 'none';
+              document.getElementById('already_verified').style.display = 'none';
+
+              document.getElementById('send').disabled = true;
+              document.getElementById('retry').disabled = true;
+
+              let waitMessage = document.getElementById('wait_message');
+              waitMessage.style.display = 'block';
+
+              fetch('/sendOTP', { 
+                method: 'POST',
+                body: JSON.stringify(
+                  { 
+                    OTP: OTP, 
+                    execID: execID 
+                  }),
+                headers: {
+                  'Content-Type': 'application/json'
+                }
+              })
+              .then(response => response.json())
+              .then(data => {
+                // Update client-side state with the verification value
+                const loggedIn = data.loggedIn;
+                const message = data.message;
 
 
-      //-   function updatePagination(currentPage) {
-      //-     console.log("this function is called");
-      //-     // Updates the offset
-      //-     offset = limit * (currentPage - 1)
-      //-     updateEventSource(offset);
+                waitMessage.style.display = 'none';
 
-      //-     var records = !{JSON.stringify(records)};
-      //-     var totalPages = Math.ceil(parseInt(records, 10) / 10); // Use the base 10
-      //-     var pagesToShow = 4;
-      //-     var paginationElement = document.getElementById('pagination');
+                // Perform additional actions based on the verification value
+                if (loggedIn) {
+                  document.getElementById('success_message').style.display = 'block';
+                  document.getElementById('send').disabled = false;
+                } else if(loggedIn === null) {
+                  document.getElementById('error_message').style.display = 'block';
+                } else {
+                  if (message === "empty") {
+                    document.getElementById('empty_message').style.display = 'block';
+                    document.getElementById('send').disabled = false;
+              
+                  } else if (message === "already verified") {
+                    document.getElementById('already_verified').style.display = 'block';
+                    document.getElementById('send').disabled = false;
 
-      //-     // Clear the existing content of paginationElement
-      //-     paginationElement.innerHTML = '';
+                  } else {
+                    document.getElementById('fail_message').style.display = 'block';
 
-      //-     // Add the "Previous" button
-      //-     if (currentPage > 1) {
-      //-       var prevButton = document.createElement('button');
-      //-       prevButton.className = 'w3-button';
-      //-       prevButton.innerHTML = '&laquo;';
-      //-       prevButton.addEventListener('click', function () {
-      //-         updatePagination(currentPage - 1);
-      //-       });
-      //-       paginationElement.appendChild(prevButton);
-      //-     }
+                  }
+                }
 
-      //-     // Calculate the range of pages to display
-      //-     var startPage = Math.max(1, currentPage - Math.floor(pagesToShow / 2));
-      //-     var endPage = Math.min(totalPages, startPage + pagesToShow - 1);
+                document.getElementById('retry').disabled = false;
 
-      //-     // Add the page links
-      //-     for (var i = startPage; i <= endPage; i++) {
-      //-       var pageButton = document.createElement('button');
-      //-       pageButton.className = 'w3-button';
-      //-       pageButton.id = i;
-      //-       pageButton.textContent = i;
-      //-       pageButton.addEventListener('click', function() {
-      //-         var clickedId = this.id;
-      //-         updatePagination(parseInt(clickedId, 10));
-      //-       });
-      //-       paginationElement.appendChild(pageButton);
-      //-     }
+              })
+              .catch(error => {
+                console.error('Error triggering login:', error);
+              });
+            }
+        });
 
-      //-     // Add the "Next" button
-      //-     if (currentPage < totalPages) {
-      //-       var nextButton = document.createElement('button');
-      //-       nextButton.className = 'w3-button';
-      //-       nextButton.innerHTML = '&raquo;';
-      //-       nextButton.addEventListener('click', function () {
-      //-         updatePagination(currentPage + 1);
-      //-       });
-      //-       paginationElement.appendChild(nextButton);
-      //-     }
 
-      //-     document.getElementById(currentPage).classList.add('w3-green');
 
-      //-   }
 
-      //-   showRecords(eventSource);
-      //-   updatePagination(1);
+
 
 
 

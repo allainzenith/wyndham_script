@@ -41,9 +41,6 @@ async function returnAValidToken(clientID, clientSecret){
     var currentDate = new Date();
 
     try {
-        // const tokenJsonPath = process.env.NODE_ENV === 'production'
-        //     ? process.env.TOKEN_PATH
-        //     : path.join(__dirname, './jsons/token.json');
 
         const tokenJsonPath = path.join(__dirname, './jsons/token.json');
 
