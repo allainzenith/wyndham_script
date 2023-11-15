@@ -302,7 +302,13 @@ async function selectElements(resortID, suiteType) {
   let gotoPageAgain = false;
   while (setupSelect < 5) {
     try {
-      if (gotoPageAgain) await page.goto(calendarUrl);
+      if (gotoPageAgain) {
+        await page.waitForSelector(
+          `.resortAvailabilityWidgetV3-title-text-color-default`,
+          { timeout: 120000 }
+        );
+        await page.goto(calendarUrl);
+      }
 
       const resortSelector = "#ResortSelect";
 
@@ -391,12 +397,13 @@ async function selectElements(resortID, suiteType) {
       }
     } catch (error) {
       console.error("Error:", error.message);
+      setupSelect++;
       
       let doneLogin = await login();
-      console.log("logged in successfully", doneLogin);
-      gotoPageAgain = true;
+      console.log("logged in successfully: ", doneLogin);
+      gotoPageAgain = doneLogin;
       
-      if (setupSelect === 5) return null;
+      if (setupSelect === 5 && doneLogin !== true) return null;
     }
   }
 }
