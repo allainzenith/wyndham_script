@@ -412,50 +412,49 @@ async function findDateSelector(initialCurrentDate, month, day, months, resortID
   let dateElement = null;
   let dayClass = `.react-datepicker__day--0${day}[aria-label*="${month}"]`;
 
-  while (findDay < 5) {
     try {
       dateElement = await page.waitForSelector(dayClass, {
         timeout: 10000,
       });
       await dateElement.scrollIntoView();
-      findDay = 5;
+      // findDay = 5;
     } catch (error) {
-      findDay++;
-      console.log("Can't find date element. Reloading again.")
-      await page.reload();
-      let doneSelect = await selectElements(resortID, suiteType);
-      console.log("Reselected elements successfully: ", doneSelect);
+      // findDay++;
+      // console.log("Can't find date element. Reloading again.")
+      // await page.reload();
+      // let doneSelect = await selectElements(resortID, suiteType);
+      // console.log("Reselected elements successfully: ", doneSelect);
+      console.log("Can't find date element. Error: ", error.message)
 
       // Executed when during the scraping the date elements couldn't be found
-      if(initialCurrentDate !== null) {
-        console.log("entered the while loop");
-        let initialMonthNumber = initialCurrentDate.toLocaleDateString(undefined, { month: "2-digit", year: "2-digit" });
-        monthNumber = currentDate.toLocaleDateString(undefined, { month: "2-digit", year: "2-digit" });
+      // if(initialCurrentDate !== null) {
+      //   console.log("entered the while loop");
+      //   let initialMonthNumber = initialCurrentDate.toLocaleDateString(undefined, { month: "2-digit", year: "2-digit" });
+      //   monthNumber = currentDate.toLocaleDateString(undefined, { month: "2-digit", year: "2-digit" });
 
-        console.log(initialMonthNumber);
-        console.log(monthNumber);
+      //   console.log(initialMonthNumber);
+      //   console.log(monthNumber);
       
-        while (initialMonthNumber !== monthNumber){
-          console.log("attempting to retrieve date element");
-          console.log("while " + initialMonthNumber + " is not equal to " + monthNumber);
-          const nextClass = '.react-datepicker__navigation--next[aria-label="Next Month"]';
-          try {
-            var nextButton = await page.waitForSelector(nextClass, {
-              timeout: 10000,
-            });
-            await nextButton.click();
-            initialCurrentDate = addMonths(initialCurrentDate, 1)
-            initialMonthNumber = initialCurrentDate.toLocaleDateString(undefined, { month: "2-digit", year: "2-digit" });
-            console.log("initial current day added by one month");
-            await page.waitForTimeout(3000);
-          } catch (error) {
-            console.log("Error: ", error.message);
-          }
-        }    
-      }
+      //   while (initialMonthNumber !== monthNumber){
+      //     console.log("attempting to retrieve date element");
+      //     console.log("while " + initialMonthNumber + " is not equal to " + monthNumber);
+      //     const nextClass = '.react-datepicker__navigation--next[aria-label="Next Month"]';
+      //     try {
+      //       var nextButton = await page.waitForSelector(nextClass, {
+      //         timeout: 10000,
+      //       });
+      //       await nextButton.click();
+      //       initialCurrentDate = addMonths(initialCurrentDate, 1)
+      //       initialMonthNumber = initialCurrentDate.toLocaleDateString(undefined, { month: "2-digit", year: "2-digit" });
+      //       console.log("initial current day added by one month");
+      //       await page.waitForTimeout(3000);
+      //     } catch (error) {
+      //       console.log("Error: ", error.message);
+      //     }
+      //   }    
+      // }
+    
     }
-
-  }
 
   return dateElement;
 
@@ -503,42 +502,65 @@ async function checkAvailability(months, resortID, suiteType) {
             date: currentDate.toLocaleDateString("en-CA"),
             availability: available,
           });
-        }
 
-        currentDate = addDays(currentDate, 1);
+          currentDate = addDays(currentDate, 1);
 
-        if (
-          month !=
-          currentDate.toLocaleDateString(undefined, { month: "long" })
-        ) {
-          let findNextButtonAttempts = 0
-          while (findNextButtonAttempts < 5) {
-            try {
-              var nextClass = `.react-datepicker__navigation--next[aria-label="Next Month"]`;
-              var nextButton = await page.waitForSelector(nextClass, {
-                timeout: 10000,
-              });
-              if (nextButton) {
-                await nextButton.click();
-                console.log("Clicked next button.")
-                await page.waitForTimeout(2000);
-              } else {
-                console.log("did not find the button");
+          if (
+            month !=
+            currentDate.toLocaleDateString(undefined, { month: "long" })
+          ) {
+            let findNextButtonAttempts = 0
+            while (findNextButtonAttempts < 5) {
+              try {
+                var nextClass = `.react-datepicker__navigation--next[aria-label="Next Month"]`;
+                var nextButton = await page.waitForSelector(nextClass, {
+                  timeout: 10000,
+                });
+                if (nextButton) {
+                  await nextButton.click();
+                  console.log("Clicked next button.")
+                  await page.waitForTimeout(2000);
+
+                  let selectedSuiteType = null;
+                  while (selectedSuiteType !== suiteType) {
+                    const suiteSelector = "#suiteType";
+                    await page.select(suiteSelector, suiteType);
+                    
+                    selectedSuiteType = await page.evaluate((selector) => {
+                      const select = document.querySelector(selector);
+                      const selectedOption = select.options[select.selectedIndex];
+                      return selectedOption.text;
+                    }, suiteSelector);
+          
+                    console.log("This is the selected suite type:",selectedSuiteType);
+                  }
+                } else {
+                  console.log("did not find the button");
+                }
+                findNextButtonAttempts = 5;
+              } catch (error) {
+                findNextButtonAttempts++;
+                console.log("Can't find next button. Reloading again.")
+                await page.reload();
+                let doneSelect = await selectElements(resortID, suiteType);
+                console.log("Reselected elements successfully: ", doneSelect);
+                let doneScraping = await checkAvailability(months, resortID, suiteType);
+                console.log("Checked availability successfully: ", doneScraping !== null);
+                return doneScraping;
+
               }
-              findNextButtonAttempts = 5;
-            } catch (error) {
-              findNextButtonAttempts++;
-              console.log("Can't find next button. Reloading again.")
-              await page.reload();
-              let doneSelect = await selectElements(resortID, suiteType);
-              console.log("Reselected elements successfully: ", doneSelect);
-              let doneScraping = await checkAvailability(months, resortID, suiteType);
-              console.log("Checked availability successfully: ", doneScraping !== null);
-              return doneScraping;
-
             }
           }
+        } else {
+          console.log("Can't find date element. Reloading again.")
+          await page.reload();
+          let doneSelect = await selectElements(resortID, suiteType);
+          console.log("Reselected elements successfully: ", doneSelect);
+          let doneScraping = await checkAvailability(months, resortID, suiteType);
+          console.log("Checked availability successfully: ", doneScraping !== null);
+          return doneScraping;         
         }
+        
       } catch (error) {
         console.error("Error:", error.message);
         console.log("Day class not found");
