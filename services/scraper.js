@@ -111,6 +111,10 @@ async function login() {
         )
       ]);
 
+      if (await pageForAddress.url() !== "https://clubwyndham.wyndhamdestinations.com/us/en/login"){
+        return "MAINTENANCE";
+      }
+
       let addressSelectorFound = 0;
 
       while (addressSelectorFound < 5) {
@@ -309,7 +313,7 @@ async function selectElements(resortID, suiteType) {
               const element = document.querySelector(selector);
               return !!element;
             },
-            { timeout: 60000 },
+            { timeout: 10000 },
             resortSelector
           ))
       );
@@ -387,18 +391,10 @@ async function selectElements(resortID, suiteType) {
       }
     } catch (error) {
       console.error("Error:", error.message);
-      setupSelect++;
-
-      await page.reload();
-
-      console.log("setupselectnow: " + setupSelect)
-
-      // try to relaunch page for one last time
-      if (setupSelect === 4) {
-        let doneLogin = await login();
-        console.log("logged in successfully", doneLogin);
-        gotoPageAgain = true;
-      }
+      
+      let doneLogin = await login();
+      console.log("logged in successfully", doneLogin);
+      gotoPageAgain = true;
       
       if (setupSelect === 5) return null;
     }
