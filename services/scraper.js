@@ -429,7 +429,7 @@ async function findDateSelector(initialCurrentDate, month, day, months, resortID
       // Executed when during the scraping the date elements couldn't be found
       if(initialCurrentDate !== null) {
         console.log("entered the while loop");
-        initialMonthNumber = initialCurrentDate.toLocaleDateString(undefined, { month: "2-digit", year: "2-digit" });
+        let initialMonthNumber = initialCurrentDate.toLocaleDateString(undefined, { month: "2-digit", year: "2-digit" });
         monthNumber = currentDate.toLocaleDateString(undefined, { month: "2-digit", year: "2-digit" });
 
         console.log(initialMonthNumber);
@@ -447,6 +447,7 @@ async function findDateSelector(initialCurrentDate, month, day, months, resortID
             initialCurrentDate = addMonths(initialCurrentDate, 1)
             initialMonthNumber = initialCurrentDate.toLocaleDateString(undefined, { month: "2-digit", year: "2-digit" });
             console.log("initial current day added by one month");
+            await page.waitForTimeout(3000);
           } catch (error) {
             console.log("Error: ", error.message);
           }
