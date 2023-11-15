@@ -303,10 +303,8 @@ async function selectElements(resortID, suiteType) {
   while (setupSelect < 5) {
     try {
       if (gotoPageAgain) {
-        await page.waitForSelector(
-          `.resortAvailabilityWidgetV3-title-text-color-default`,
-          { timeout: 120000 }
-        );
+        await page.bringToFront();
+        var calendarUrl = `https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`;
         await page.goto(calendarUrl);
       }
 
