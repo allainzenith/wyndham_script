@@ -208,6 +208,7 @@ router.get('/retry', async(req, res, next) => {
 
   let resort = await findOrCreateAResort(resortID, suiteType); 
   let eventCreated = await findByPk((req.query.execID).trim(), "execution");
+  await updateEventStatus(eventCreated, "SCRAPING");
   
   if (eventCreated !== null){
     try {

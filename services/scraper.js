@@ -111,7 +111,7 @@ async function login() {
         )
       ]);
 
-      if (await pageForAddress.url() !== "https://clubwyndham.wyndhamdestinations.com/us/en/login"){
+      if (await pageForAddress.url() !== "https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results"){
         return "MAINTENANCE";
       }
 
