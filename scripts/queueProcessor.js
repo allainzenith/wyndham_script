@@ -92,7 +92,11 @@ async function addToScheduledQueue(task, callback, ...args) {
   //scheduled updates would only execute if verified and logged in successfully
   else { 
     console.log("logged in: ", loggedIn);
-    scheduledtaskQueue = [] }
+    scheduledtaskQueue = [];
+    const browser = sharedData.browser;
+    await browser.close();
+    needtolaunchPuppeteer = true;
+  }
     resolve(loggedIn);
   });
 
