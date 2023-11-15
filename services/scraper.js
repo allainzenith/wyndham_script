@@ -406,7 +406,7 @@ async function selectElements(resortID, suiteType) {
 }
 
 
-async function findDateSelector(initialCurrentDate, month, day, resortID, suiteType, currentDate) {
+async function findDateSelector(initialCurrentDate, month, day, months, resortID, suiteType, currentDate) {
   const page = sharedData.page;
   let findDay = 0;
   let dateElement = null;
@@ -428,26 +428,28 @@ async function findDateSelector(initialCurrentDate, month, day, resortID, suiteT
 
       // Executed when during the scraping the date elements couldn't be found
       if(initialCurrentDate !== null) {
-        initialMonthNumber = parseInt(initialCurrentDate.toLocaleDateString(undefined, { month: "2-digit" }), 10);
-        monthNumber = parseInt(currentDate.toLocaleDateString(undefined, { month: "2-digit" }), 10);
+        console.log("entered the while loop");
+        initialMonthNumber = initialCurrentDate.toLocaleDateString(undefined, { month: "2-digit", year: "2-digit" });
+        monthNumber = currentDate.toLocaleDateString(undefined, { month: "2-digit", year: "2-digit" });
+
+        console.log(initialMonthNumber);
+        console.log(monthNumber);
       
-        while (initialMonthNumber < monthNumber){
+        while (initialMonthNumber !== monthNumber){
           console.log("attempting to retrieve date element");
-          console.log("while " + initialMonthNumber + " is less than " + monthNumber);
+          console.log("while " + initialMonthNumber + " is not equal to " + monthNumber);
           const nextClass = '.react-datepicker__navigation--next[aria-label="Next Month"]';
           try {
             var nextButton = await page.waitForSelector(nextClass, {
               timeout: 10000,
             });
             await nextButton.click();
-            initialMonthNumber++;
+            initialCurrentDate = addMonths(initialCurrentDate, 1)
+            initialMonthNumber = initialCurrentDate.toLocaleDateString(undefined, { month: "2-digit", year: "2-digit" });
+            console.log("initial current day added by one month");
           } catch (error) {
-            console.log("Can't find next button. Reloading again.")
-            await page.reload();
-            let doneSelect = await selectElements(resortID, suiteType);
-            console.log("Reselected elements successfully: ", doneSelect);
+            console.log("Error: ", error.message);
           }
-
         }    
       }
     }
@@ -474,7 +476,7 @@ async function checkAvailability(months, resortID, suiteType) {
       day: "2-digit",
     });
 
-    await findDateSelector(null, month, day, resortID, suiteType, currentDate)
+    await findDateSelector(null, month, day, months, resortID, suiteType, currentDate)
 
     while (currentDate <= EndDate) {
       try {
@@ -485,7 +487,7 @@ async function checkAvailability(months, resortID, suiteType) {
           day: "2-digit",
         });
 
-        var dateElement = await findDateSelector(initialCurrentDate, month, day, resortID, suiteType, currentDate);
+        var dateElement = await findDateSelector(initialCurrentDate, month, day, months, resortID, suiteType, currentDate);
 
         if (dateElement !== null) {
 
@@ -529,27 +531,10 @@ async function checkAvailability(months, resortID, suiteType) {
               await page.reload();
               let doneSelect = await selectElements(resortID, suiteType);
               console.log("Reselected elements successfully: ", doneSelect);
+              let doneScraping = await checkAvailability(months, resortID, suiteType);
+              console.log("Checked availability successfully: ", doneScraping !== null);
+              return doneScraping;
 
-              let initialMonthNumber = parseInt(initialCurrentDate.toLocaleDateString(undefined, { month: "2-digit" }), 10);
-              let monthNumber = parseInt(currentDate.toLocaleDateString(undefined, { month: "2-digit" }), 10);
-              let backtoStart = initialMonthNumber;
-      
-              while (initialMonthNumber < monthNumber){
-                console.log("attempting to retrieve lost next button");
-                console.log("while " + initialMonthNumber + " is less than " + monthNumber);
-                const nextClass = '.react-datepicker__navigation--next[aria-label="Next Month"]';
-                try {
-                  var nextButton = await page.waitForSelector(nextClass, {
-                    timeout: 10000,
-                  });
-                  await nextButton.click();
-                  initialMonthNumber++;
-                } catch (error) {
-                  console.log("Error: ", error.message);
-                  initialMonthNumber = backtoStart;
-                }
-
-              } 
             }
           }
         }
