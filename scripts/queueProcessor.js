@@ -69,7 +69,10 @@ async function addToQueue(task, callback, ...args) {
     }
     taskQueue.push({ task, args, callback });
     if (loggedIn === true) { await processQueue() }
-    if (loggedIn === "MAINTENANCE" || loggedIn === null) { taskQueue = [] }
+    if (loggedIn === "MAINTENANCE" || loggedIn === null) { 
+      taskQueue = [];
+      await processQueue();
+    }
 
     resolve(loggedIn);
   });
@@ -93,9 +96,7 @@ async function addToScheduledQueue(task, callback, ...args) {
   else { 
     console.log("logged in: ", loggedIn);
     scheduledtaskQueue = [];
-    const browser = sharedData.browser;
-    await browser.close();
-    needtolaunchPuppeteer = true;
+    await processQueue();
   }
     resolve(loggedIn);
   });
