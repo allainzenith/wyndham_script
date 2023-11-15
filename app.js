@@ -10,6 +10,7 @@ var { clientID, clientSecret, returnAValidToken } = require("./config/config");
 
 const schedule = require("node-schedule");
 const { scheduledUpdates } = require("./scripts/scheduledUpdates");
+const { taskQueue } = require("./scripts/queueProcessor");
 var app = express();
 
 let thisToken;
@@ -56,8 +57,8 @@ app.use(function (err, req, res, next) {
   res.render("error");
 });
 
-// // Schedule the update every 6 hours, 24 hours, and 1 week
-// schedule.scheduleJob("0 */6 * * *", async () => {
+// Schedule the update every 6 hours, 24 hours, and 1 week
+// schedule.scheduleJob("0 */8 * * *", async () => {
 //   console.log("this schedule function is called");
 //   await scheduledUpdates("TIER 1");
 // });
