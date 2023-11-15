@@ -60,17 +60,17 @@ async function scheduledUpdates(tierType) {
                     console.log('Task completed');
                 }, resortID, suiteType, months, res, eventCreated);
             } else if (loggedIn === false) {
-                updateEventStatus(ev, "UNVERIFIED");
+                updateEventStatus(eventCreated, "UNVERIFIED");
             } else if (loggedIn === "MAINTENANCE") {
-                updateEventStatus(ev, "MAINTENANCE");
+                updateEventStatus(eventCreated, "MAINTENANCE");
             } else if (loggedIn === "LOGIN_ERROR") {
-                updateEventStatus(ev, "LOGIN_ERROR");
+                updateEventStatus(eventCreated, "LOGIN_ERROR");
             }
         }
 
       })
     .catch(error => {
-    console.error('Send OTP error:', error);
+    console.error('Scheduled updates error:', error);
     });
 
 }
