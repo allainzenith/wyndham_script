@@ -6,7 +6,6 @@ const path = require("path");
 const { addMonths, addDays } = require("date-fns");
 const { userName, passWord } = require("../config/config");
 const { globals, sharedData } = require("../config/puppeteerOptions");
-const { launch } = require("puppeteer");
 
 let needtoLogin;
 
@@ -186,19 +185,84 @@ async function findSendSmsCode(){
 
   } catch (error) {
     await page.waitForTimeout(5000);
-    if(await page.url() === 'https://clubwyndham.wyndhamdestinations.com/us/en/owner/account') {
+    
+    if(await page.url() !== 'https://clubwyndham.wyndhamdestinations.com/us/en/login') {
       console.log("No need for OTP verification");
-      console.log("Logged in successfullyyyy!!");
-      await page.waitForSelector(
-        `.resortAvailabilityWidgetV3-title-text-color-default`,
-        { timeout: 120000 }
-      );
-      return true;
+      console.log("Logged in successfullyyyy!!");  
+
+      let canSelect = await enableSessionCalendar();
+      return canSelect;
+
     } else {
       console.log("Error: ", error.message);
       return null;
     }
   }
+}
+
+async function enableSessionCalendar(){
+  const page = sharedData.page;
+  try {
+    await page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results');
+    console.log("navigated to resorts page");
+    // let hamburgerSelector = '.hamburger-menu[aria-label="Toggle navigation menu"]'
+    // await page.waitForSelector(hamburgerSelector);
+    // await page.click(hamburgerSelector);
+
+    // // Get all <li> elements with the specified class
+    // const listItems = await page.$$('li.mobile-navigation__list-item');
+
+    // // Find the <li> with an <a> tag containing the text "Resorts"
+    // const resortsListItem = await Promise.all(listItems.map(async (li) => {
+    //   const linkText = await li.$eval('a.mobile-navigation__list-item--title', (a) => a.innerText.trim());
+    //   return linkText === 'Resorts' ? li : null;
+    // }));
+
+    // // Filter out null values (li elements without a link with text "Resorts")
+    // const validResortsListItems = resortsListItem.filter((li) => li !== null);
+
+    // // Click on each valid <li> element
+    // for (const li of validResortsListItems) {
+    //   await Promise.all([
+    //     page.waitForNavigation(), 
+    //     li.click()
+    //   ]);
+    // }
+
+
+    // Replace 'your-div-class' with the actual class name of the div
+    const divClassName = 'resort-card__name';
+
+    // Use the attribute selector to find the first <a> tag within the specified div
+    const link = await page.$(`div.${divClassName} a`);
+
+    if (link) {
+
+      await Promise.all([
+        page.waitForNavigation(), 
+        await link.click()
+      ]);
+
+      let calendarSelector = `a[href*="/us/en/owner/resort-monthly-calendar"]`;
+      await page.waitForSelector(calendarSelector);
+  
+      await Promise.all([
+        page.waitForNavigation(), 
+        page.click(calendarSelector)
+      ]);
+
+      return true;
+  
+    } else {
+      console.error(`Link within div with class "${divClassName}" not found`);
+
+      return false;
+    }  
+  } catch (error) {
+      console.log("Error: ", error.message);
+      return false;    
+  }
+
 }
 
 async function checkOverlay(overlaySelector) {
@@ -266,22 +330,25 @@ async function sendOTP(verOTP) {
     console.log("Hit submit button");
 
     try {
-      await page.waitForTimeout(10000);
-      await page.waitForSelector('#error-fragment', {timeout:10000, visible: true});
+      await page.waitForSelector('#error-fragment', {timeout:5000, visible: true});
       console.log("error selector found")
       console.log("The token code is incorrect");
       return false;
     } catch (error) {
-      if (await page.url() !== "https://clubwyndham.wyndhamdestinations.com/us/en/owner/account"){
-        return "MAINTENANCE";
-      } else {
-        await page.waitForSelector(
-          `.resortAvailabilityWidgetV3-title-text-color-default`,
-          { timeout: 120000 }
-        );
-        console.log("Device verified successfully!");
-        return true;
-      }
+      // if (await page.url() !== "https://clubwyndham.wyndhamdestinations.com/us/en/owner/account"){
+      //   return "MAINTENANCE";
+      // } else {
+      //   await page.waitForSelector(
+      //     `.resortAvailabilityWidgetV3-title-text-color-default`,
+      //     { timeout: 120000 }
+      //   );
+      //   console.log("Device verified successfully!");
+      //   return true;
+      // }
+      await page.waitForTimeout(5000);
+      console.log("No need for OTP verification");
+      console.log("Logged in successfullyyyy!!");
+      return true;
     }
   } catch (error) {
     console.error("Error:", error.message);
@@ -303,8 +370,6 @@ async function selectElements(resortID, suiteType) {
   while (setupSelect < 5) {
     try {
       if (gotoPageAgain) {
-        await page.bringToFront();
-        var calendarUrl = `https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`;
         await page.goto(calendarUrl);
       }
 
@@ -409,7 +474,6 @@ async function selectElements(resortID, suiteType) {
 
 async function findDateSelector(initialCurrentDate, month, day, months, resortID, suiteType, currentDate) {
   const page = sharedData.page;
-  let findDay = 0;
   let dateElement = null;
   let dayClass = `.react-datepicker__day--0${day}[aria-label*="${month}"]`;
 
@@ -418,42 +482,8 @@ async function findDateSelector(initialCurrentDate, month, day, months, resortID
         timeout: 10000,
       });
       await dateElement.scrollIntoView();
-      // findDay = 5;
     } catch (error) {
-      // findDay++;
-      // console.log("Can't find date element. Reloading again.")
-      // await page.reload();
-      // let doneSelect = await selectElements(resortID, suiteType);
-      // console.log("Reselected elements successfully: ", doneSelect);
       console.log("Can't find date element. Error: ", error.message)
-
-      // Executed when during the scraping the date elements couldn't be found
-      // if(initialCurrentDate !== null) {
-      //   console.log("entered the while loop");
-      //   let initialMonthNumber = initialCurrentDate.toLocaleDateString(undefined, { month: "2-digit", year: "2-digit" });
-      //   monthNumber = currentDate.toLocaleDateString(undefined, { month: "2-digit", year: "2-digit" });
-
-      //   console.log(initialMonthNumber);
-      //   console.log(monthNumber);
-      
-      //   while (initialMonthNumber !== monthNumber){
-      //     console.log("attempting to retrieve date element");
-      //     console.log("while " + initialMonthNumber + " is not equal to " + monthNumber);
-      //     const nextClass = '.react-datepicker__navigation--next[aria-label="Next Month"]';
-      //     try {
-      //       var nextButton = await page.waitForSelector(nextClass, {
-      //         timeout: 10000,
-      //       });
-      //       await nextButton.click();
-      //       initialCurrentDate = addMonths(initialCurrentDate, 1)
-      //       initialMonthNumber = initialCurrentDate.toLocaleDateString(undefined, { month: "2-digit", year: "2-digit" });
-      //       console.log("initial current day added by one month");
-      //       await page.waitForTimeout(3000);
-      //     } catch (error) {
-      //       console.log("Error: ", error.message);
-      //     }
-      //   }    
-      // }
     
     }
 
