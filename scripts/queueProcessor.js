@@ -12,9 +12,9 @@ async function processQueue() {
   if (isProcessing) return;
   if (taskQueue.length === 0 && scheduledtaskQueue.length === 0) {
     console.log("All tasks in the queue finished executing..");
+    needtolaunchPuppeteer = true;
     const browser = sharedData.browser;
     await browser.close();
-    needtolaunchPuppeteer = true;
     return;
   }
 
@@ -50,7 +50,10 @@ async function processVerification(verOTP) {
       console.log("this part is executed");
       await processQueue(); 
     }
-    if (loggedIn === "MAINTENANCE" || loggedIn === null) { taskQueue = [] }
+    if (loggedIn === "MAINTENANCE" || loggedIn === null) { 
+      taskQueue = [];
+      await processQueue();
+    }
 
     resolve(loggedIn);
   });
@@ -67,10 +70,13 @@ async function addToQueue(task, callback, ...args) {
         "puppeteer is already launched. execution of prior task is ongoing."
       );
     }
+
     taskQueue.push({ task, args, callback });
+
     if (loggedIn === true) { await processQueue() }
     if (loggedIn === "MAINTENANCE" || loggedIn === null) { 
       taskQueue = [];
+      await processQueue();
     }
 
     resolve(loggedIn);
