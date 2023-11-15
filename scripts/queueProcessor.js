@@ -71,7 +71,6 @@ async function addToQueue(task, callback, ...args) {
     if (loggedIn === true) { await processQueue() }
     if (loggedIn === "MAINTENANCE" || loggedIn === null) { 
       taskQueue = [];
-      await processQueue();
     }
 
     resolve(loggedIn);
