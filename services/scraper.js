@@ -521,19 +521,26 @@ async function checkAvailability(months, resortID, suiteType) {
                   console.log("Clicked next button.")
                   await page.waitForTimeout(2000);
 
-                  let selectedSuiteType = null;
-                  while (selectedSuiteType !== suiteType) {
-                    const suiteSelector = "#suiteType";
-                    await page.select(suiteSelector, suiteType);
+                  const suiteSelector = "#suiteType";
                     
-                    selectedSuiteType = await page.evaluate((selector) => {
+                  let selectedSuiteType = await page.evaluate((selector) => {
                       const select = document.querySelector(selector);
                       const selectedOption = select.options[select.selectedIndex];
                       return selectedOption.text;
-                    }, suiteSelector);
-          
-                    console.log("This is the selected suite type:",selectedSuiteType);
+                  }, suiteSelector);
+
+                  console.log("THE SUITE TYPE SELECTED: ", selectedSuiteType);
+
+                  if (selectedSuiteType !== suiteType) {
+                    console.log("RESETTING THE SUITE TYPE");
+                    await page.reload();
+                    let doneSelect = await selectElements(resortID, suiteType);
+                    console.log("Reselected elements successfully: ", doneSelect);
+                    let doneScraping = await checkAvailability(months, resortID, suiteType);
+                    console.log("Checked availability successfully: ", doneScraping !== null);
+                    return doneScraping;
                   }
+
                 } else {
                   console.log("did not find the button");
                 }
