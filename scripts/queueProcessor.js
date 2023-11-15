@@ -147,5 +147,6 @@ module.exports = {
   addToQueue,
   resourceIntensiveTask,
   addToScheduledQueue,
-  processVerification
+  processVerification,
+  taskQueue
 };
