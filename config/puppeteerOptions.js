@@ -39,6 +39,8 @@ async function globals() {
       sharedData.page = await sharedData.browser.newPage();
       sharedData.pageForAddress = await sharedData.browser.newPage();
       sharedData.page.setDefaultNavigationTimeout(120000);
+      sharedData.pageForAddress.setDefaultNavigationTimeout(120000);
+
     } catch (error) {
       console.log("Launching of puppeteer failed: " + error);
       console.log("Launching puppeteer again.");
@@ -47,10 +49,10 @@ async function globals() {
       }
     }
 
-    
-
     return sharedData;
 }
+
+
 
 module.exports = { 
     globals,
