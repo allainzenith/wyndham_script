@@ -147,7 +147,10 @@ async function login() {
       try {
         await page.waitForTimeout(5000);
         await page.waitForSelector(`.button-primary[value*="Login"]`);
-        await page.click(`.button-primary[value*="Login"]`);
+        await Promise.all([
+          page.waitForNavigation(), 
+          page.click(`.button-primary[value*="Login"]`)
+        ]);
         console.log("form submitted")
       } catch (error) {
         console.log("Can't submit");
@@ -204,30 +207,26 @@ async function enableSessionCalendar(){
   const page = sharedData.page;
   try {
     await page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results');
-    console.log("navigated to resorts page");
-    // let hamburgerSelector = '.hamburger-menu[aria-label="Toggle navigation menu"]'
-    // await page.waitForSelector(hamburgerSelector);
-    // await page.click(hamburgerSelector);
 
-    // // Get all <li> elements with the specified class
-    // const listItems = await page.$$('li.mobile-navigation__list-item');
+    let addressSelectorFound = 0;
 
-    // // Find the <li> with an <a> tag containing the text "Resorts"
-    // const resortsListItem = await Promise.all(listItems.map(async (li) => {
-    //   const linkText = await li.$eval('a.mobile-navigation__list-item--title', (a) => a.innerText.trim());
-    //   return linkText === 'Resorts' ? li : null;
-    // }));
-
-    // // Filter out null values (li elements without a link with text "Resorts")
-    // const validResortsListItems = resortsListItem.filter((li) => li !== null);
-
-    // // Click on each valid <li> element
-    // for (const li of validResortsListItems) {
-    //   await Promise.all([
-    //     page.waitForNavigation(), 
-    //     li.click()
-    //   ]);
-    // }
+    while (addressSelectorFound < 5) {
+      try {
+        await page.waitForSelector(`.resort-card`, {
+          timeout: 10000,
+        });
+        await page.waitForSelector(`.resort-card__address`, {
+          timeout: 10000,
+        });       
+        console.log("resorts fully loaded.");
+        console.log("navigated to resorts page");
+        addressSelectorFound = 5;
+      } catch (error) {
+        addressSelectorFound++;
+        console.log("Timed out. Reloading the page.");
+        await page.reload();
+      }
+    }
 
 
     // Replace 'your-div-class' with the actual class name of the div
@@ -505,6 +504,26 @@ async function checkAvailability(months, resortID, suiteType) {
       day: "2-digit",
     });
 
+    const suiteSelector = "#suiteType";
+                    
+    let selectedSuiteType = await page.evaluate((selector) => {
+        const select = document.querySelector(selector);
+        const selectedOption = select.options[select.selectedIndex];
+        return selectedOption.text;
+    }, suiteSelector);
+
+    console.log("THE SUITE TYPE SELECTED: ", selectedSuiteType);
+
+    if (selectedSuiteType !== suiteType) {
+      console.log("RESETTING THE SUITE TYPE");
+      await page.reload();
+      let doneSelect = await selectElements(resortID, suiteType);
+      console.log("Reselected elements successfully: ", doneSelect);
+      let doneScraping = await checkAvailability(months, resortID, suiteType);
+      console.log("Checked availability successfully: ", doneScraping !== null);
+      return doneScraping;
+    }
+
     await findDateSelector(null, month, day, months, resortID, suiteType, currentDate)
 
     while (currentDate <= EndDate) {
@@ -519,6 +538,7 @@ async function checkAvailability(months, resortID, suiteType) {
         var dateElement = await findDateSelector(initialCurrentDate, month, day, months, resortID, suiteType, currentDate);
 
         if (dateElement !== null) {
+          await dateElement.scrollIntoView();
 
           var ariaDisabledValue = await dateElement.evaluate((element) => {
             // Use the element.getAttribute() method to get the value of aria-disabled
@@ -548,7 +568,7 @@ async function checkAvailability(months, resortID, suiteType) {
                 if (nextButton) {
                   await nextButton.click();
                   console.log("Clicked next button.")
-                  await page.waitForTimeout(2000);
+                  await page.waitForTimeout(3000);
 
                   const suiteSelector = "#suiteType";
                     

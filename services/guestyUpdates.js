@@ -5,6 +5,7 @@
 const axios = require('axios')
 const { MAP_API_KEY } = require('../config/config')
 var { clientID, clientSecret, returnAValidToken } = require("../config/config");
+const sdk = require('api')('@open-api-docs/v1.0#pc5in1tloyhmv10');
 
 // async function executeUpdates(resortFoundorCreated, token, address, updatedAvail, suiteType){
 async function executeUpdates(resortFoundorCreated, address, updatedAvail, suiteType){
@@ -35,9 +36,22 @@ async function executeUpdates(resortFoundorCreated, address, updatedAvail, suite
                     }
 
                     // performs the update for a listing ID that is multi-unit or single, but not a sub unit
+                    // for (const listing of listings) {
+                    //     // updateSuccess = await updateAvailability(listing, updatedAvail, token);
+                    //     updateSuccess = await updateAvailability(listing, updatedAvail);
+
+                    //     listingIDs.push(listing._id);
+                    //     listingNames.push(listing.title);
+
+                    //     if (updateSuccess === false) {
+                    //         updatedAllSuccessfully++;
+                    //     }
+
+                    // }
+
+                    updateSuccess = await updateAvailability(listings, updatedAvail); 
+
                     for (const listing of listings) {
-                        // updateSuccess = await updateAvailability(listing, updatedAvail, token);
-                        updateSuccess = await updateAvailability(listing, updatedAvail);
 
                         listingIDs.push(listing._id);
                         listingNames.push(listing.title);
@@ -80,42 +94,45 @@ async function executeUpdates(resortFoundorCreated, address, updatedAvail, suite
                 console.log(avail);
             }
 
-            for (const listing of listingJsonArray) {
-                try {
-                    // let listingObj = await retrieveAListing(listing._id, token)
-                    let listingObj = await retrieveAListing(listing._id)
+            // for (const listing of listingJsonArray) {
+            //     // try {
+            //     //     // let listingObj = await retrieveAListing(listing._id, token)
+            //     //     let listingObj = await retrieveAListing(listing._id)
 
-                    let hasDays = listingObj.calendarRules.bookingWindow.hasOwnProperty('defaultSettings') === false ||
-                                    (listingObj.calendarRules.bookingWindow.defaultSettings &&
-                                        listingObj.calendarRules.bookingWindow.defaultSettings.days !== 0)
+            //     //     let hasDays = listingObj.calendarRules.bookingWindow.hasOwnProperty('defaultSettings') === false ||
+            //     //                     (listingObj.calendarRules.bookingWindow.defaultSettings &&
+            //     //                         listingObj.calendarRules.bookingWindow.defaultSettings.days !== 0)
 
-                    if (hasDays) {
-                        console.log("This listing calendar needs to be updated.")
-                        // let updatedAvailabilitySettings = await updateAvailabilitySettings(listing._id, token);
-                        let updatedAvailabilitySettings = await updateAvailabilitySettings(listing._id);
+            //     //     if (hasDays) {
+            //     //         console.log("This listing calendar needs to be updated.")
+            //     //         // let updatedAvailabilitySettings = await updateAvailabilitySettings(listing._id, token);
+            //     //         let updatedAvailabilitySettings = await updateAvailabilitySettings(listing._id);
                         
-                        if (updatedAvailabilitySettings) {
-                            console.log("Calendar availability settings updated successfully.");
-                        } else {
-                            console.log("Calendar availability settings update failed.");
-                        }
-                    } 
+            //     //         if (updatedAvailabilitySettings) {
+            //     //             console.log("Calendar availability settings updated successfully.");
+            //     //         } else {
+            //     //             console.log("Calendar availability settings update failed.");
+            //     //         }
+            //     //     } 
 
-                } catch (error) {
-                    console.error("Error: " + error);
-                }
+            //     // } catch (error) {
+            //     //     console.error("Error: " + error);
+            //     // }
 
-                // updateSuccess = await updateAvailability(listing, updatedAvail, token);
-                updateSuccess = await updateAvailability(listing, updatedAvail);
+            //     updateSuccess = await updateAvailability(listing, updatedAvail);
 
-                if (updateSuccess) {
-                    console.log("listing._id: " + listing._id);
-                    listingIDs.push(listing._id);
-                } else {
-                    updatedAllSuccessfully++;
-                }
+            //     if (updateSuccess) {
+            //         console.log("listing._id: " + listing._id);
+            //         listingIDs.push(listing._id);
+            //     } else {
+            //         updatedAllSuccessfully++;
+            //     }
 
-            }
+            // }
+
+            updateSuccess = await updateAvailability(listingJsonArray, updatedAvail);
+
+
 
             success = updatedAllSuccessfully === 0;
 
@@ -318,19 +335,19 @@ async function updateAvailability(listing, updatedAvail){
 
     const arrayOfAvailability = []
 
-    for (const item of updatedAvail) {
+    for(const list of listing) {
+        for (const item of updatedAvail) {
 
-        let data = {
-            listingId: listing._id,
-            startDate: item.start,
-            endDate: item.end,
-            status: item.availability,
-
+            arrayOfAvailability.push({
+                listingId: list._id,
+                startDate: item.start,
+                endDate: item.end,
+                status: item.availability
+            })
+    
+            // arrayOfAvailability.push(data);
         }
-
-        arrayOfAvailability.push(data);
     }
-
     const chunkSize = 10;
     const subArrayOfAvailability = [];
     let success = true;
@@ -340,6 +357,27 @@ async function updateAvailability(listing, updatedAvail){
     }
 
     console.log("Subarray size: ", subArrayOfAvailability.length);
+
+//     sdk.auth('Bearer eyJraWQiOiJaRHJMRkN6Zm1hQlFDby02ODI3U2M4ZlpPZmV3SHVxTWVNZ0J3cXVHWUhRIiwiYWxnIjoiUlMyNTYifQ.eyJ2ZXIiOjEsImp0aSI6IkFULnk5VXBnTlBDRG91QW12aFNBQ0pqU2pHcXJ3czBzM3B0N3JsRE0yM1Z5ZzQiLCJpc3MiOiJodHRwczovL2xvZ2luLmd1ZXN0eS5jb20vb2F1dGgyL2F1czFwOHFyaDUzQ2NRVEk5NWQ3IiwiYXVkIjoiaHR0cHM6Ly9vcGVuLWFwaS5ndWVzdHkuY29tIiwiaWF0IjoxNzAwMDkwMDY0LCJleHAiOjE3MDAxNzY0NjQsImNpZCI6IjBvYWJsbzRmaDVLNW00R3lONWQ3Iiwic2NwIjpbIm9wZW4tYXBpIl0sInJlcXVlc3RlciI6IkVYVEVSTkFMIiwiYWNjb3VudElkIjoiNjI0NzYxODBlOWZkYmEwMDM2NmY3ZjQyIiwic3ViIjoiMG9hYmxvNGZoNUs1bTRHeU41ZDciLCJ1c2VyUm9sZXMiOlt7InJvbGVJZCI6eyJwZXJtaXNzaW9ucyI6WyJhZG1pbiJdfX1dLCJyb2xlIjoidXNlciIsImNsaWVudFR5cGUiOiJvcGVuYXBpIiwiaWFtIjoidjMiLCJhY2NvdW50TmFtZSI6IkxpdmUgU3VpdGUiLCJuYW1lIjoic2NyYXBlci1hbGxhaW4tZGV2In0.b2UXBPCJxM_dlM4QTsk94VIeF_1kBHmAatg-cPzFAjv4BDziN_T111MF8lNgsJUR5WaieBlTTNWJJw6K-SKrnwWd-wnIH-jPKd2Odnc3ZczFy0HahHoooqIjPocbYbAjOgtnGi6MOD5eGWk4wirJqjQ-Th8E_R5VKIlcGPFp2QUu03zzuljjKiXaBF4seXoKYnUYMDbO_trVIK3M6nw9oL2BDjTB_S_tuodyJrP-cMS0OrvBqj6ijMQrkUdkgElx39y7yFLixMcpL9rW6cJmEFdPCnR366-3vYkj4KGYyRgseq7AVh3KGmeZK25uTmLIlVzsm_3EJXOYclYkb38n6g');
+//     sdk.putAvailabilityPricingApiCalendarListings([
+//     {
+//         listingId: '5fa02fa358d2db673e17bc2d',
+//         startDate: '2023-01-01',
+//         endDate: '2023-01-01',
+//         status: 'available',
+//         price: '100',
+//         isBasePrice: 'false',
+//         minNights: '3',
+//         isBaseMinNights: 'false',
+//         note: 'this is a note',
+//         cta: 'false',
+//         ctd: 'false'
+//     }
+//     ])
+//   .then(({ data }) => console.log(data))
+//   .catch(err => console.error(err));
+
+    // return true;
 
     for (const sub of subArrayOfAvailability) {
         const url = 'https://open-api.guesty.com/v1/availability-pricing/api/calendar/listings'; 
@@ -351,14 +389,26 @@ async function updateAvailability(listing, updatedAvail){
         };
 
         try {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            const response = await axios.put(url, sub, { headers });
-            console.log('PUT request successful: ', response.data);
+            await new Promise(resolve => setTimeout(resolve, 5000));
+            sdk.auth(`Bearer eyJraWQiOiJaRHJMRkN6Zm1hQlFDby02ODI3U2M4ZlpPZmV3SHVxTWVNZ0J3cXVHWUhRIiwiYWxnIjoiUlMyNTYifQ.eyJ2ZXIiOjEsImp0aSI6IkFULnk5VXBnTlBDRG91QW12aFNBQ0pqU2pHcXJ3czBzM3B0N3JsRE0yM1Z5ZzQiLCJpc3MiOiJodHRwczovL2xvZ2luLmd1ZXN0eS5jb20vb2F1dGgyL2F1czFwOHFyaDUzQ2NRVEk5NWQ3IiwiYXVkIjoiaHR0cHM6Ly9vcGVuLWFwaS5ndWVzdHkuY29tIiwiaWF0IjoxNzAwMDkwMDY0LCJleHAiOjE3MDAxNzY0NjQsImNpZCI6IjBvYWJsbzRmaDVLNW00R3lONWQ3Iiwic2NwIjpbIm9wZW4tYXBpIl0sInJlcXVlc3RlciI6IkVYVEVSTkFMIiwiYWNjb3VudElkIjoiNjI0NzYxODBlOWZkYmEwMDM2NmY3ZjQyIiwic3ViIjoiMG9hYmxvNGZoNUs1bTRHeU41ZDciLCJ1c2VyUm9sZXMiOlt7InJvbGVJZCI6eyJwZXJtaXNzaW9ucyI6WyJhZG1pbiJdfX1dLCJyb2xlIjoidXNlciIsImNsaWVudFR5cGUiOiJvcGVuYXBpIiwiaWFtIjoidjMiLCJhY2NvdW50TmFtZSI6IkxpdmUgU3VpdGUiLCJuYW1lIjoic2NyYXBlci1hbGxhaW4tZGV2In0.b2UXBPCJxM_dlM4QTsk94VIeF_1kBHmAatg-cPzFAjv4BDziN_T111MF8lNgsJUR5WaieBlTTNWJJw6K-SKrnwWd-wnIH-jPKd2Odnc3ZczFy0HahHoooqIjPocbYbAjOgtnGi6MOD5eGWk4wirJqjQ-Th8E_R5VKIlcGPFp2QUu03zzuljjKiXaBF4seXoKYnUYMDbO_trVIK3M6nw9oL2BDjTB_S_tuodyJrP-cMS0OrvBqj6ijMQrkUdkgElx39y7yFLixMcpL9rW6cJmEFdPCnR366-3vYkj4KGYyRgseq7AVh3KGmeZK25uTmLIlVzsm_3EJXOYclYkb38n6g`);
+            await sdk.putAvailabilityPricingApiCalendarListings(sub)
+            .then(({ data }) => console.log(data))
+            .catch(err => console.error(err));
+    
         } catch (error) {
-            console.error('PUT request failed:', error.message);
-            console.error('PUT request failed status code', error.code);
-            success = false;
+            console.log("error");
         }
+
+        // try {
+        //     await new Promise(resolve => setTimeout(resolve, 1000));
+        //     const response = await axios.put(url, sub, { headers });
+        //     console.log('PUT request successful: ', response.data);
+        // } catch (error) {
+        //     console.error('PUT request failed:', error.message);
+        //     console.error('PUT request failed status code', error.code);
+        //     success = false;
+        // }
+
     }
 
     return success;
