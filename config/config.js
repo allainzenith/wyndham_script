@@ -22,8 +22,10 @@ const sequelize = new Sequelize(database, dbUsername, dbPassword, {
     define : { freezeTableName: true },
     logging: false,
     pool: {
-        max: 20, 
-        min: 1
+        max: 10,
+        min: 0,
+        acquire: 30000,
+        idle: 30000,
       },
 });
 

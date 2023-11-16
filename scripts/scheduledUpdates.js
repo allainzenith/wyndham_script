@@ -63,7 +63,7 @@ async function scheduledUpdates(tierType) {
                 updateEventStatus(eventCreated, "UNVERIFIED");
             } else if (loggedIn === "MAINTENANCE") {
                 updateEventStatus(eventCreated, "MAINTENANCE");
-            } else if (loggedIn === "LOGIN_ERROR") {
+            } else {
                 updateEventStatus(eventCreated, "LOGIN_ERROR");
             }
         }

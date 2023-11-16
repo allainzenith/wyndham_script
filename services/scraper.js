@@ -240,15 +240,15 @@ async function enableSessionCalendar(){
 
       await Promise.all([
         page.waitForNavigation(), 
-        await link.click()
+        link.click()
       ]);
 
       let calendarSelector = `a[href*="/us/en/owner/resort-monthly-calendar"]`;
-      await page.waitForSelector(calendarSelector);
+      let calendarElement = await page.waitForSelector(calendarSelector);
   
       await Promise.all([
         page.waitForNavigation(), 
-        page.click(calendarSelector)
+        page.click(calendarSelector),
       ]);
 
       return true;
@@ -256,11 +256,11 @@ async function enableSessionCalendar(){
     } else {
       console.error(`Link within div with class "${divClassName}" not found`);
 
-      return false;
+      return null;
     }  
   } catch (error) {
       console.log("Error: ", error.message);
-      return false;    
+      return null;    
   }
 
 }
@@ -335,20 +335,19 @@ async function sendOTP(verOTP) {
       console.log("The token code is incorrect");
       return false;
     } catch (error) {
-      // if (await page.url() !== "https://clubwyndham.wyndhamdestinations.com/us/en/owner/account"){
-      //   return "MAINTENANCE";
-      // } else {
-      //   await page.waitForSelector(
-      //     `.resortAvailabilityWidgetV3-title-text-color-default`,
-      //     { timeout: 120000 }
-      //   );
-      //   console.log("Device verified successfully!");
-      //   return true;
-      // }
       await page.waitForTimeout(5000);
-      console.log("No need for OTP verification");
-      console.log("Logged in successfullyyyy!!");
-      return true;
+    
+      if(await page.url() !== 'https://clubwyndham.wyndhamdestinations.com/us/en/login') {
+        console.log("No need for OTP verification");
+        console.log("Logged in successfullyyyy!!");  
+  
+        let canSelect = await enableSessionCalendar();
+        return canSelect;
+  
+      } else {
+        console.log("Error: ", error.message);
+        return null;
+      }
     }
   } catch (error) {
     console.error("Error:", error.message);
@@ -359,10 +358,9 @@ async function sendOTP(verOTP) {
 
 async function selectElements(resortID, suiteType) {
   const page = sharedData.page;
+
   await page.bringToFront();
-
   var calendarUrl = `https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`;
-
   await page.goto(calendarUrl);
 
   let setupSelect = 0;
