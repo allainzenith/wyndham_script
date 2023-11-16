@@ -37,9 +37,11 @@ async function countRecords(objectType, condJson) {
 async function findAllRecords(objectType, order) {
   try {
     const typeofObject = objectType == "execution" ? execution : resorts;
-    return await typeofObject.findAll({
+    const records = await typeofObject.findAll({
       order: order,
     });
+
+    return records;
   } catch (error) {
     console.error("Error fetching all records: " + error);
     return false;
