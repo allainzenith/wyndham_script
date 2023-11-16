@@ -358,18 +358,15 @@ async function sendOTP(verOTP) {
 async function selectElements(resortID, suiteType) {
   const page = sharedData.page;
 
-  await page.bringToFront();
-  var calendarUrl = `https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`;
-  await page.goto(calendarUrl);
+  // await page.bringToFront();
+  // var calendarUrl = `https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`;
+  // await page.goto(calendarUrl);
+
 
   let setupSelect = 0;
   let gotoPageAgain = false;
   while (setupSelect < 5) {
     try {
-      if (gotoPageAgain) {
-        await page.goto(calendarUrl);
-      }
-
       const resortSelector = "#ResortSelect";
 
       await page.waitForSelector(resortSelector).then(
@@ -383,6 +380,24 @@ async function selectElements(resortID, suiteType) {
             resortSelector
           ))
       );
+
+      let selectedResort = null;
+      while (selectedResort !== resortID) {
+        // await page.select(resortSelector, resortID);
+
+        await Promise.all([
+          page.waitForNavigation(), 
+          page.select(resortSelector, resortID)
+        ]);
+    
+        selectedResort = await page.evaluate((selector) => {
+          const select = document.querySelector(selector);
+          const selectedOption = select.options[select.selectedIndex];
+          return selectedOption.value;
+        }, resortSelector);
+    
+        console.log("This is the selected resort:",selectedResort);
+      }
 
       let selectedOptionText = await page.evaluate((selector) => {
         const select = document.querySelector(selector);
