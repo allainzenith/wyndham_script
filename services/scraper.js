@@ -519,10 +519,9 @@ async function checkAvailability(months, resortID, suiteType) {
       await page.reload();
       let doneSelect = await selectElements(resortID, suiteType);
       console.log("Reselected elements successfully: ", doneSelect);
-      let doneScraping = await checkAvailability(months, resortID, suiteType);
-      console.log("Checked availability successfully: ", doneScraping !== null);
-      return doneScraping;
     }
+
+    await page.waitForTimeout(5000);
 
     await findDateSelector(null, month, day, months, resortID, suiteType, currentDate)
 
@@ -568,7 +567,7 @@ async function checkAvailability(months, resortID, suiteType) {
                 if (nextButton) {
                   await nextButton.click();
                   console.log("Clicked next button.")
-                  await page.waitForTimeout(3000);
+                  await page.waitForTimeout(2000);
 
                   const suiteSelector = "#suiteType";
                     
