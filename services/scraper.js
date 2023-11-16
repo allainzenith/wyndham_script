@@ -494,8 +494,6 @@ async function findDateSelector(initialCurrentDate, month, day, months, resortID
       return selectedOption.text;
   }, suiteSelector);
 
-  console.log("THE SUITE TYPE SELECTED: ", selectedSuiteType);
-
   if (selectedSuiteType !== suiteType) {
     console.log("Sayop ang suite type");
     return null;
