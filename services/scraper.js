@@ -383,7 +383,6 @@ async function selectElements(resortID, suiteType) {
 
       let selectedResort = null;
       while (selectedResort !== resortID) {
-        // await page.select(resortSelector, resortID);
 
         await Promise.all([
           page.waitForNavigation(), 

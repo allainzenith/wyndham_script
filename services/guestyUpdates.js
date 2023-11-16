@@ -134,9 +134,7 @@ async function executeUpdates(resortFoundorCreated, address, updatedAvail, suite
 
             updateSuccess = await updateAvailability(listingJsonArray, updatedAvail);
 
-
-
-            success = updatedAllSuccessfully === 0;
+            success = updateSuccess;
 
             return success ? "resort already updated" : null;
             
@@ -398,7 +396,7 @@ async function updateAvailability(listing, updatedAvail){
         })
         .catch(error => {
           console.error(error.response ? error.response.body : error.message);
-          success = false
+          success = false;
         });
     
     }
