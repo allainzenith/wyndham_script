@@ -486,6 +486,20 @@ async function findDateSelector(initialCurrentDate, month, day, months, resortID
   let dateElement = null;
   let dayClass = `.react-datepicker__day--0${day}[aria-label*="${month}"]`;
 
+  const suiteSelector = "#suiteType";
+                    
+  let selectedSuiteType = await page.evaluate((selector) => {
+      const select = document.querySelector(selector);
+      const selectedOption = select.options[select.selectedIndex];
+      return selectedOption.text;
+  }, suiteSelector);
+
+  console.log("THE SUITE TYPE SELECTED: ", selectedSuiteType);
+
+  if (selectedSuiteType !== suiteType) {
+    console.log("Sayop ang suite type");
+    return null;
+  } else {
     try {
       dateElement = await page.waitForSelector(dayClass, {
         timeout: 10000,
@@ -495,6 +509,7 @@ async function findDateSelector(initialCurrentDate, month, day, months, resortID
       console.log("Can't find date element. Error: ", error.message)
     
     }
+  }
 
   return dateElement;
 
@@ -579,26 +594,6 @@ async function checkAvailability(months, resortID, suiteType) {
                   await nextButton.click();
                   console.log("Clicked next button.")
                   await page.waitForTimeout(2000);
-
-                  const suiteSelector = "#suiteType";
-                    
-                  let selectedSuiteType = await page.evaluate((selector) => {
-                      const select = document.querySelector(selector);
-                      const selectedOption = select.options[select.selectedIndex];
-                      return selectedOption.text;
-                  }, suiteSelector);
-
-                  console.log("THE SUITE TYPE SELECTED: ", selectedSuiteType);
-
-                  if (selectedSuiteType !== suiteType) {
-                    console.log("RESETTING THE SUITE TYPE");
-                    dates = [];
-                    let doneSelect = await selectElements(resortID, suiteType);
-                    console.log("Reselected elements successfully: ", doneSelect);
-                    let doneScraping = await checkAvailability(months, resortID, suiteType);
-                    console.log("Checked availability successfully: ", doneScraping !== null);
-                    return doneScraping;
-                  }
 
                 } else {
                   console.log("did not find the button");
