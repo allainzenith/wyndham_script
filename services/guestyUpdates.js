@@ -336,8 +336,9 @@ async function updateAvailability(listing, updatedAvail){
     let token = await returnAValidToken(clientID, clientSecret);
 
     const arrayOfAvailability = []
-    for (const item of updatedAvail) {
-        for(const list of listing) {
+
+    for(const list of listing) {
+        for (const item of updatedAvail) {
 
             arrayOfAvailability.push({
                 'listingId': list._id,
