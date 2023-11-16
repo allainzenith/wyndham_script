@@ -169,7 +169,7 @@ async function findListing(address, suiteType){
                 ? (listing.bedrooms === suiteType) 
                 : ((listing.title).includes(specialSuiteString))
 
-            if (firstCondition && (listing.type === "MTL" || listing.type === "SINGLE" || listing.type === "MTL_CHILD")){
+            if (firstCondition && (listing.type === "MTL" || listing.type === "SINGLE")){
                 let {wynLat, wynLong} = await getLatLongAddress(address);
                 guestLat = Math.abs(parseFloat(listing.address.lat).toFixed(2));
                 guestLong = Math.abs(parseFloat(listing.address.lng).toFixed(2));
