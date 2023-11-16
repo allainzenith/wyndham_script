@@ -462,8 +462,6 @@ async function selectElements(resortID, suiteType) {
         console.log(
           `Reloading calendar page now..`
         );
-
-        await page.reload();
         
         setupSelect++;
 
@@ -608,7 +606,6 @@ async function checkAvailability(months, resortID, suiteType) {
               } catch (error) {
                 findNextButtonAttempts++;
                 console.log("Can't find next button. Reloading again.")
-                await page.reload();
                 let doneSelect = await selectElements(resortID, suiteType);
                 console.log("Reselected elements successfully: ", doneSelect);
                 let doneScraping = await checkAvailability(months, resortID, suiteType);
@@ -620,7 +617,6 @@ async function checkAvailability(months, resortID, suiteType) {
           }
         } else {
           console.log("Can't find date element. Reloading again.")
-          await page.reload();
           let doneSelect = await selectElements(resortID, suiteType);
           console.log("Reselected elements successfully: ", doneSelect);
           let doneScraping = await checkAvailability(months, resortID, suiteType);
