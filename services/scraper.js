@@ -516,21 +516,21 @@ async function checkAvailability(months, resortID, suiteType) {
       day: "2-digit",
     });
 
-    const suiteSelector = "#suiteType";
+    // const suiteSelector = "#suiteType";
                     
-    let selectedSuiteType = await page.evaluate((selector) => {
-        const select = document.querySelector(selector);
-        const selectedOption = select.options[select.selectedIndex];
-        return selectedOption.text;
-    }, suiteSelector);
+    // let selectedSuiteType = await page.evaluate((selector) => {
+    //     const select = document.querySelector(selector);
+    //     const selectedOption = select.options[select.selectedIndex];
+    //     return selectedOption.text;
+    // }, suiteSelector);
 
-    console.log("THE SUITE TYPE SELECTED: ", selectedSuiteType);
+    // console.log("THE SUITE TYPE SELECTED: ", selectedSuiteType);
 
-    if (selectedSuiteType !== suiteType) {
-      console.log("RESETTING THE SUITE TYPE");
-      let doneSelect = await selectElements(resortID, suiteType);
-      console.log("Reselected elements successfully: ", doneSelect);
-    }
+    // if (selectedSuiteType !== suiteType) {
+    //   console.log("RESETTING THE SUITE TYPE");
+    //   let doneSelect = await selectElements(resortID, suiteType);
+    //   console.log("Reselected elements successfully: ", doneSelect);
+    // }
 
     await page.waitForTimeout(5000);
 
@@ -592,6 +592,7 @@ async function checkAvailability(months, resortID, suiteType) {
 
                   if (selectedSuiteType !== suiteType) {
                     console.log("RESETTING THE SUITE TYPE");
+                    dates = [];
                     let doneSelect = await selectElements(resortID, suiteType);
                     console.log("Reselected elements successfully: ", doneSelect);
                     let doneScraping = await checkAvailability(months, resortID, suiteType);
@@ -605,7 +606,8 @@ async function checkAvailability(months, resortID, suiteType) {
                 findNextButtonAttempts = 5;
               } catch (error) {
                 findNextButtonAttempts++;
-                console.log("Can't find next button. Reloading again.")
+                console.log("Can't find next button. Reloading again.");
+                dates = [];
                 let doneSelect = await selectElements(resortID, suiteType);
                 console.log("Reselected elements successfully: ", doneSelect);
                 let doneScraping = await checkAvailability(months, resortID, suiteType);
