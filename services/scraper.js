@@ -449,6 +449,8 @@ async function selectElements(resortID, suiteType) {
           console.log("This is the selected suite type:",selectedSuiteType);
         }
 
+        await page.waitForTimeout(5000);
+
         let purchaseType = null;
         const purchaseSelector = "#purchaseType";
         while (purchaseType !== "Developer") {
@@ -460,7 +462,7 @@ async function selectElements(resortID, suiteType) {
             return selectedOption.text;
           }, purchaseSelector);
 
-          console.log("This is the selected suite type:",purchaseType);
+          console.log("This is the selected purchase type:",purchaseType);
         }
 
         setupSelect = 5;
