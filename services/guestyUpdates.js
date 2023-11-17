@@ -385,12 +385,14 @@ async function updateAvailability(listing, updatedAvail){
 
         await new Promise(resolve => setTimeout(resolve, 5000));
 
+        let subArray = JSON.stringify(sub);
+
         await superagent
         .put('https://open-api.guesty.com/v1/availability-pricing/api/calendar/listings')
         .set('accept', 'application/json')
         .set('authorization', `Bearer ${token} `)  
         .set('content-type', 'application/json')
-        .send(JSON.stringify(sub))
+        .send(subArray)
         .then(response => {
           console.log(response.body);
         })
