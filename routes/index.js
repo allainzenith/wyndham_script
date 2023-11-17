@@ -315,20 +315,23 @@ router.get('/sse/oneListing', (req, res) => {
     ];
 
     let data = await joinTwoTables("execution", "resorts", eventCond, order, limit, offset);
+    let formattedRecords = [];
+    if (Array.isArray(data)) {
+      formattedRecords = data.map(item => ({
+          ...item.toJSON(), 
+          resort: {
+            listingName: item.resort.listingName === null? "To be updated": item.resort.listingName, 
+            listingID: item.resort.listingID === null? "To be updated": item.resort.listingID, 
+            resortName: item.resort.resortName === null? "To be updated": item.resort.resortName, 
+            unitType: item.resort.unitType === null? "To be updated": item.resort.unitType, 
+            resortID: item.resort.resortID === null? "To be updated": item.resort.resortID, 
+          }, 
+          execID: item.execID === null? "To be updated": item.execID,  
+          createdAt: format(item.createdAt, 'MM-dd-yyyy HH:mm:ss', { timeZone: 'America/New_York' }),
+          updatedAt: format(item.updatedAt, 'MM-dd-yyyy HH:mm:ss', { timeZone: 'America/New_York' }),
+        }));
 
-    const formattedRecords = data.map(item => ({
-      ...item.toJSON(), 
-      resort: {
-        listingName: item.resort.listingName === null? "To be updated": item.resort.listingName, 
-        listingID: item.resort.listingID === null? "To be updated": item.resort.listingID, 
-        resortName: item.resort.resortName === null? "To be updated": item.resort.resortName, 
-        unitType: item.resort.unitType === null? "To be updated": item.resort.unitType, 
-        resortID: item.resort.resortID === null? "To be updated": item.resort.resortID, 
-      }, 
-      execID: item.execID === null? "To be updated": item.execID,  
-      createdAt: format(item.createdAt, 'MM-dd-yyyy HH:mm:ss', { timeZone: 'America/New_York' }),
-      updatedAt: format(item.updatedAt, 'MM-dd-yyyy HH:mm:ss', { timeZone: 'America/New_York' }),
-    }));
+    }
 
     res.write(`data: ${JSON.stringify(formattedRecords)}\n\n`);
   }, 1000);
@@ -355,18 +358,21 @@ router.get('/sse/scheduledUpdates', (req, res) => {
 
     let data = await joinTwoTables("execution", "resorts", eventCond, order, limit, offset);
 
-    const formattedRecords = data.map(item => ({
-      ...item.toJSON(), 
-      resort: {
-        listingName: item.resort.listingName === null? "To be updated": item.resort.listingName, 
-        listingID: item.resort.listingID === null? "To be updated": item.resort.listingID, 
-        resortName: item.resort.resortName === null? "To be updated": item.resort.resortName, 
-        unitType: item.resort.unitType === null? "To be updated": item.resort.unitType, 
-        resortID: item.resort.resortID === null? "To be updated": item.resort.resortID, 
-      },  
-      createdAt: format(item.createdAt, 'MM-dd-yyyy HH:mm:ss', { timeZone: 'America/New_York' }),
-      updatedAt: format(item.updatedAt, 'MM-dd-yyyy HH:mm:ss', { timeZone: 'America/New_York' }),
-    }));
+    let formattedRecords = [];
+    if (Array.isArray(data)) {
+      formattedRecords = data.map(item => ({
+        ...item.toJSON(), 
+        resort: {
+          listingName: item.resort.listingName === null? "To be updated": item.resort.listingName, 
+          listingID: item.resort.listingID === null? "To be updated": item.resort.listingID, 
+          resortName: item.resort.resortName === null? "To be updated": item.resort.resortName, 
+          unitType: item.resort.unitType === null? "To be updated": item.resort.unitType, 
+          resortID: item.resort.resortID === null? "To be updated": item.resort.resortID, 
+        },  
+        createdAt: format(item.createdAt, 'MM-dd-yyyy HH:mm:ss', { timeZone: 'America/New_York' }),
+        updatedAt: format(item.updatedAt, 'MM-dd-yyyy HH:mm:ss', { timeZone: 'America/New_York' }),
+      }));
+    }
 
     res.write(`data: ${JSON.stringify(formattedRecords)}\n\n`);
   }, 1000);
@@ -388,18 +394,20 @@ router.get('/sse/resorts', async(req, res) => {
   ];
 
   let data = await findLikeRecords(search, "resorts", order, limit, offset);
+  let formattedRecords = [];
+  if (Array.isArray(data)) {
+    formattedRecords = data.map(item => ({
+      ...item.toJSON(),  
+      resortRefNum: item.resortRefNum === null? "To be updated": item.resortRefNum,
+      listingID: item.listingID === null? "To be updated": item.listingID,
+      resortID: item.resortID === null? "To be updated": item.resortID,
+      resortName: item.resortName === null? "To be updated": item.resortName,
+      listingName: item.listingName === null? "To be updated": item.listingName,
+      unitType: item.unitType === null? "To be updated": item.unitType,
+      notes: item.notes === null? "": item.notes,
 
-  const formattedRecords = data.map(item => ({
-    ...item.toJSON(),  
-    resortRefNum: item.resortRefNum === null? "To be updated": item.resortRefNum,
-    listingID: item.listingID === null? "To be updated": item.listingID,
-    resortID: item.resortID === null? "To be updated": item.resortID,
-    resortName: item.resortName === null? "To be updated": item.resortName,
-    listingName: item.listingName === null? "To be updated": item.listingName,
-    unitType: item.unitType === null? "To be updated": item.unitType,
-    notes: item.notes === null? "": item.notes,
-
-  }));
+    }));
+  }
 
   res.write(`data: ${JSON.stringify(formattedRecords)}\n\n`);
 });
@@ -433,19 +441,21 @@ router.get('/sse/events', (req, res) => {
     ];
 
     let data = await joinTwoTables("execution", "resorts", eventCond, order, limit, offset);
-
-    const formattedRecords = data.map(item => ({
-      ...item.toJSON(), 
-      resort: {
-        listingName: item.resort.listingName === null? "To be updated": item.resort.listingName, 
-        listingID: item.resort.listingID === null? "To be updated": item.resort.listingID, 
-        resortName: item.resort.resortName === null? "To be updated": item.resort.resortName, 
-        unitType: item.resort.unitType === null? "To be updated": item.resort.unitType, 
-        resortID: item.resort.resortID === null? "To be updated": item.resort.resortID, 
-      },  
-      createdAt: format(item.createdAt, 'MM-dd-yyyy HH:mm:ss', { timeZone: 'America/New_York' }),
-      updatedAt: format(item.updatedAt, 'MM-dd-yyyy HH:mm:ss', { timeZone: 'America/New_York' }),
-    }));
+    let formattedRecords = [];
+    if (Array.isArray(data)) {
+      formattedRecords = data.map(item => ({
+        ...item.toJSON(), 
+        resort: {
+          listingName: item.resort.listingName === null? "To be updated": item.resort.listingName, 
+          listingID: item.resort.listingID === null? "To be updated": item.resort.listingID, 
+          resortName: item.resort.resortName === null? "To be updated": item.resort.resortName, 
+          unitType: item.resort.unitType === null? "To be updated": item.resort.unitType, 
+          resortID: item.resort.resortID === null? "To be updated": item.resort.resortID, 
+        },  
+        createdAt: format(item.createdAt, 'MM-dd-yyyy HH:mm:ss', { timeZone: 'America/New_York' }),
+        updatedAt: format(item.updatedAt, 'MM-dd-yyyy HH:mm:ss', { timeZone: 'America/New_York' }),
+      }));
+    }
 
     // console.log(JSON.stringify(formattedRecords, null, 2));
 

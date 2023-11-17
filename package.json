@@ -8,6 +8,7 @@
   "dependencies": {
     "api": "^6.1.1",
     "axios": "^1.5.1",
+    "child-process": "^1.0.2",
     "cookie-parser": "~1.4.4",
     "date-fns": "^2.30.0",
     "date-fns-tz": "^2.0.0",
@@ -21,6 +22,7 @@
     "moment": "^2.29.4",
     "morgan": "~1.9.1",
     "mysql2": "^3.6.1",
+    "node-libcurl": "^3.0.0",
     "node-schedule": "^2.1.1",
     "node-windows": "^1.0.0-beta.8",
     "puppeteer": "^21.4.1",

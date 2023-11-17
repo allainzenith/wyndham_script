@@ -7,6 +7,9 @@ const { MAP_API_KEY } = require('../config/config')
 var { clientID, clientSecret, returnAValidToken } = require("../config/config");
 const sdk = require('api')('@open-api-docs/v1.0#pc5in1tloyhmv10');
 const superagent = require('superagent');
+const { exec } = require('child_process');
+const http = require("https");
+const { Curl } = require('node-libcurl');
 
 
 // async function executeUpdates(resortFoundorCreated, token, address, updatedAvail, suiteType){
@@ -334,40 +337,62 @@ async function updateAvailability(listing, updatedAvail){
     let token = await returnAValidToken(clientID, clientSecret);
 
     const arrayOfAvailability = []
+    let success = true;
 
-    for(const list of listing) {
-        for (const item of updatedAvail) {
+    for (const item of updatedAvail) {
+        for(const list of listing) {
 
-            arrayOfAvailability.push({
-                'listingId': list._id,
-                'startDate': item.start,
-                'endDate': item.end,
-                'status': item.availability
-            })
+            // arrayOfAvailability.push({
+            //     listingId: list._id,
+            //     startDate: item.start,
+            //     endDate: item.end,
+            //     status: item.availability
+            // })
+
+            arrayOfAvailability.push(`{"listingId": "${list._id}","startDate": "${item.start}","endDate": "${item.end}","status": "${item.availability}"}`);
+
+
+            // try {
+            //     await sdk.auth(`Bearer ${token}`);
+            //     await sdk.putAvailabilityPricingApiCalendarListings([{listingId: list._id, startDate: item.start, endDate: item.start, status: item.availability}])
+            //     .then(({ data }) => { 
+            //         console.log(JSON.stringify(data, null, 2));
+            //         console.log("PUT REQUEST SUCCESSFUL");
+            //     })
+            //     .catch((err) => {
+            //         console.error(err);
+            //         success = false;
+            //     });
+            // } catch (error) {
+            //     console.error("error: ", error.message);
+            //     success = false;
+            // }
+
+            // await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // let subArray = JSON.stringify(sub);
+    
+            // await superagent
+            // .put('https://open-api.guesty.com/v1/availability-pricing/api/calendar/listings')
+            // .set('accept', 'application/json')
+            // .set('authorization', `Bearer ${token} `)  
+            // .set('content-type', 'application/json')
+            // .send(subArray)
+            // .then(response => {
+            //   console.log(response.body);
+            // })
+            // .catch(error => {
+            //   console.error(error.response ? error.response.body : error.message);
+            //   success = false;
+            // });
 
         }
     }
 
-    // await new Promise(resolve => setTimeout(resolve, 5000));
-
-    // try {
-    //     await sdk.auth(`Bearer ${token}`);
-    //     await sdk.putAvailabilityPricingApiCalendarListings(arrayOfAvailability)
-    //     .then(({ data }) => { 
-    //         console.log(JSON.stringify(data));
-    //     })
-    //     .catch((err) => {
-    //         console.error(err);
-    //         success = false;
-    //     });
-    // } catch (error) {
-    //     console.error("error: ", error.message);
-    //     success = false;
-    // }
+    //===========================
 
     const chunkSize = 10;
     const subArrayOfAvailability = [];
-    let success = true;
 
     for (let i = 0; i < arrayOfAvailability.length; i += chunkSize) {
         subArrayOfAvailability.push(arrayOfAvailability.slice(i, i + chunkSize));
@@ -383,15 +408,65 @@ async function updateAvailability(listing, updatedAvail){
             "Accept": "application/json"
         };
 
-        await new Promise(resolve => setTimeout(resolve, 5000));
+        const subArray = '[' + sub.join(",") + ']';
 
-        let subArray = JSON.stringify(sub);
+        console.log(subArray)
+
+        // const url = 'https://open-api.guesty.com/v1/availability-pricing/api/calendar/listings';
+
+        // const options = {
+        //     method: 'PUT',
+        //     headers: {
+        //         'accept': 'application/json',
+        //         'authorization': 'Bearer eyJraWQiOiJaRHJMRkN6Zm1hQlFDby02ODI3U2M4ZlpPZmV3SHVxTWVNZ0J3cXVHWUhRIiwiYWxnIjoiUlMyNTYifQ.eyJ2ZXIiOjEsImp0aSI6IkFULnhuWHdWS0NJQnBZUTdWcENVVnhhdnlzeFFaa2pQWUVNRFlWSng1M0J5d2ciLCJpc3MiOiJodHRwczovL2xvZ2luLmd1ZXN0eS5jb20vb2F1dGgyL2F1czFwOHFyaDUzQ2NRVEk5NWQ3IiwiYXVkIjoiaHR0cHM6Ly9vcGVuLWFwaS5ndWVzdHkuY29tIiwiaWF0IjoxNzAwMTgwODA3LCJleHAiOjE3MDAyNjcyMDcsImNpZCI6IjBvYWJsbzRmaDVLNW00R3lONWQ3Iiwic2NwIjpbIm9wZW4tYXBpIl0sInJlcXVlc3RlciI6IkVYVEVSTkFMIiwiYWNjb3VudElkIjoiNjI0NzYxODBlOWZkYmEwMDM2NmY3ZjQyIiwic3ViIjoiMG9hYmxvNGZoNUs1bTRHeU41ZDciLCJ1c2VyUm9sZXMiOlt7InJvbGVJZCI6eyJwZXJtaXNzaW9ucyI6WyJhZG1pbiJdfX1dLCJyb2xlIjoidXNlciIsImNsaWVudFR5cGUiOiJvcGVuYXBpIiwiaWFtIjoidjMiLCJhY2NvdW50TmFtZSI6IkxpdmUgU3VpdGUiLCJuYW1lIjoic2NyYXBlci1hbGxhaW4tZGV2In0.eaUyjAFWFHWm64yOVMG7bHauEO5-Hnc30Ktfzdx_MZC-b_Rs0FRhVp7A9YB2d3vw5V-DyoSBidDsVm3yvifWpWJLf2WK8QYnXhUj_NWIOI-_gyDwBrODKvoNYpgO5aiGyuTihgFAWk95bKAzhLMD4aVq0F3Nh0ujwceByeURJdH16bnfoHcvYo9iq5DEJhBqd2rqDxRZ7vpFxdkXqjeLlhJE0uUiad3pO3FRdL6EtWZdbOxLavrBegzFYki2weI9h2PhEGIoTLiagUAouAp9jfEEkWHRIiBOWRVXy-A_de_Pt19lpgxOHh9_Yyl7-hon9ozswHBpITcvqNsmvnDHfQ',
+        //         'content-type': 'application/json',
+        //     }
+        // };
+    
+        // let result = '';
+        // const req = http.request(url, options, (res) => {
+        //     console.log(res.statusCode);
+    
+        //     res.setEncoding('utf8');
+        //     res.on('data', (chunk) => {
+        //         result += chunk;
+        //     });
+    
+        //     res.on('end', () => {
+        //         // console.log(result);
+        //         console.log("okay");
+        //     });
+        // });
+    
+        // req.on('error', (e) => {
+        //     console.error(e);
+        // });
+    
+        // req.write(subArray);
+        // req.end();
+
+        // try {
+        //     await sdk.auth(`Bearer ${token}`);
+        //     await sdk.putAvailabilityPricingApiCalendarListings(sub)
+        //     .then(({ data }) => { 
+        //         console.log(JSON.stringify(data));
+        //     })
+        //     .catch((err) => {
+        //         console.error(err);
+        //         success = false;
+        //     });
+        // } catch (error) {
+        //     console.error("error: ", error.message);
+        //     success = false;
+        // }
+
+        await new Promise(resolve => setTimeout(resolve, 2000));
 
         await superagent
         .put('https://open-api.guesty.com/v1/availability-pricing/api/calendar/listings')
-        .set('accept', 'application/json')
-        .set('authorization', `Bearer ${token} `)  
-        .set('content-type', 'application/json')
+        .set('Authorization', `Bearer ${token} `)  
+        .set('Accept', 'application/json')
+        .set('Content-type', 'application/json')
         .send(subArray)
         .then(response => {
           console.log(response.body);
@@ -402,6 +477,7 @@ async function updateAvailability(listing, updatedAvail){
         });
     
     }
+
 
     return success;
 
