@@ -436,6 +436,9 @@ async function selectElements(resortID, suiteType) {
       }
 
       if (optionExists) {
+        const purchaseSelector = "#purchaseType";
+        await page.select(purchaseSelector, "Developer");
+
         let selectedSuiteType = null;
         while (selectedSuiteType !== suiteType) {
           await page.select(suiteSelector, suiteType);
@@ -448,9 +451,6 @@ async function selectElements(resortID, suiteType) {
 
           console.log("This is the selected suite type:",selectedSuiteType);
         }
-
-        const purchaseSelector = "#purchaseType";
-        await page.select(purchaseSelector, "Developer");
 
         setupSelect = 5;
   
