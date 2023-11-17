@@ -7,9 +7,7 @@ const { MAP_API_KEY } = require('../config/config')
 var { clientID, clientSecret, returnAValidToken } = require("../config/config");
 const sdk = require('api')('@open-api-docs/v1.0#pc5in1tloyhmv10');
 const superagent = require('superagent');
-const { exec } = require('child_process');
 const http = require("https");
-const { Curl } = require('node-libcurl');
 
 
 // async function executeUpdates(resortFoundorCreated, token, address, updatedAvail, suiteType){
