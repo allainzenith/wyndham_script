@@ -7,8 +7,11 @@ const { mysql2 } = require('mysql2')
 
 
 // Wyndham Credentials
-userName = "SJO111"
-passWord = "zgw5qbc@xpw2JEQ@ypy"
+// userName = "SJO111"
+// passWord = "zgw5qbc@xpw2JEQ@ypy"
+
+userName = "BrettMason"
+passWord = "Rental$2023"
 
 // For database connection
 database = "wyndham_script";

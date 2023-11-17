@@ -119,10 +119,10 @@ async function login() {
       while (addressSelectorFound < 5) {
         try {
           await pageForAddress.waitForSelector(`.resort-card`, {
-            timeout: 10000,
+            timeout: 60000,
           });
           await pageForAddress.waitForSelector(`.resort-card__address`, {
-            timeout: 10000,
+            timeout: 60000,
           });       
           console.log("resorts fully loaded.");
           addressSelectorFound = 5;
@@ -148,9 +148,11 @@ async function login() {
         await page.waitForTimeout(5000);
         await page.waitForSelector(`.button-primary[value*="Login"]`);
         await Promise.all([
-          page.waitForNavigation(), 
+          page.waitForNavigation(),
           page.click(`.button-primary[value*="Login"]`)
         ]);
+        // await page.click(`.button-primary[value*="Login"]`)
+
         console.log("form submitted")
       } catch (error) {
         console.log("Can't submit");
@@ -187,7 +189,7 @@ async function findSendSmsCode(){
     return false;
 
   } catch (error) {
-    await page.waitForTimeout(5000);
+    await page.waitForTimeout(30000);
     
     if(await page.url() !== 'https://clubwyndham.wyndhamdestinations.com/us/en/login') {
       console.log("No need for OTP verification");
@@ -325,7 +327,12 @@ async function sendOTP(verOTP) {
     console.log("Clicked remember device");
     await page.waitForTimeout(2000);
     await page.waitForSelector('input[type="submit"]', {timeout:10000});
-    await page.click('input[type="submit"]');
+
+    await Promise.all([
+      page.waitForNavigation(), 
+      page.click('input[type="submit"]')
+    ]);
+
     console.log("Hit submit button");
 
     try {
@@ -381,7 +388,12 @@ async function selectElements(resortID, suiteType) {
           ))
       );
 
-      let selectedResort = null;
+      let selectedResort = await page.evaluate((selector) => {
+        const select = document.querySelector(selector);
+        const selectedOption = select.options[select.selectedIndex];
+        return selectedOption.value;
+      }, resortSelector);
+
       while (selectedResort !== resortID) {
 
         await Promise.all([
@@ -436,20 +448,7 @@ async function selectElements(resortID, suiteType) {
       }
 
       if (optionExists) {
-        let selectedSuiteType = null;
-        while (selectedSuiteType !== suiteType) {
-          await page.select(suiteSelector, suiteType);
-
-          selectedSuiteType = await page.evaluate((selector) => {
-            const select = document.querySelector(selector);
-            const selectedOption = select.options[select.selectedIndex];
-            return selectedOption.text;
-          }, suiteSelector);
-
-          console.log("This is the selected suite type:",selectedSuiteType);
-        }
-
-        await page.waitForTimeout(5000);
+        let selectedSuiteType = await page.select(suiteSelector, "All Suites");
 
         let purchaseType = null;
         const purchaseSelector = "#purchaseType";
@@ -463,6 +462,20 @@ async function selectElements(resortID, suiteType) {
           }, purchaseSelector);
 
           console.log("This is the selected purchase type:",purchaseType);
+        }
+
+        await page.waitForTimeout(5000);
+
+        while (selectedSuiteType !== suiteType) {
+          await page.select(suiteSelector, suiteType);
+
+          selectedSuiteType = await page.evaluate((selector) => {
+            const select = document.querySelector(selector);
+            const selectedOption = select.options[select.selectedIndex];
+            return selectedOption.text;
+          }, suiteSelector);
+
+          console.log("This is the selected suite type:",selectedSuiteType);
         }
 
         setupSelect = 5;

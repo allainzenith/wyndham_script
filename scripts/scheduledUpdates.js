@@ -65,6 +65,7 @@ async function scheduledUpdates(tierType) {
                 updateEventStatus(eventCreated, "MAINTENANCE");
             } else {
                 updateEventStatus(eventCreated, "LOGIN_ERROR");
+                scheduledUpdates(tierType);
             }
         }
 
