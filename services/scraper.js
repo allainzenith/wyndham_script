@@ -436,9 +436,6 @@ async function selectElements(resortID, suiteType) {
       }
 
       if (optionExists) {
-        const purchaseSelector = "#purchaseType";
-        await page.select(purchaseSelector, "Developer");
-
         let selectedSuiteType = null;
         while (selectedSuiteType !== suiteType) {
           await page.select(suiteSelector, suiteType);
@@ -450,6 +447,20 @@ async function selectElements(resortID, suiteType) {
           }, suiteSelector);
 
           console.log("This is the selected suite type:",selectedSuiteType);
+        }
+
+        let purchaseType = null;
+        const purchaseSelector = "#purchaseType";
+        while (purchaseType !== "Developer") {
+          await page.select(purchaseSelector, "Developer");
+
+          purchaseType = await page.evaluate((selector) => {
+            const select = document.querySelector(selector);
+            const selectedOption = select.options[select.selectedIndex];
+            return selectedOption.text;
+          }, purchaseSelector);
+
+          console.log("This is the selected suite type:",purchaseType);
         }
 
         setupSelect = 5;
