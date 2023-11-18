@@ -339,51 +339,15 @@ async function updateAvailability(listing, updatedAvail){
 
     for (const item of updatedAvail) {
         for(const list of listing) {
-
+            let cta = item.availability === "unavailable" ? true : false;
             // arrayOfAvailability.push({
-            //     listingId: list._id,
-            //     startDate: item.start,
-            //     endDate: item.end,
-            //     status: item.availability
+            //     "listingId": list._id,
+            //     "startDate": item.start,
+            //     "endDate": item.end,
+            //     "status": item.availability, 
+            //     "cta": cta
             // })
-
-            arrayOfAvailability.push(`{"listingId": "${list._id}","startDate": "${item.start}","endDate": "${item.end}","status": "${item.availability}"}`);
-
-
-            // try {
-            //     await sdk.auth(`Bearer ${token}`);
-            //     await sdk.putAvailabilityPricingApiCalendarListings([{listingId: list._id, startDate: item.start, endDate: item.start, status: item.availability}])
-            //     .then(({ data }) => { 
-            //         console.log(JSON.stringify(data, null, 2));
-            //         console.log("PUT REQUEST SUCCESSFUL");
-            //     })
-            //     .catch((err) => {
-            //         console.error(err);
-            //         success = false;
-            //     });
-            // } catch (error) {
-            //     console.error("error: ", error.message);
-            //     success = false;
-            // }
-
-            // await new Promise(resolve => setTimeout(resolve, 2000));
-
-            // let subArray = JSON.stringify(sub);
-    
-            // await superagent
-            // .put('https://open-api.guesty.com/v1/availability-pricing/api/calendar/listings')
-            // .set('accept', 'application/json')
-            // .set('authorization', `Bearer ${token} `)  
-            // .set('content-type', 'application/json')
-            // .send(subArray)
-            // .then(response => {
-            //   console.log(response.body);
-            // })
-            // .catch(error => {
-            //   console.error(error.response ? error.response.body : error.message);
-            //   success = false;
-            // });
-
+            arrayOfAvailability.push(`{"listingId": "${list._id}","startDate": "${item.start}","endDate": "${item.end}","status": "${item.availability}", "cta": ${cta}}`);
         }
     }
 
@@ -406,9 +370,9 @@ async function updateAvailability(listing, updatedAvail){
             "Accept": "application/json"
         };
 
-        const subArray = '[' + sub.join(",") + ']';
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
-        console.log(subArray)
+        const subArray = '[' + sub.join(",") + ']';
 
         // const url = 'https://open-api.guesty.com/v1/availability-pricing/api/calendar/listings';
 
@@ -416,7 +380,7 @@ async function updateAvailability(listing, updatedAvail){
         //     method: 'PUT',
         //     headers: {
         //         'accept': 'application/json',
-        //         'authorization': 'Bearer eyJraWQiOiJaRHJMRkN6Zm1hQlFDby02ODI3U2M4ZlpPZmV3SHVxTWVNZ0J3cXVHWUhRIiwiYWxnIjoiUlMyNTYifQ.eyJ2ZXIiOjEsImp0aSI6IkFULnhuWHdWS0NJQnBZUTdWcENVVnhhdnlzeFFaa2pQWUVNRFlWSng1M0J5d2ciLCJpc3MiOiJodHRwczovL2xvZ2luLmd1ZXN0eS5jb20vb2F1dGgyL2F1czFwOHFyaDUzQ2NRVEk5NWQ3IiwiYXVkIjoiaHR0cHM6Ly9vcGVuLWFwaS5ndWVzdHkuY29tIiwiaWF0IjoxNzAwMTgwODA3LCJleHAiOjE3MDAyNjcyMDcsImNpZCI6IjBvYWJsbzRmaDVLNW00R3lONWQ3Iiwic2NwIjpbIm9wZW4tYXBpIl0sInJlcXVlc3RlciI6IkVYVEVSTkFMIiwiYWNjb3VudElkIjoiNjI0NzYxODBlOWZkYmEwMDM2NmY3ZjQyIiwic3ViIjoiMG9hYmxvNGZoNUs1bTRHeU41ZDciLCJ1c2VyUm9sZXMiOlt7InJvbGVJZCI6eyJwZXJtaXNzaW9ucyI6WyJhZG1pbiJdfX1dLCJyb2xlIjoidXNlciIsImNsaWVudFR5cGUiOiJvcGVuYXBpIiwiaWFtIjoidjMiLCJhY2NvdW50TmFtZSI6IkxpdmUgU3VpdGUiLCJuYW1lIjoic2NyYXBlci1hbGxhaW4tZGV2In0.eaUyjAFWFHWm64yOVMG7bHauEO5-Hnc30Ktfzdx_MZC-b_Rs0FRhVp7A9YB2d3vw5V-DyoSBidDsVm3yvifWpWJLf2WK8QYnXhUj_NWIOI-_gyDwBrODKvoNYpgO5aiGyuTihgFAWk95bKAzhLMD4aVq0F3Nh0ujwceByeURJdH16bnfoHcvYo9iq5DEJhBqd2rqDxRZ7vpFxdkXqjeLlhJE0uUiad3pO3FRdL6EtWZdbOxLavrBegzFYki2weI9h2PhEGIoTLiagUAouAp9jfEEkWHRIiBOWRVXy-A_de_Pt19lpgxOHh9_Yyl7-hon9ozswHBpITcvqNsmvnDHfQ',
+        //         'authorization': `Bearer ${token}`,
         //         'content-type': 'application/json',
         //     }
         // };
@@ -431,7 +395,7 @@ async function updateAvailability(listing, updatedAvail){
         //     });
     
         //     res.on('end', () => {
-        //         // console.log(result);
+        //         console.log(result);
         //         console.log("okay");
         //     });
         // });
@@ -445,9 +409,10 @@ async function updateAvailability(listing, updatedAvail){
 
         // try {
         //     await sdk.auth(`Bearer ${token}`);
-        //     await sdk.putAvailabilityPricingApiCalendarListings(sub)
+        //     await sdk.putAvailabilityPricingApiCalendarListings(subArray)
         //     .then(({ data }) => { 
-        //         console.log(JSON.stringify(data));
+        //         // console.log(JSON.stringify(data));
+        //         console.log("Request successful")
         //     })
         //     .catch((err) => {
         //         console.error(err);
@@ -457,8 +422,6 @@ async function updateAvailability(listing, updatedAvail){
         //     console.error("error: ", error.message);
         //     success = false;
         // }
-
-        await new Promise(resolve => setTimeout(resolve, 2000));
 
         await superagent
         .put('https://open-api.guesty.com/v1/availability-pricing/api/calendar/listings')
