@@ -34,7 +34,7 @@ app.use(async (req, res, next) => {
 
   if (updateOnce) {
     updateOnce = false;
-    // await scheduledUpdates("TIER 1");
+    await scheduledUpdates("TIER 1");
   }
   next();
 });

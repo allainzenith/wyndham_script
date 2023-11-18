@@ -647,7 +647,6 @@ async function checkAvailability(months, resortID, suiteType) {
         
       } catch (error) {
         console.error("Error:", error.message);
-        console.log("Day class not found");
       }
     }
 
