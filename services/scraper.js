@@ -648,6 +648,7 @@ async function checkAvailability(months, resortID, suiteType) {
       } catch (error) {
         console.error("Error:", error.message);
         console.log("Possible select options became null.");
+        await page.reload();
         let doneSelect = await selectElements(resortID, suiteType);
         console.log("Reselected elements successfully: ", doneSelect);
         let doneScraping = await checkAvailability(months, resortID, suiteType);
