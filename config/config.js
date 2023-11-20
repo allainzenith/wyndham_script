@@ -27,8 +27,6 @@ const sequelize = new Sequelize(database, dbUsername, dbPassword, {
     pool: {
         max: 10,
         min: 0,
-        acquire: 30000,
-        idle: 30000,
       },
 });
 
