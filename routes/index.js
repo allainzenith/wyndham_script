@@ -52,7 +52,6 @@ router.get('/duplicateListingLinks', (req, res) => {
 
 router.post('/sendOTP', async(req, res, next) => {
   let verOTP = req.body.OTP;
-  let eventCreated = await findByPk(req.body.execID, "execution");
 
   if (isVerified === false) {
     if (verOTP === "") {
@@ -65,6 +64,7 @@ router.post('/sendOTP', async(req, res, next) => {
         // Trigger the login process asynchronously
         processVerification(verOTP)
           .then(loggedIn => {
+            let eventCreated = findByPk(req.body.execID, "execution");
             isVerified = loggedIn;  
             const message = "successOrFail";
             res.json({ loggedIn, message });
@@ -221,6 +221,8 @@ router.get('/retry', async(req, res, next) => {
         .then(loggedIn => {
 
           isVerified = loggedIn;
+
+          eventCreated = findByPk((req.query.execID).trim(), "execution");
           
           if (loggedIn === "MAINTENANCE") {
             updateEventStatus(eventCreated, "MAINTENANCE");
@@ -242,53 +244,6 @@ router.get('/retry', async(req, res, next) => {
   } else {
     console.log("Creating a resort or execution record failed.")
   }
-
-  
-  // if (isVerified === false) {
-  //   try {
-  //     // Trigger the login process asynchronously
-  //     login()
-  //       .then(needsVerify => { 
-  //         let resortRefNum = resort.resortRefNum;
-  //         let execID = eventCreated.execID;
-
-  //         if (needsVerify === false && eventCreated !== null){
-  //           isVerified = true;
-  //           //first parameter is a callback function
-  //           addToQueue(resourceIntensiveTask, () => {
-  //             console.log('Task completed');
-  //           }, resortID, suiteType, months, resort, eventCreated);
-  //         } else {
-  //           if (eventCreated === null) {
-  //             console.log("Creating a resort or execution record failed.")
-  //           } else if (needsVerify === "MAINTENANCE") {
-  //             updateEventStatus(eventCreated, "MAINTENANCE");
-  //           } 
-  //         }
-
-  //         res.json({ needsVerify, resortRefNum, execID });
-  //       })
-  //       .catch(error => {
-  //         console.error('Login process error:', error);
-  //         res.status(500).json({ error: 'Internal Server Error' });
-  //       });
-  //   } catch (error) {
-  //     console.error('Error triggering login:', error);
-  //     res.status(500).json({ error: 'Internal Server Error' });
-  //   }
-  // } else {
-  //   console.log("already verified");
-  //   let retryScraping = await updateEventStatus(eventCreated, "SCRAPING");
-  
-  //   if (retryScraping){
-  //     //first parameter is a callback function
-  //     addToQueue(resourceIntensiveTask, () => {
-  //       console.log('One-listing task executed successfully');
-  //     }, resortID, suiteType, months, resort, eventCreated);
-  //   } else {
-  //     console.log("Creating a resort or execution record failed.")
-  //   }
-  // }
 
 });
 

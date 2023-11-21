@@ -12,6 +12,7 @@ async function processQueue() {
   if (isProcessing) return;
   if (taskQueue.length === 0 && scheduledtaskQueue.length === 0) {
     console.log("All tasks in the queue finished executing..");
+    loggedIn = false;
     needtolaunchPuppeteer = true;
     const browser = sharedData.browser;
     await browser.close();
@@ -47,7 +48,6 @@ async function processVerification(verOTP) {
     loggedIn = await sendOTP(verOTP);
     console.log("logged in is: ", loggedIn);
     if (loggedIn === true) { 
-      console.log("this part is executed");
       await processQueue(); 
     }
     if (loggedIn === "MAINTENANCE" || loggedIn === null) { 
@@ -63,8 +63,12 @@ async function addToQueue(task, callback, ...args) {
   return new Promise(async(resolve) => {
     if (needtolaunchPuppeteer) {
       needtolaunchPuppeteer = false;
-      console.log("launching puppeteer now");
-      loggedIn = await launchPuppeteer();
+      try {
+        console.log("launching puppeteer now");
+        loggedIn = await launchPuppeteer();
+      } catch (error) {
+        resolve(null);
+      }
     } else {
       console.log(
         "puppeteer is already launched. execution of prior task is ongoing."
@@ -86,23 +90,28 @@ async function addToQueue(task, callback, ...args) {
 
 async function addToScheduledQueue(task, callback, ...args) {
   return new Promise(async(resolve) => {
-  if (needtolaunchPuppeteer) {
-    needtolaunchPuppeteer = false;
-    console.log("launching puppeteer now");
-    loggedIn = await launchPuppeteer();
-  } else {
-    console.log(
-      "puppeteer is already launched. execution of prior task is ongoing."
-    );
-  }
-  scheduledtaskQueue.push({ task, args, callback });
-  if (loggedIn === true) { await processQueue() }
-  //scheduled updates would only execute if verified and logged in successfully
-  else { 
-    console.log("logged in: ", loggedIn);
-    scheduledtaskQueue = [];
-    await processQueue();
-  }
+    if (needtolaunchPuppeteer) {
+      needtolaunchPuppeteer = false;
+      try {
+        console.log("launching puppeteer now");
+        loggedIn = await launchPuppeteer();
+      } catch (error) {
+        resolve(null);
+      }
+    } else {
+      console.log(
+        "puppeteer is already launched. execution of prior task is ongoing."
+      );
+    }
+
+    scheduledtaskQueue.push({ task, args, callback });
+
+    if (loggedIn === true) { await processQueue() }
+    if (loggedIn === "MAINTENANCE" || loggedIn === null) { 
+      // scheduledtaskQueue = [];
+      await processQueue();
+    }
+
     resolve(loggedIn);
   });
 
@@ -132,7 +141,6 @@ async function resourceIntensiveTask(
       eventCreated
     );
     console.log("Executed Script Successfully: " + executedScript);
-    await new Promise((resolve) => setTimeout(resolve, 3000));
     callback();
   } catch (error) {
     console.log(error);
@@ -148,5 +156,4 @@ module.exports = {
   resourceIntensiveTask,
   addToScheduledQueue,
   processVerification,
-  taskQueue
 };

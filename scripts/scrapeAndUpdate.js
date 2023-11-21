@@ -21,7 +21,7 @@ async function executeScript(resortID, suiteType, months, resortFoundorCreated, 
             success = false;
             await updateEventStatus(eventCreated, "MAINTENANCE");
         } else {
-            success = await updateGuestyandRecord(resortFoundorCreated, eventCreated, scraped, suiteType);
+            success = await updateGuestyandRecord(resortFoundorCreated, eventCreated, scraped, suiteType, months);
         }
     }  else {
         success = false;
@@ -90,7 +90,7 @@ async function createAnEvent(resortRefNum, months){
 
 
 // async function updateGuestyandRecord(resortFoundorCreated, eventCreated, scraped, token, suiteType){
-async function updateGuestyandRecord(resortFoundorCreated, eventCreated, scraped, suiteType){
+async function updateGuestyandRecord(resortFoundorCreated, eventCreated, scraped, suiteType, months){
 
     await updateEventStatus(eventCreated, "UPDATING");
     
@@ -109,7 +109,7 @@ async function updateGuestyandRecord(resortFoundorCreated, eventCreated, scraped
     const title = scraped.sElement;
 
     // let result = await executeUpdates(resortFoundorCreated, token, address, updatedAvail, options[suiteType]);
-    let result = await executeUpdates(resortFoundorCreated, address, updatedAvail, options[suiteType]);
+    let result = await executeUpdates(resortFoundorCreated, address, updatedAvail, options[suiteType], months);
 
     //call function to update resort and status 
     if (result !== null) {

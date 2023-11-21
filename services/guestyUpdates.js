@@ -4,146 +4,112 @@
 
 const axios = require('axios')
 const { MAP_API_KEY } = require('../config/config')
-var { clientID, clientSecret, returnAValidToken } = require("../config/config");
+const { getCurrentAndEndDate } = require("./scraper");
+const { addMonths, addDays } = require("date-fns");
 const sdk = require('api')('@open-api-docs/v1.0#pc5in1tloyhmv10');
-const superagent = require('superagent');
 const http = require("https");
-
+let { clientID, clientSecret, returnAValidToken } = require("../config/config");
 
 // async function executeUpdates(resortFoundorCreated, token, address, updatedAvail, suiteType){
-async function executeUpdates(resortFoundorCreated, address, updatedAvail, suiteType){
-    
-    // if (token !== null){
-        var listingIDs = [], listingNames = [];
-        let listingID, listingName, updateSuccess, success; 
-        let updatedAllSuccessfully = 0;
+async function executeUpdates(resortFoundorCreated, address, updatedAvail, suiteType, months){
 
-        var resortJSON = await resortFoundorCreated.toJSON()
-        var resortJSONlistingID = await resortJSON.listingID;
-        console.log("resortJSONlistingID: " + resortJSONlistingID);
-        if (resortJSONlistingID === undefined || resortJSONlistingID === null){
+    var listingIDs = [], listingNames = [];
+    let listingID, listingName, updateSuccess; 
 
-            console.log("There is no existing records for this listing. Searching one now..")
+    var resortJSON = await resortFoundorCreated.toJSON()
+    var resortJSONlistingID = await resortJSON.listingID;
+    console.log("resortJSONlistingID: " + resortJSONlistingID);
+    if (resortJSONlistingID === undefined || resortJSONlistingID === null){
 
-            try {             
-                // let listings = await findListing(address, token, suiteType);
-                let listings = await findListing(address, suiteType);
+        console.log("There is no existing records for this listing. Searching one now..")
 
-                if (listings.length !== 0) { 
+        try {             
+            // let listings = await findListing(address, token, suiteType);
+            let listings = await findListing(address, suiteType);
 
-                    console.log("Done retrieving listings: true");
+            if (listings.length !== 0) { 
 
-                    console.log("Printing calendar availability scraped from wyndham...")
-                    for (const avail of updatedAvail) {
-                        console.log(avail);
-                    }
+                console.log("Done retrieving listings: true");
 
-                    // performs the update for a listing ID that is multi-unit or single, but not a sub unit
-                    // for (const listing of listings) {
-                    //     // updateSuccess = await updateAvailability(listing, updatedAvail, token);
-                    //     updateSuccess = await updateAvailability(listing, updatedAvail);
-
-                    //     listingIDs.push(listing._id);
-                    //     listingNames.push(listing.title);
-
-                    //     if (updateSuccess === false) {
-                    //         updatedAllSuccessfully++;
-                    //     }
-
-                    // }
-
-                    updateSuccess = await updateAvailability(listings, updatedAvail); 
-
-                    for (const listing of listings) {
-
-                        listingIDs.push(listing._id);
-                        listingNames.push(listing.title);
-
-                        if (updateSuccess === false) {
-                            updatedAllSuccessfully++;
-                        }
-
-                    }
-
-                    listingID = listingIDs.join(",");
-                    listingName = listingNames.join(",");
-
-                    success = updatedAllSuccessfully === 0;
-
-                    return {listingID, listingName, success};
-
-
-                } else {
-                    console.log("Resort with chosen address or suite type may not be available on Guesty.")
-                    console.log("Please check if the address or its suite type (e.g., 1BR) matches a Guesty Listing.");
-                    console.log( "'Listings' is empty.")
-                    return null;
+                console.log("Printing calendar availability scraped from wyndham...")
+                for (const avail of updatedAvail) {
+                    console.log(avail);
                 }
-        
-            } catch (error) {
-                console.error('Error:', error.message);
+
+                updateSuccess = await updateAvailability(listings, updatedAvail, months); 
+
+                for (const listing of listings) {
+
+                    listingIDs.push(listing._id);
+                    listingNames.push(listing.title);
+
+
+                }
+
+                listingID = listingIDs.join(",");
+                listingName = listingNames.join(",");
+
+                return {listingID, listingName, updateSuccess};
+
+
+            } else {
+                console.log("Resort with chosen address or suite type may not be available on Guesty.")
+                console.log("Please check if the address or its suite type (e.g., 1BR) matches a Guesty Listing.");
+                console.log( "'Listings' is empty.")
                 return null;
             }
+    
+        } catch (error) {
+            console.error('Error:', error.message);
+            return null;
+        }
 
-        } else {
-            console.log("Listing found!");
+    } else {
+        console.log("Listing found!");
 
-            var listingIDObj = resortJSONlistingID.split(","); 
-            const listingJsonArray = listingIDObj.map(item => ({ _id: item.trim() })); 
+        var listingIDObj = resortJSONlistingID.split(","); 
+        const listingJsonArray = listingIDObj.map(item => ({ _id: item.trim() })); 
 
 
-            console.log("Printing calendar availability scraped from wyndham...")
-            for (const avail of updatedAvail) {
-                console.log(avail);
+        console.log("Printing calendar availability scraped from wyndham...")
+        for (const avail of updatedAvail) {
+            console.log(avail);
+        }
+
+        for (const listing of listingJsonArray) {
+            try {
+                console.log("Listing id: ", listing._id);
+                let listingObj = await retrieveAListing(listing._id)
+
+                let hasDays = listingObj.calendarRules.bookingWindow.hasOwnProperty('defaultSettings') === false ||
+                                (listingObj.calendarRules.bookingWindow.defaultSettings &&
+                                    listingObj.calendarRules.bookingWindow.defaultSettings.days !== 0)
+
+                if (hasDays) {
+                    console.log("This listing calendar needs to be updated.")
+                    let updatedAvailabilitySettings = await updateAvailabilitySettings(listing._id);
+                    
+                    if (updatedAvailabilitySettings) {
+                        console.log("Calendar availability settings updated successfully.");
+                    } else {
+                        console.log("Calendar availability settings update failed.");
+                    }
+                } else {
+                    console.log("Availability settings does not need to be updated");
+                }
+
+            } catch (error) {
+                console.error("Error: " + error);
             }
 
-            // for (const listing of listingJsonArray) {
-            //     // try {
-            //     //     // let listingObj = await retrieveAListing(listing._id, token)
-            //     //     let listingObj = await retrieveAListing(listing._id)
-
-            //     //     let hasDays = listingObj.calendarRules.bookingWindow.hasOwnProperty('defaultSettings') === false ||
-            //     //                     (listingObj.calendarRules.bookingWindow.defaultSettings &&
-            //     //                         listingObj.calendarRules.bookingWindow.defaultSettings.days !== 0)
-
-            //     //     if (hasDays) {
-            //     //         console.log("This listing calendar needs to be updated.")
-            //     //         // let updatedAvailabilitySettings = await updateAvailabilitySettings(listing._id, token);
-            //     //         let updatedAvailabilitySettings = await updateAvailabilitySettings(listing._id);
-                        
-            //     //         if (updatedAvailabilitySettings) {
-            //     //             console.log("Calendar availability settings updated successfully.");
-            //     //         } else {
-            //     //             console.log("Calendar availability settings update failed.");
-            //     //         }
-            //     //     } 
-
-            //     // } catch (error) {
-            //     //     console.error("Error: " + error);
-            //     // }
-
-            //     updateSuccess = await updateAvailability(listing, updatedAvail);
-
-            //     if (updateSuccess) {
-            //         console.log("listing._id: " + listing._id);
-            //         listingIDs.push(listing._id);
-            //     } else {
-            //         updatedAllSuccessfully++;
-            //     }
-
-            // }
-
-            updateSuccess = await updateAvailability(listingJsonArray, updatedAvail);
-
-            success = updateSuccess;
-
-            return success ? "resort already updated" : null;
-            
         }
-    // } else {
-    //     console.log("Token not found");
-    //     return null;       
-    // }
+
+        updateSuccess = await updateAvailability(listingJsonArray, updatedAvail, months);
+
+        return updateSuccess ? "resort already updated" : null;
+        
+    }
+
 }
 
 async function findListing(address, suiteType){
@@ -330,24 +296,28 @@ async function updateAvailabilitySettings(listingID){
 
 }
 
-async function updateAvailability(listing, updatedAvail){
+async function updateAvailability(listing, updatedAvail, months){
 
     let token = await returnAValidToken(clientID, clientSecret);
 
     const arrayOfAvailability = []
     let success = true;
 
+    const url = 'https://open-api.guesty.com/v1/availability-pricing/api/calendar/listings';
+
+
     for (const item of updatedAvail) {
         for(const list of listing) {
             let cta = item.availability === "unavailable" ? true : false;
-            // arrayOfAvailability.push({
-            //     "listingId": list._id,
-            //     "startDate": item.start,
-            //     "endDate": item.end,
-            //     "status": item.availability, 
-            //     "cta": cta
-            // })
-            arrayOfAvailability.push(`{"listingId": "${list._id}","startDate": "${item.start}","endDate": "${item.end}","status": "${item.availability}", "cta": ${cta}}`);
+            arrayOfAvailability.push({
+                listingId: list._id,
+                startDate: item.start,
+                endDate: item.end,
+                status: item.availability, 
+                cta: cta, 
+                ctd: cta
+            });
+
         }
     }
 
@@ -364,85 +334,182 @@ async function updateAvailability(listing, updatedAvail){
 
     for (const sub of subArrayOfAvailability) {
 
-        const headers = {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-        };
-
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        const subArray = '[' + sub.join(",") + ']';
-
-        // const url = 'https://open-api.guesty.com/v1/availability-pricing/api/calendar/listings';
-
-        // const options = {
-        //     method: 'PUT',
-        //     headers: {
-        //         'accept': 'application/json',
-        //         'authorization': `Bearer ${token}`,
-        //         'content-type': 'application/json',
-        //     }
-        // };
-    
-        // let result = '';
-        // const req = http.request(url, options, (res) => {
-        //     console.log(res.statusCode);
-    
-        //     res.setEncoding('utf8');
-        //     res.on('data', (chunk) => {
-        //         result += chunk;
-        //     });
-    
-        //     res.on('end', () => {
-        //         console.log(result);
-        //         console.log("okay");
-        //     });
-        // });
-    
-        // req.on('error', (e) => {
-        //     console.error(e);
-        // });
-    
-        // req.write(subArray);
-        // req.end();
-
-        // try {
-        //     await sdk.auth(`Bearer ${token}`);
-        //     await sdk.putAvailabilityPricingApiCalendarListings(subArray)
-        //     .then(({ data }) => { 
-        //         // console.log(JSON.stringify(data));
-        //         console.log("Request successful")
-        //     })
-        //     .catch((err) => {
-        //         console.error(err);
-        //         success = false;
-        //     });
-        // } catch (error) {
-        //     console.error("error: ", error.message);
-        //     success = false;
-        // }
-
-        await superagent
-        .put('https://open-api.guesty.com/v1/availability-pricing/api/calendar/listings')
-        .set('Authorization', `Bearer ${token} `)  
-        .set('Accept', 'application/json')
-        .set('Content-type', 'application/json')
-        .send(subArray)
-        .then(response => {
-          console.log(response.body);
-        })
-        .catch(error => {
-          console.error(error.response ? error.response.body : error.message);
-          success = false;
-        });
-    
+        try {
+            await sdk.auth(`Bearer ${token}`);
+            await sdk.putAvailabilityPricingApiCalendarListings(sub)
+            .then(({ data }) => { 
+                console.log("Request successful")
+            })
+            .catch((err) => {
+                console.error(err);
+                success = false;
+            });
+        } catch (error) {
+            console.error("error: ", error.message);
+            success = false;
+        }
     }
 
+    let indiUpdatedAvail = [];
+
+    for (const item of updatedAvail) {
+        let start = new Date(item.start);
+        let end = new Date(item.end);
+        
+        while (start <= end) {
+            indiUpdatedAvail.push({
+                dateUpdatedAvail: start.toLocaleDateString("en-CA"),
+                statusUpdatedAvail: item.availability
+            })
+            start = addDays(start, 1);
+        }
+    }
+
+    for (const list of listing) {
+        success = await finalizeAccuracy(months, list._id, indiUpdatedAvail);
+    }
 
     return success;
 
 }
+
+async function finalizeAccuracy(months, listingID, indiUpdatedAvail) {
+    let token = await returnAValidToken(clientID, clientSecret);
+
+    const { currentDate, EndDate } = getCurrentAndEndDate(months);
+    let startDate = currentDate.toLocaleDateString("en-CA");
+    let endDate = EndDate.toLocaleDateString("en-CA");
+
+    const url = `https://open-api.guesty.com/v1/availability-pricing/api/calendar/listings/${listingID}?startDate=${startDate}&endDate=${endDate}&includeAllotment=${true}`;
+
+    const headers = {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application json",
+        "Accept": "application/json"
+    };
+
+    
+    try {
+        console.log('GET request successful');
+        const response = await axios.get(url, { headers });
+        const data = response.data;
+
+        let dateAvailability = data.data.days;
+        let retrievedAvailability = [];
+
+        for (const item of dateAvailability) {
+            let advanceNotice = item.blocks.hasOwnProperty('an') ? item.blocks.an : false;
+
+            if (advanceNotice) {
+                console.log("This date is in an advance notice block type. It cannot be updated");
+                console.log("===================================================================");
+                console.log("Date: ");
+                console.log(item.date);
+                console.log(item.status);
+                console.log(item.blocks.an);
+                console.log("===================================================================");
+            }
+
+            retrievedAvailability.push({
+                listingId: item.listingId, 
+                date: item.date,
+                status: item.status,
+                an: advanceNotice
+            })
+        }
+        
+        const finalAvailability = indiUpdatedAvail.map((obj, index) => ({ ...obj, ...retrievedAvailability[index] }));
+
+        for (const item of finalAvailability) {
+            if(item.dateUpdatedAvail === item.date && item.statusUpdatedAvail !== item.status && item.an === false) {
+                console.log("statuses don't match");
+                console.log(item);
+                
+                try {
+                    const blockObject = {
+                        startDate: item.dateUpdatedAvail,
+                        endDate: item.dateUpdatedAvail,
+                        status: item.statusUpdatedAvail
+                    };
+
+                    const listingId = { id: item.listingId };
+
+                    await updateCalendarIndividually(blockObject, listingId);
+                } catch (error) {
+                    console.error('PUT request failed:', error.message);
+                    return false;   
+                }
+
+            }
+        }
+        return true;
+
+    } catch (error) {
+        console.error('GET request failed:', error.message);
+        return false;
+    }
+
+}
+
+async function updateCalendarIndividually(blockObject, listingId) {
+    let token = await returnAValidToken(clientID, clientSecret);
+
+    try {
+        sdk.auth(`Bearer ${token}`);
+        sdk.putAvailabilityPricingApiCalendarListingsId(blockObject, listingId)
+        .then(({ data }) => { 
+            console.log("Final Request Successful");
+            return true;
+        })
+        .catch((err) => {
+            console.error(err);
+            return false;
+        });
+    } catch (error) {
+        console.error("error: ", error.message);
+        return false;
+    }
+
+}
+
+async function makeHTTPRequest(subArray, url, token) {
+    return new Promise((resolve, reject) => {
+        const options = {
+            method: 'PUT',
+            headers: {
+                'accept': 'application/json',
+                'authorization': `Bearer ${token}`,
+                'content-type': 'application/json',
+            }
+        };
+        let result = '';
+        let success = true;
+        const req = http.request(url, options, (res) => {
+            console.log(res.statusCode);
+    
+            res.setEncoding('utf8');
+            res.on('data', (chunk) => {
+                result += chunk;
+            });
+    
+            res.on('end', () => {
+                // console.log(result);
+                console.log("okay");
+                resolve(true);
+            });
+        });
+    
+        req.on('error', (e) => {
+            console.error(e);
+            reject(false);
+        });
+    
+        req.write(subArray);
+        req.end();
+
+    });
+}
+
 
 async function getLatLongAddress(address){
 
