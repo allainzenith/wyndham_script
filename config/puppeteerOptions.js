@@ -43,7 +43,6 @@ async function globals() {
 
     } catch (error) {
       console.log("Launching of puppeteer failed: " + error);
-      console.log("Launching puppeteer again.");
       if(sharedData.browser !== null){
         await sharedData.browser.close();
       }

@@ -1,5 +1,5 @@
 const { findRecords } = require('../sequelizer/controller/controller');
-const { addToScheduledQueue, resourceIntensiveTask } = require('../scripts/queueProcessor');
+const { addToScheduledQueue, resourceIntensiveTask } = require('./queueProcessor');
 const { saveRecord } = require('../sequelizer/controller/controller');
 const { updateEventStatus } = require('./scrapeAndUpdate');
 const { sequelize } = require("../config/config");
@@ -42,37 +42,32 @@ async function scheduledUpdates(tierType) {
         resortRefNum = res.resortRefNum;  
     
         eventCreated = await createAnEvent(res.resortRefNum, months);
-        const obj = { res, resortID, suiteType, resortRefNum, eventCreated };
+        const obj = { res, resortID, suiteType, eventCreated };
         allEvents.push(obj);
     }
     
 
-    console.log("All tasks added to the queue..")
-    
-
-    addToScheduledQueue(resourceIntensiveTask, () => {
-        console.log('Task completed');
-    }, allEvents[0].resortID, allEvents[0].suiteType, months, allEvents[0].res, allEvents[0].eventCreated)
-    .then(loggedIn => {
-        for(const {res, resortID, suiteType, resortRefNum, eventCreated } of allEvents) {
+    for(const {res, resortID, suiteType, eventCreated } of allEvents) {
+        addToScheduledQueue(resourceIntensiveTask, () => {
+            console.log('Task completed');
+        }, resortID, suiteType, months, res, eventCreated)
+        .then(loggedIn => {
             if (loggedIn === true) {
-                addToScheduledQueue(resourceIntensiveTask, () => {
-                    console.log('Task completed');
-                }, resortID, suiteType, months, res, eventCreated);
-            } else if (loggedIn === false) {
+                updateEventStatus(eventCreated, "SCRAPING");
+            }
+            else if (loggedIn === false) {
                 updateEventStatus(eventCreated, "UNVERIFIED");
             } else if (loggedIn === "MAINTENANCE") {
                 updateEventStatus(eventCreated, "MAINTENANCE");
-            } else {
+            } else if (loggedIn === null) {
                 updateEventStatus(eventCreated, "LOGIN_ERROR");
-                scheduledUpdates(tierType);
             }
-        }
 
-      })
-    .catch(error => {
-    console.error('Scheduled updates error:', error);
-    });
+            })
+        .catch(error => {
+        console.error('Scheduled updates error:', error);
+        });
+    }
 
 }
 

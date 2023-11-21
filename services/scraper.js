@@ -11,11 +11,9 @@ let needtoLogin;
 
 async function executeScraper(resortID, suiteType, months, resortHasNoRecord) {
   try {
-    // console.log("I need to log in: " + needtoLogin);
-    // let doneLogin = needtoLogin ? await loginVerified() : true;
-    // console.log("Done login: " + doneLogin);
-
-    let doneLogin = true;
+    console.log("I need to log in: " + needtoLogin);
+    let doneLogin = needtoLogin ? await login() : true;
+    console.log("Done login: " + doneLogin);
 
     let sElement = doneLogin === true ? await selectElements(resortID, suiteType) : null;
     console.log("Selected Option Text:", sElement);
@@ -69,7 +67,7 @@ async function launchPuppeteer() {
     return loggedIn;
     // return true;
   } catch (error) {
-    return false;
+    return null;
   }
 }
 
@@ -77,7 +75,7 @@ async function login() {
   let checkToBegin = true;
 
   while (checkToBegin) {
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise(resolve => setTimeout(resolve, 1000));
     try {
       sharedData.page;
       sharedData.pageForAddress;
@@ -91,11 +89,17 @@ async function login() {
     const page = sharedData.page;
     const pageForAddress = sharedData.pageForAddress;
 
-    await Promise.all([
-      page.waitForNavigation(), 
-      page.bringToFront(),
-      page.goto("https://clubwyndham.wyndhamdestinations.com/us/en/login")
-    ]);
+    try {
+      await Promise.all([
+        page.waitForNavigation(), 
+        page.bringToFront(),
+        page.goto("https://clubwyndham.wyndhamdestinations.com/us/en/login"),
+      ]);
+
+    } catch (error) {
+      console.log("Error at the start:",error.message);
+      return null;
+    }
 
     if (await page.url() !== "https://clubwyndham.wyndhamdestinations.com/us/en/login"){
       return "MAINTENANCE";
@@ -139,25 +143,12 @@ async function login() {
       let loginSelector = await page.$(`.button-primary[value*="Login"]`);
       await loginSelector.scrollIntoView();
 
-      await checkOverlay('.onetrust-close-btn-handler[aria-label*="Close"]');
+      await checkOverlay();
 
       await page.type("#okta-signin-username", userName);
       await page.type("#okta-signin-password", passWord);
-
-      try {
-        await page.waitForTimeout(5000);
-        await page.waitForSelector(`.button-primary[value*="Login"]`);
-        await Promise.all([
-          page.waitForNavigation(),
-          page.click(`.button-primary[value*="Login"]`)
-        ]);
-        // await page.click(`.button-primary[value*="Login"]`)
-
-        console.log("form submitted")
-      } catch (error) {
-        console.log("Can't submit");
-        console.log("Error message: ", error.message);
-      }
+      await page.waitForTimeout(5000);
+      await page.click(`.button-primary[value*="Login"]`)
 
       let isVerified = await findSendSmsCode();
 
@@ -189,22 +180,133 @@ async function findSendSmsCode(){
     return false;
 
   } catch (error) {
-    await page.waitForTimeout(30000);
+    let checkIfLoggedIn = 0;
+
+    while (checkIfLoggedIn < 5) {
+      let doneLogin = await isLoggedIn();
     
-    if(await page.url() !== 'https://clubwyndham.wyndhamdestinations.com/us/en/login') {
-      console.log("No need for OTP verification");
-      console.log("Logged in successfullyyyy!!");  
+      if(doneLogin) {
+        console.log("No need for OTP verification");
+        console.log("Logged in successfullyyyy!!");  
+  
+        // let canSelect = await enableSessionCalendar();
+        // returnValue = canSelect;
+        needtoLogin = false;
+        checkIfLoggedIn = 5;
+        return true;
+      } else {
+        console.log("Error: ", error.message);
+        checkIfLoggedIn++;
 
-      let canSelect = await enableSessionCalendar();
-      return canSelect;
+        try {
+          await page.waitForSelector(`.button-primary[value*="Login"]`);
+          await page.click(`.button-primary[value*="Login"]`)
+  
+          console.log("form submitted")
+        } catch (error) {
+          console.log("Can't submit");
+          console.log("Error message: ", error.message);
+        }
+  
+      }
 
-    } else {
-      console.log("Error: ", error.message);
-      return null;
     }
+
+    return null;
+
   }
 }
 
+async function isLoggedIn() {
+  const page = sharedData.page;
+  const urlToWaitFor = 'https://clubwyndham.wyndhamdestinations.com/us/en/owner/account';
+  try {
+    await page.waitForFunction(
+      (url) => window.location.href.includes(url),
+      { timeout: 120000 },
+      urlToWaitFor
+    );
+    console.log('Navigation to', urlToWaitFor, 'completed within the timeout');
+    return true;
+  } catch (error) {
+    console.error('Navigation did not complete within the timeout:', error.message);
+    return false;
+  }
+}
+
+async function sendOTP(verOTP) {
+  const page = sharedData.page;
+
+  try {
+    await page.waitForSelector('#input60', {timeout:3000});
+    await page.type("#input60", verOTP);
+    console.log("Inputted code");
+    await page.waitForSelector('#input69', {timeout:3000});
+    await page.click("#input69");
+    console.log("Clicked remember device");
+    await page.waitForTimeout(2000);
+    await page.waitForSelector('input[type="submit"]', {timeout:3000});
+
+    await Promise.all([
+      page.waitForNavigation(), 
+      page.click('input[type="submit"]')
+    ]);
+
+    console.log("Hit submit button");
+
+    try {
+      await page.waitForSelector('#error-fragment', {timeout:3000, visible: true});
+      console.log("error selector found")
+      console.log("The token code is incorrect");
+      return false;
+    } catch (error) {
+
+      let doneLogin = await isLoggedIn();
+    
+      if(doneLogin) {
+        console.log("No need for OTP verification");
+        console.log("Logged in successfullyyyy!!");  
+        needtoLogin = false;
+        return true;
+      } else {
+        console.log("Error: ", error.message);
+        return null;
+      }
+    }
+
+  } catch (error) {
+    console.error("Error:", error.message);
+    return null;
+  } 
+
+}
+
+async function resendSmsCode() {
+  return new Promise(async(resolve) => {
+    try {
+      const page = sharedData.page;
+      const browser = sharedData.browser;
+      if (await page.url() !== "https://clubwyndham.wyndhamdestinations.com/us/en/login"){
+        resolve("MAINTENANCE");
+        await browser.close();
+      } else {
+        let needsVerify = await findSendSmsCode();
+        resolve(needsVerify);
+      }
+    } catch (error) {
+      console.error("Error:", error.message);
+      login()
+      .then(needsVerify => {
+        resolve(needsVerify);
+      })
+      .catch(error => {
+        console.error(error);
+        resolve(null);
+      });
+    } 
+
+  });
+}
 async function enableSessionCalendar(){
   const page = sharedData.page;
   try {
@@ -245,7 +347,7 @@ async function enableSessionCalendar(){
       ]);
 
       let calendarSelector = `a[href*="/us/en/owner/resort-monthly-calendar"]`;
-      let calendarElement = await page.waitForSelector(calendarSelector);
+      await page.waitForSelector(calendarSelector);
   
       await Promise.all([
         page.waitForNavigation(), 
@@ -266,9 +368,10 @@ async function enableSessionCalendar(){
 
 }
 
-async function checkOverlay(overlaySelector) {
+async function checkOverlay() {
   const page = sharedData.page;
-
+  const overlaySelector = '.onetrust-close-btn-handler[aria-label*="Close"]'
+  
   const overlayExists = await page.evaluate((selector) => {
     const overlayElement = document.querySelector(selector);
     return overlayElement !== null;
@@ -287,93 +390,36 @@ async function checkOverlay(overlaySelector) {
 
 }
 
-async function resendSmsCode() {
-  return new Promise(async(resolve) => {
-    try {
-      const page = sharedData.page;
-      const browser = sharedData.browser;
-      if (await page.url() !== "https://clubwyndham.wyndhamdestinations.com/us/en/login"){
-        resolve("MAINTENANCE");
-        await browser.close();
-      } else {
-        let needsVerify = await findSendSmsCode();
-        resolve(needsVerify);
-      }
-    } catch (error) {
-      console.error("Error:", error.message);
-      login()
-      .then(needsVerify => {
-        resolve(needsVerify);
-      })
-      .catch(error => {
-        console.error(error);
-        resolve(null);
-      });
-    } 
-
-  });
-}
-
-
-async function sendOTP(verOTP) {
-  const page = sharedData.page;
-
-  try {
-    await page.waitForSelector('#input60', {timeout:10000});
-    await page.type("#input60", verOTP);
-    console.log("Inputted code");
-    await page.waitForSelector('#input69', {timeout:10000});
-    await page.click("#input69");
-    console.log("Clicked remember device");
-    await page.waitForTimeout(2000);
-    await page.waitForSelector('input[type="submit"]', {timeout:10000});
-
-    await Promise.all([
-      page.waitForNavigation(), 
-      page.click('input[type="submit"]')
-    ]);
-
-    console.log("Hit submit button");
-
-    try {
-      await page.waitForSelector('#error-fragment', {timeout:5000, visible: true});
-      console.log("error selector found")
-      console.log("The token code is incorrect");
-      return false;
-    } catch (error) {
-      await page.waitForTimeout(5000);
-    
-      if(await page.url() !== 'https://clubwyndham.wyndhamdestinations.com/us/en/login') {
-        console.log("No need for OTP verification");
-        console.log("Logged in successfullyyyy!!");  
-  
-        let canSelect = await enableSessionCalendar();
-        return canSelect;
-  
-      } else {
-        console.log("Error: ", error.message);
-        return null;
-      }
-    }
-  } catch (error) {
-    console.error("Error:", error.message);
-    return null;
-  } 
-
-}
-
 async function selectElements(resortID, suiteType) {
   const page = sharedData.page;
 
-  // await page.bringToFront();
-  // var calendarUrl = `https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`;
-  // await page.goto(calendarUrl);
-
 
   let setupSelect = 0;
-  let gotoPageAgain = false;
   while (setupSelect < 5) {
     try {
+
+      await page.bringToFront();
+      await page.waitForTimeout(5000);
+      var calendarUrl = `https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`;
+
+      try {
+        await page.waitForFunction(
+          (url) => window.location.href.includes(url),
+          { timeout: 1000 },
+          calendarUrl
+        );
+        console.log("Already on the calendar URL");
+      } catch (error) {
+        console.error("Not on the calendar URL yet: ", error.message);
+        console.log("Navigating now..");
+        await Promise.all([
+          page.waitForNavigation(), 
+          page.goto(calendarUrl)
+        ]);
+      }
+
+      await checkOverlay();
+
       const resortSelector = "#ResortSelect";
 
       await page.waitForSelector(resortSelector).then(
@@ -383,10 +429,15 @@ async function selectElements(resortID, suiteType) {
               const element = document.querySelector(selector);
               return !!element;
             },
-            { timeout: 10000 },
+            { timeout: 60000 },
             resortSelector
           ))
       );
+
+      const resort  = await page.waitForSelector(resortSelector, {
+        timeout: 3000,
+      });
+      await resort.scrollIntoView();
 
       let selectedResort = await page.evaluate((selector) => {
         const select = document.querySelector(selector);
@@ -425,7 +476,7 @@ async function selectElements(resortID, suiteType) {
           const select = document.querySelector(selector);
           return select && select.length > 1;
         },
-        { timeout: 60000 },
+        { timeout: 10000 },
         suiteSelector
       );
       
@@ -499,7 +550,6 @@ async function selectElements(resortID, suiteType) {
       
       let doneLogin = await login();
       console.log("logged in successfully: ", doneLogin);
-      gotoPageAgain = doneLogin;
       
       if (setupSelect === 5 && doneLogin !== true) return null;
     }
@@ -507,7 +557,7 @@ async function selectElements(resortID, suiteType) {
 }
 
 
-async function findDateSelector(initialCurrentDate, month, day, months, resortID, suiteType, currentDate) {
+async function findDateSelector(month, day, suiteType) {
   const page = sharedData.page;
   let dateElement = null;
   let dayClass = `.react-datepicker__day--0${day}[aria-label*="${month}"]`;
@@ -526,7 +576,7 @@ async function findDateSelector(initialCurrentDate, month, day, months, resortID
   } else {
     try {
       dateElement = await page.waitForSelector(dayClass, {
-        timeout: 10000,
+        timeout: 3000,
       });
       await dateElement.scrollIntoView();
     } catch (error) {
@@ -555,25 +605,9 @@ async function checkAvailability(months, resortID, suiteType) {
       day: "2-digit",
     });
 
-    // const suiteSelector = "#suiteType";
-                    
-    // let selectedSuiteType = await page.evaluate((selector) => {
-    //     const select = document.querySelector(selector);
-    //     const selectedOption = select.options[select.selectedIndex];
-    //     return selectedOption.text;
-    // }, suiteSelector);
-
-    // console.log("THE SUITE TYPE SELECTED: ", selectedSuiteType);
-
-    // if (selectedSuiteType !== suiteType) {
-    //   console.log("RESETTING THE SUITE TYPE");
-    //   let doneSelect = await selectElements(resortID, suiteType);
-    //   console.log("Reselected elements successfully: ", doneSelect);
-    // }
-
     await page.waitForTimeout(5000);
 
-    await findDateSelector(null, month, day, months, resortID, suiteType, currentDate)
+    await findDateSelector(month, day, suiteType)
 
     while (currentDate <= EndDate) {
       try {
@@ -584,7 +618,7 @@ async function checkAvailability(months, resortID, suiteType) {
           day: "2-digit",
         });
 
-        var dateElement = await findDateSelector(initialCurrentDate, month, day, months, resortID, suiteType, currentDate);
+        var dateElement = await findDateSelector(month, day, suiteType);
 
         if (dateElement !== null) {
           await dateElement.scrollIntoView();
@@ -625,8 +659,9 @@ async function checkAvailability(months, resortID, suiteType) {
                 findNextButtonAttempts = 5;
               } catch (error) {
                 findNextButtonAttempts++;
-                console.log("Can't find next button. Reloading again.");
+                console.log("Can't find next button. Logging in again.");
                 dates = [];
+                await page.reload();
                 let doneSelect = await selectElements(resortID, suiteType);
                 console.log("Reselected elements successfully: ", doneSelect);
                 let doneScraping = await checkAvailability(months, resortID, suiteType);
@@ -637,7 +672,8 @@ async function checkAvailability(months, resortID, suiteType) {
             }
           }
         } else {
-          console.log("Can't find date element. Reloading again.")
+          console.log("Can't find date element. Logging in again.")
+          await page.reload();
           let doneSelect = await selectElements(resortID, suiteType);
           console.log("Reselected elements successfully: ", doneSelect);
           let doneScraping = await checkAvailability(months, resortID, suiteType);
@@ -708,9 +744,7 @@ async function checkAvailability(months, resortID, suiteType) {
   } catch (error) {
     console.error("Error:", error.message);
     return null;
-  } finally {
-    await page.waitForTimeout(2000);
-  }
+  } 
 }
 
 function getCurrentAndEndDate(months) {
@@ -740,7 +774,7 @@ async function getResortAddress(resortID, sElement) {
 
         addressFound = await pageForAddress.waitForSelector(
           resortCardSelector,
-          { timeout: 120000 }
+          { timeout: 60000 }
         );
 
         addressSelectorFound = 5;
@@ -780,5 +814,6 @@ module.exports = {
   resendSmsCode,
   sendOTP,
   launchPuppeteer,
-  login
+  login,
+  getCurrentAndEndDate
 };

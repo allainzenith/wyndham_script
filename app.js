@@ -10,7 +10,6 @@ var { clientID, clientSecret, returnAValidToken } = require("./config/config");
 
 const schedule = require("node-schedule");
 const { scheduledUpdates } = require("./scripts/scheduledUpdates");
-const { taskQueue } = require("./scripts/queueProcessor");
 var app = express();
 
 let thisToken;
@@ -34,7 +33,7 @@ app.use(async (req, res, next) => {
 
   if (updateOnce) {
     updateOnce = false;
-    //await scheduledUpdates("TIER 1");
+    // await scheduledUpdates("TIER 1");
   }
   next();
 });
