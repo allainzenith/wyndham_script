@@ -375,7 +375,7 @@ async function updateAvailability(listing, updatedAvail, months){
 
 async function finalizeAccuracy(months, listingID, indiUpdatedAvail) {
     let token = await returnAValidToken(clientID, clientSecret);
-
+    let success = true;
     const { currentDate, EndDate } = getCurrentAndEndDate(months);
     let startDate = currentDate.toLocaleDateString("en-CA");
     let endDate = EndDate.toLocaleDateString("en-CA");
@@ -426,6 +426,7 @@ async function finalizeAccuracy(months, listingID, indiUpdatedAvail) {
                 console.log(item);
                 
                 try {
+                    await new Promise(resolve => setTimeout(resolve, 2000));
                     const blockObject = {
                         startDate: item.dateUpdatedAvail,
                         endDate: item.dateUpdatedAvail,
@@ -434,20 +435,22 @@ async function finalizeAccuracy(months, listingID, indiUpdatedAvail) {
 
                     const listingId = { id: item.listingId };
 
-                    await updateCalendarIndividually(blockObject, listingId);
+                    success = await updateCalendarIndividually(blockObject, listingId);
+
                 } catch (error) {
                     console.error('PUT request failed:', error.message);
-                    return false;   
+                    success = false;
                 }
 
             }
         }
-        return true;
 
     } catch (error) {
         console.error('GET request failed:', error.message);
-        return false;
+        success = false;
     }
+
+    return success;
 
 }
 
