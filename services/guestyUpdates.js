@@ -301,7 +301,7 @@ async function updateAvailability(listing, updatedAvail, months){
     let token = await returnAValidToken(clientID, clientSecret);
 
     const arrayOfAvailability = []
-    let success = true;
+    let success = 0;
 
     const url = 'https://open-api.guesty.com/v1/availability-pricing/api/calendar/listings';
 
@@ -342,13 +342,15 @@ async function updateAvailability(listing, updatedAvail, months){
             })
             .catch((err) => {
                 console.error(err);
-                success = false;
+                success++;
             });
         } catch (error) {
             console.error("error: ", error.message);
-            success = false;
+            success++;
         }
     }
+
+    console.log(success);
 
     let indiUpdatedAvail = [];
 
@@ -365,17 +367,21 @@ async function updateAvailability(listing, updatedAvail, months){
         }
     }
 
-    for (const list of listing) {
-        success = await finalizeAccuracy(months, list._id, indiUpdatedAvail);
+    if (success == 0) {
+        for (const list of listing) {
+            success = await finalizeAccuracy(months, list._id, indiUpdatedAvail);
+        }   
+    } else {
+        console.log("Previous requests failed. Execution status set to UPDATE_FAILED.");
     }
 
-    return success;
+    return success === 0;
 
 }
 
 async function finalizeAccuracy(months, listingID, indiUpdatedAvail) {
     let token = await returnAValidToken(clientID, clientSecret);
-    let success = true;
+    let success = 0;
     const { currentDate, EndDate } = getCurrentAndEndDate(months);
     let startDate = currentDate.toLocaleDateString("en-CA");
     let endDate = EndDate.toLocaleDateString("en-CA");
@@ -390,9 +396,16 @@ async function finalizeAccuracy(months, listingID, indiUpdatedAvail) {
 
     
     try {
-        console.log('GET request successful');
-        const response = await axios.get(url, { headers });
-        const data = response.data;
+        let data;
+
+        try {
+            const response = await axios.get(url, { headers });
+            data = response.data;
+            console.log('Request to retrieve calendar successful');
+        } catch (error) {
+            console.error('Request to retrieve calendar failed:', error.message);
+            success++;
+        }
 
         let dateAvailability = data.data.days;
         let retrievedAvailability = [];
@@ -435,20 +448,24 @@ async function finalizeAccuracy(months, listingID, indiUpdatedAvail) {
 
                     const listingId = { id: item.listingId };
 
-                    success = await updateCalendarIndividually(blockObject, listingId);
+                    let updateCalendarSuccess = await updateCalendarIndividually(blockObject, listingId);
+
+                    if (updateCalendarSuccess === false) { success++; };
 
                 } catch (error) {
                     console.error('PUT request failed:', error.message);
-                    success = false;
+                    success++;
                 }
 
             }
         }
 
     } catch (error) {
-        console.error('GET request failed:', error.message);
-        success = false;
+        console.error('Error:', error.message);
+        success++;
     }
+
+    console.log("finalize accuracy: ", success);
 
     return success;
 
@@ -456,22 +473,24 @@ async function finalizeAccuracy(months, listingID, indiUpdatedAvail) {
 
 async function updateCalendarIndividually(blockObject, listingId) {
     let token = await returnAValidToken(clientID, clientSecret);
+    let success = true;
 
     try {
         sdk.auth(`Bearer ${token}`);
         sdk.putAvailabilityPricingApiCalendarListingsId(blockObject, listingId)
         .then(({ data }) => { 
             console.log("Final Request Successful");
-            return true;
         })
         .catch((err) => {
             console.error(err);
-            return false;
+            success = false;
         });
     } catch (error) {
         console.error("error: ", error.message);
-        return false;
+        success = false;
     }
+
+    return success;
 
 }
 
