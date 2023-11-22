@@ -190,7 +190,7 @@ async function findListing(address, suiteType){
                 }
             }
         } catch (error) {
-            console.error("Error: "+ error);
+            console.error("Error evaluating availability settings: "+ error);
         }
     }
 
@@ -237,63 +237,81 @@ async function retrieveListings(substringAddress){
 }
 
 async function retrieveAListing(listingID){
+    return new Promise(async(resolve, reject) => {
+        let token = await returnAValidToken(clientID, clientSecret);
+        let fields = "_id bedrooms title type address calendarRules.bookingWindow";
+        const url = `https://open-api.guesty.com/v1/listings/${listingID}?fields=${fields}`;
 
-    let token = await returnAValidToken(clientID, clientSecret);
-    fields = "_id bedrooms title type address calendarRules.bookingWindow";
-    const url = `https://open-api.guesty.com/v1/listings/${listingID}?fields=${fields}`;
+        const headers = {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application json",
+            "Accept": "application/json"
+        };
 
-    const headers = {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application json",
-        "Accept": "application/json"
-    };
 
-    
-    try {
-        const response = await axios.get(url, { headers });
-        console.log('GET request successful');
-        return response.data;
-    } catch (error) {
-        console.error('GET request failed:', error.message);
-        return null;
-    }
-
+        await axios.get(url, { headers })
+        .then(({ data }) => {
+            console.log("Listing retrieved successfully!");
+            console.log(JSON.stringify(data.calendarRules, null, 2));
+            resolve(data);
+        })
+        .catch(err => { 
+            console.error(err);
+            reject(null);
+        });
+    });
 }
 
 async function updateAvailabilitySettings(listingID){
 
     let token = await returnAValidToken(clientID, clientSecret);
 
-    const url = `https://open-api.guesty.com/v1/listings/${listingID}/availability-settings`;
+    // const url = `https://open-api.guesty.com/v1/listings/${listingID}/availability-settings`;
 
-    const headers = {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-    };
+    // const headers = {
+    //     "Authorization": `Bearer ${token}`,
+    //     "Content-Type": "application/json",
+    //     "Accept": "application/json"
+    // };
 
-    const rawBody = JSON.stringify(
-        {
+    // const rawBody = JSON.stringify(
+    //     {
+    //         calendarRules: {
+    //             bookingWindow: {
+    //                 defaultSettings: {
+    //                     days: 0
+    //                 }
+    //             }
+    //         },
+    //         defaultAvailability: "AVAILABLE",
+    //     }
+    // )  
+
+    // try {
+    //     await axios.put(url, rawBody, { headers });
+    //     console.log('PUT request successful: ');
+    //     return true;
+    // } catch (error) {
+    //     console.error('PUT request failed:', error.message);
+    //     return false;
+    // }
+    return new Promise(async(resolve, reject) => {
+        sdk.auth(`Bearer ${token}`);
+        sdk.putListingsIdAvailabilitySettings({
             calendarRules: {
-                bookingWindow: {
-                    defaultSettings: {
-                        days: 0
-                    }
-                }
-            },
-            defaultAvailability: "AVAILABLE",
-        }
-    )  
-
-    try {
-        await axios.put(url, rawBody, { headers });
-        console.log('PUT request successful: ');
-        return true;
-    } catch (error) {
-        console.error('PUT request failed:', error.message);
-        return false;
-    }
-
+                bookingWindow: {defaultSettings: {days: 0}}
+            }, 
+            defaultAvailability: 'AVAILABLE'
+        }, {id: `${listingID}`})
+        .then(({ data }) => {
+            console.log("Availability settings PUT request successful.");
+            return true;
+        })
+        .catch(err => { 
+            console.error(err);
+            return false;
+        });
+    })
 }
 
 async function updateAvailability(listing, updatedAvail, months){
@@ -332,25 +350,36 @@ async function updateAvailability(listing, updatedAvail, months){
 
     console.log("Subarray size: ", subArrayOfAvailability.length);
 
-    for (const sub of subArrayOfAvailability) {
+    // for (const sub of subArrayOfAvailability) {
 
-        try {
-            await sdk.auth(`Bearer ${token}`);
-            await sdk.putAvailabilityPricingApiCalendarListings(sub)
-            .then(({ data }) => { 
-                console.log("Request successful")
+    //     await sdk.auth(`Bearer ${token}`);
+    //     await sdk.putAvailabilityPricingApiCalendarListings(sub)
+    //     .then(({ data }) => { 
+    //         console.log("Request successful")
+    //     })
+    //     .catch((err) => {
+    //         console.error(err);
+            
+    //     });
+
+    // }
+
+    const updatePromises = subArrayOfAvailability.map(async (sub) => {
+        await sdk.auth(`Bearer ${token}`);
+        return sdk.putAvailabilityPricingApiCalendarListings(sub)
+            .then(({ data }) => {
+                console.log("Request successful");
             })
             .catch((err) => {
                 console.error(err);
-                success++;
+                // success++;
             });
-        } catch (error) {
-            console.error("error: ", error.message);
-            success++;
-        }
-    }
+    });
 
-    console.log(success);
+    await Promise.all(updatePromises);
+
+    console.log("individual checking now..");
+
 
     let indiUpdatedAvail = [];
 
@@ -385,40 +414,28 @@ async function finalizeAccuracy(months, listingID, indiUpdatedAvail) {
     const { currentDate, EndDate } = getCurrentAndEndDate(months);
     let startDate = currentDate.toLocaleDateString("en-CA");
     let endDate = EndDate.toLocaleDateString("en-CA");
-
-    const url = `https://open-api.guesty.com/v1/availability-pricing/api/calendar/listings/${listingID}?startDate=${startDate}&endDate=${endDate}&includeAllotment=${true}`;
-
-    const headers = {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application json",
-        "Accept": "application/json"
-    };
-
     
-    try {
-        let data;
 
-        try {
-            const response = await axios.get(url, { headers });
-            data = response.data;
-            console.log('Request to retrieve calendar successful');
-        } catch (error) {
-            console.error('Request to retrieve calendar failed:', error.message);
-            success++;
-        }
+    let data = await getCalendarAvailability(startDate, endDate, listingID);
 
+
+    if (data !== null) {
         let dateAvailability = data.data.days;
         let retrievedAvailability = [];
 
         for (const item of dateAvailability) {
             let advanceNotice = item.blocks.hasOwnProperty('an') ? item.blocks.an : false;
 
+            const isAvailable = (typeof item.allotment === 'number' && !Number.isNaN(item.allotment))? item.allotment > 0 : item.status === 'available';
+
+            const status = isAvailable ? "available" : "unavailable";
+
             if (advanceNotice) {
                 console.log("This date is in an advance notice block type. It cannot be updated");
                 console.log("===================================================================");
                 console.log("Date: ");
                 console.log(item.date);
-                console.log(item.status);
+                console.log(status);
                 console.log(item.blocks.an);
                 console.log("===================================================================");
             }
@@ -426,20 +443,20 @@ async function finalizeAccuracy(months, listingID, indiUpdatedAvail) {
             retrievedAvailability.push({
                 listingId: item.listingId, 
                 date: item.date,
-                status: item.status,
+                status: status,
                 an: advanceNotice
             })
         }
         
         const finalAvailability = indiUpdatedAvail.map((obj, index) => ({ ...obj, ...retrievedAvailability[index] }));
 
+        let requestsSent = 0;
         for (const item of finalAvailability) {
             if(item.dateUpdatedAvail === item.date && item.statusUpdatedAvail !== item.status && item.an === false) {
                 console.log("statuses don't match");
                 console.log(item);
                 
                 try {
-                    await new Promise(resolve => setTimeout(resolve, 2000));
                     const blockObject = {
                         startDate: item.dateUpdatedAvail,
                         endDate: item.dateUpdatedAvail,
@@ -457,40 +474,74 @@ async function finalizeAccuracy(months, listingID, indiUpdatedAvail) {
                     success++;
                 }
 
+                requestsSent++;
+
+                if (requestsSent >=10) {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+
             }
         }
-
-    } catch (error) {
-        console.error('Error:', error.message);
-        success++;
+    } else {
+        success = 1;
     }
 
     console.log("finalize accuracy: ", success);
-
     return success;
+
+}
+
+async function getCalendarAvailability(startDate, endDate, listingID) {
+    let token = await returnAValidToken(clientID, clientSecret);
+
+    return new Promise(async(resolve, reject) => {
+        await sdk.auth(`Bearer ${token}`);
+        await sdk.getAvailabilityPricingApiCalendarListingsId({startDate: startDate, endDate: endDate, includeAllotment: 'true', id: listingID})
+        .then(({ data }) => { 
+            console.log('Request to retrieve calendar successful')
+            let availCalendar = data;
+            resolve(availCalendar);
+        })
+        .catch((err) => {
+            console.error(err);
+            reject(null);
+        });
+    });
 
 }
 
 async function updateCalendarIndividually(blockObject, listingId) {
     let token = await returnAValidToken(clientID, clientSecret);
-    let success = true;
+    // const url = `https://open-api.guesty.com/v1/availability-pricing/api/calendar/listings/${listingId}`;
 
-    try {
-        sdk.auth(`Bearer ${token}`);
-        sdk.putAvailabilityPricingApiCalendarListingsId(blockObject, listingId)
+    // const headers = {
+    //     "Authorization": `Bearer ${token}`,
+    //     "Content-Type": "application/json",
+    //     "Accept": "application/json"
+    // };
+
+    // try {
+    //     await axios.put(url, JSON.stringify(blockObject), { headers });
+    //     console.log('Calendar date successfully updated!');
+    // } catch (error) {
+    //     console.error('Calendar date update failed: ', error.message);
+    //     success = false;
+    // }
+
+    // try {
+    return new Promise(async(resolve, reject) => {
+        await sdk.auth(`Bearer ${token}`);
+        await sdk.putAvailabilityPricingApiCalendarListingsId(blockObject, listingId)
         .then(({ data }) => { 
             console.log("Final Request Successful");
+            resolve(true);
         })
         .catch((err) => {
             console.error(err);
-            success = false;
+            reject(false);
         });
-    } catch (error) {
-        console.error("error: ", error.message);
-        success = false;
-    }
 
-    return success;
+    });
 
 }
 

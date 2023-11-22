@@ -199,10 +199,9 @@ async function findSendSmsCode(){
         checkIfLoggedIn++;
 
         try {
-          await page.waitForSelector(`.button-primary[value*="Login"]`);
-          await page.click(`.button-primary[value*="Login"]`)
-  
-          console.log("form submitted")
+          let doneLogin = await login();
+          console.log("Done login: ", doneLogin);
+
         } catch (error) {
           console.log("Can't submit");
           console.log("Error message: ", error.message);
@@ -219,14 +218,14 @@ async function findSendSmsCode(){
 
 async function isLoggedIn() {
   const page = sharedData.page;
-  const urlToWaitFor = 'https://clubwyndham.wyndhamdestinations.com/us/en/owner/account';
+  const accountURL = 'https://clubwyndham.wyndhamdestinations.com/us/en/owner/account';
   try {
     await page.waitForFunction(
       (url) => window.location.href.includes(url),
-      { timeout: 120000 },
-      urlToWaitFor
+      { timeout: 60000 },
+      accountURL
     );
-    console.log('Navigation to', urlToWaitFor, 'completed within the timeout');
+    console.log('Navigation to', accountURL, 'completed within the timeout');
     return true;
   } catch (error) {
     console.error('Navigation did not complete within the timeout:', error.message);
@@ -576,7 +575,7 @@ async function findDateSelector(month, day, suiteType) {
   } else {
     try {
       dateElement = await page.waitForSelector(dayClass, {
-        timeout: 3000,
+        timeout: 5000,
       });
       await dateElement.scrollIntoView();
     } catch (error) {
@@ -651,7 +650,7 @@ async function checkAvailability(months, resortID, suiteType) {
                 if (nextButton) {
                   await nextButton.click();
                   console.log("Clicked next button.")
-                  await page.waitForTimeout(2000);
+                  await page.waitForTimeout(1000);
 
                 } else {
                   console.log("did not find the button");
