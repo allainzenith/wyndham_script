@@ -650,7 +650,7 @@ async function checkAvailability(months, resortID, suiteType) {
                 if (nextButton) {
                   await nextButton.click();
                   console.log("Clicked next button.")
-                  await page.waitForTimeout(1000);
+                  await page.waitForTimeout(2000);
 
                 } else {
                   console.log("did not find the button");
