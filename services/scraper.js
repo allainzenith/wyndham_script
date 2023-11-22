@@ -466,7 +466,7 @@ async function selectElements(resortID, suiteType) {
         return selectedOption.text;
       }, resortSelector);
 
-      console.log("this is the selected option: " + selectedOptionText);
+      console.log("This is the selected option: " + selectedOptionText);
 
       const suiteSelector = "#suiteType";
 
@@ -569,6 +569,7 @@ async function findDateSelector(month, day, suiteType) {
       return selectedOption.text;
   }, suiteSelector);
 
+
   if (selectedSuiteType !== suiteType) {
     console.log("Sayop ang suite type");
     return null;
@@ -649,8 +650,50 @@ async function checkAvailability(months, resortID, suiteType) {
                 });
                 if (nextButton) {
                   await nextButton.click();
-                  console.log("Clicked next button.")
-                  await page.waitForTimeout(2000);
+                  console.log("Clicked next button.");
+
+                  const parentClass = '.react-datepicker__month-container';
+                  const monthClass = '.react-datepicker__current-month';
+
+                  let checkMonthAttempts = 0;
+                  let monthNowText = null;
+
+                  let currentMonth = currentDate.toLocaleDateString(undefined, {
+                    month: "long",
+                  });
+
+                  let monthCheck = currentMonth.substring(0, 3).toUpperCase() + ' ' + currentDate.getFullYear();
+          
+                  while (checkMonthAttempts < 5 ) {
+                    await page.waitForTimeout(2000);
+
+                    monthNowText = await page.evaluate((parentSelector, monthSelector) => {
+                      const parentElement = document.querySelector(parentSelector);
+                      if (parentElement) {
+                        const monthElement = parentElement.querySelector(monthSelector);
+                        return monthElement ? monthElement.textContent.trim().toUpperCase() : null;
+                      }
+                      return null;
+                    }, parentClass, monthClass);
+          
+                    if (monthNowText === monthCheck) {
+                      checkMonthAttempts = 5;
+                      console.log(monthNowText + " is equal to ", monthCheck);
+                    } else { 
+                      console.log("Target month: ", monthCheck);
+                      console.log("Current month: ", monthNowText);
+
+                      if (checkMonthAttempts === 4) {
+                        await page.reload();
+                        let doneSelect = await selectElements(resortID, suiteType);
+                        console.log("Reselected elements successfully: ", doneSelect);
+                        let doneScraping = await checkAvailability(months, resortID, suiteType);
+                        console.log("Checked availability successfully: ", doneScraping !== null);
+                        return doneScraping;
+                      }
+                      checkMonthAttempts++;
+                    }
+                  }
 
                 } else {
                   console.log("did not find the button");
@@ -658,7 +701,8 @@ async function checkAvailability(months, resortID, suiteType) {
                 findNextButtonAttempts = 5;
               } catch (error) {
                 findNextButtonAttempts++;
-                console.log("Can't find next button. Logging in again.");
+                console.log("Can't find next button. Reloading again.");
+                console.log("Error: ", error.message);
                 dates = [];
                 await page.reload();
                 let doneSelect = await selectElements(resortID, suiteType);
@@ -671,7 +715,8 @@ async function checkAvailability(months, resortID, suiteType) {
             }
           }
         } else {
-          console.log("Can't find date element. Logging in again.")
+          console.log("Can't find date element. Reloading again.");
+          console.log("Error: ", error.message);
           await page.reload();
           let doneSelect = await selectElements(resortID, suiteType);
           console.log("Reselected elements successfully: ", doneSelect);
