@@ -408,10 +408,10 @@ async function selectElements(resortID, suiteType) {
           calendarUrl
         );
         console.log("Already on the calendar URL");
-        // await Promise.all([
-        //   page.waitForNavigation(), 
-        //   page.reload()
-        // ]);
+        await Promise.all([
+          page.waitForNavigation(), 
+          page.reload()
+        ]);
       } catch (error) {
         console.error("Not on the calendar URL yet: ", error.message);
         console.log("Navigating now..");
@@ -521,6 +521,30 @@ async function selectElements(resortID, suiteType) {
 
         setupSelect = 5;
 
+        //====================================================================
+        // SELECTING SUITE TYPE
+        //====================================================================
+
+        const suiteSelector = "#suiteType";
+
+        let selectedSuiteType = await page.select(suiteSelector, "All Suites");
+
+        while (selectedSuiteType !== suiteType) {
+          await page.select(suiteSelector, suiteType);
+
+          selectedSuiteType = await page.evaluate((selector) => {
+            const select = document.querySelector(selector);
+            const selectedOption = select.options[select.selectedIndex];
+            return selectedOption.text;
+          }, suiteSelector);
+
+          console.log("This is the selected suite type:",selectedSuiteType);
+        }
+
+        //====================================================================
+        // END OF SELECTING SUITE TYPE
+        //====================================================================
+
 
   
         return selectedOptionText;
@@ -557,30 +581,6 @@ async function checkAvailability(months, resortID, suiteType) {
     let monthNow = 0;
     let responses = [];
 
-    //====================================================================
-    // SELECTING SUITE TYPE
-    //====================================================================
-
-    const suiteSelector = "#suiteType";
-
-    let selectedSuiteType = await page.select(suiteSelector, "All Suites");
-
-    while (selectedSuiteType !== suiteType) {
-      await page.select(suiteSelector, suiteType);
-
-      selectedSuiteType = await page.evaluate((selector) => {
-        const select = document.querySelector(selector);
-        const selectedOption = select.options[select.selectedIndex];
-        return selectedOption.text;
-      }, suiteSelector);
-
-      console.log("This is the selected suite type:",selectedSuiteType);
-    }
-
-    //====================================================================
-    // END OF SELECTING SUITE TYPE
-    //====================================================================
-
     while (monthNow <= months) {   
 
       let currentMonth = currentDate.toLocaleDateString(undefined, {
@@ -601,7 +601,7 @@ async function checkAvailability(months, resortID, suiteType) {
       let dateForSecondResponse;
       let numResponses = 0;
       let secondResponsePromise = true;
-      const selectedResort = [`${selectedSuiteType}`];
+      // const selectedResort = [`${selectedSuiteType}`];
 
       // Wait for a specific request with the target payload
       const requestPromise = page.waitForRequest(request => {
@@ -794,7 +794,19 @@ async function checkAvailability(months, resortID, suiteType) {
     return updatedAvail;
   } catch (error) {
     console.error("Error:", error.message);
-    return null;
+    await page.reload();
+    let doneSelect = await selectElements(resortID, suiteType);
+    console.log("Reselected elements successfully: ", doneSelect);
+    let doneScraping = await checkAvailability(
+      months,
+      resortID,
+      suiteType
+    );
+    console.log(
+      "Checked availability successfully: ",
+      doneScraping !== null
+    );
+    return doneScraping;
   } 
 }
 
