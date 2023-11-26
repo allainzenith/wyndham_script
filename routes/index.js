@@ -114,7 +114,7 @@ router.post('/resendOTP', async(req, res, next) => {
           } 
         })
         .catch(error => {
-          console.error('Login process error:', error);
+          console.error('Resend OTP error:', error);
           res.status(500).json({ error: 'Internal Server Error' });
         });
     } catch (error) {
@@ -151,20 +151,20 @@ router.post('/one', async(req, res, next) => {
         console.log('Task completed');
       }, resortID, suiteType, months, resort, eventCreated)
         .then(loggedIn => {
-          let eventCreated = findByPk(eventCreated.execID, "execution");
+          let event = findByPk(eventCreated.execID, "execution");
 
           isVerified = loggedIn;
           
           if (loggedIn === "MAINTENANCE") {
-            updateEventStatus(eventCreated, "MAINTENANCE");
+            updateEventStatus(event, "MAINTENANCE");
           } else if (loggedIn === null) {
-            updateEventStatus(eventCreated, "LOGIN_ERROR");
+            updateEventStatus(event, "LOGIN_ERROR");
           }
 
           res.json({ loggedIn, execID });
         })
         .catch(error => {
-          console.error('Login process error:', error);
+          console.error('One error:', error);
           res.status(500).json({ error: 'Internal Server Error' });
         });
     } catch (error) {
@@ -235,7 +235,7 @@ router.get('/retry', async(req, res, next) => {
           res.json({ loggedIn, execID });
         })
         .catch(error => {
-          console.error('Login process error:', error);
+          console.error('Retry error:', error);
           res.status(500).json({ error: 'Internal Server Error' });
         });
     } catch (error) {
