@@ -350,20 +350,6 @@ async function updateAvailability(listing, updatedAvail, months){
 
     console.log("Subarray size: ", subArrayOfAvailability.length);
 
-    // for (const sub of subArrayOfAvailability) {
-
-    //     await sdk.auth(`Bearer ${token}`);
-    //     await sdk.putAvailabilityPricingApiCalendarListings(sub)
-    //     .then(({ data }) => { 
-    //         console.log("Request successful")
-    //     })
-    //     .catch((err) => {
-    //         console.error(err);
-            
-    //     });
-
-    // }
-
     const updatePromises = subArrayOfAvailability.map(async (sub) => {
         await sdk.auth(`Bearer ${token}`);
         return sdk.putAvailabilityPricingApiCalendarListings(sub)
@@ -372,7 +358,6 @@ async function updateAvailability(listing, updatedAvail, months){
             })
             .catch((err) => {
                 console.error(err);
-                // success++;
             });
     });
 
@@ -512,23 +497,7 @@ async function getCalendarAvailability(startDate, endDate, listingID) {
 
 async function updateCalendarIndividually(blockObject, listingId) {
     let token = await returnAValidToken(clientID, clientSecret);
-    // const url = `https://open-api.guesty.com/v1/availability-pricing/api/calendar/listings/${listingId}`;
 
-    // const headers = {
-    //     "Authorization": `Bearer ${token}`,
-    //     "Content-Type": "application/json",
-    //     "Accept": "application/json"
-    // };
-
-    // try {
-    //     await axios.put(url, JSON.stringify(blockObject), { headers });
-    //     console.log('Calendar date successfully updated!');
-    // } catch (error) {
-    //     console.error('Calendar date update failed: ', error.message);
-    //     success = false;
-    // }
-
-    // try {
     return new Promise(async(resolve, reject) => {
         await sdk.auth(`Bearer ${token}`);
         await sdk.putAvailabilityPricingApiCalendarListingsId(blockObject, listingId)

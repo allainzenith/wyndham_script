@@ -87,7 +87,7 @@ router.post('/sendOTP', async(req, res, next) => {
             res.status(500).json({ error: 'Internal Server Error' });
           });
       } catch (error) {
-        console.error('Error triggering login:', error);
+        console.error('Error triggering sending OTP:', error);
         res.status(500).json({ error: 'Internal Server Error' });
       }
     }
@@ -106,6 +106,7 @@ router.post('/resendOTP', async(req, res, next) => {
       // Trigger the login process asynchronously
       resendSmsCode()
         .then(needsVerify => {  
+          let eventCreated = findByPk(req.body.execID, "execution");
           res.json({ needsVerify });
 
           if (needsVerify === "MAINTENANCE") {
@@ -136,7 +137,7 @@ router.post('/one', async(req, res, next) => {
 
   var resortID = (req.body.resort_id).trim();
   var suiteType = (req.body.suite_type).trim();
-  var months = (req.body.months).trim();
+  var months = (req.body.months).trim() > 12 ? 12 : (req.body.months).trim();
 
   let resort = await findOrCreateAResort(resortID, suiteType); 
   let eventCreated = ( resort !== null) ? await createAnEvent(resort.resortRefNum, months) : null;
@@ -150,6 +151,7 @@ router.post('/one', async(req, res, next) => {
         console.log('Task completed');
       }, resortID, suiteType, months, resort, eventCreated)
         .then(loggedIn => {
+          let eventCreated = findByPk(eventCreated.execID, "execution");
 
           isVerified = loggedIn;
           
@@ -204,8 +206,8 @@ router.get('/retry', async(req, res, next) => {
 
   var resortID = (req.query.resort_id).trim();
   var suiteType = (req.query.suite_type).trim();
-  var months = (req.query.months).trim();
-
+  var months = (req.query.months).trim() > 12 ? 12 : (req.query.months).trim();
+  
   let resort = await findOrCreateAResort(resortID, suiteType); 
   let eventCreated = await findByPk((req.query.execID).trim(), "execution");
 

@@ -17,7 +17,7 @@ block content
           //- Retry Responses
           p(id='retry_attempt', style='display:none;color:green') Please wait for a moment while we retry verification...
           p(id='retry_success', style='display:none;color:green') Retried successfully! Please wait for the code sent.
-          p(id='retry_fail', style='display:none;color:green') Device already verified. 
+          p(id='retry_fail', style='display:none;color:green') Retry failed. 
           p(id='retry_error', style='display:none;color:red') Please wait for a while before retrying.
 
           //- Send Responses
@@ -79,7 +79,7 @@ block content
         let endpoint = `/sse/oneListing`;
         let eventSource = new EventSource(`/sse/oneListing?limit=${limit}&offset=${offset}&search=${search}`);
 
-        let resortRefNum, execID, resort_id, suite_type, months, enableInitial = true;
+        let resortRefNum, eventCreated, execID, resort_id, suite_type, months, enableInitial = true;
         showRecords(eventSource, "events");
         updatePagination(eventSource, limit, offset, "events", 1, records, endpoint, search)
 
@@ -183,9 +183,14 @@ block content
 
               fetch('/resendOTP', { 
                 method: 'POST',
+                body: JSON.stringify(
+                { 
+                  execID: execID 
+                }),
                 headers: {
                   'Content-Type': 'application/json'
-                }
+                },
+                
               })
               .then(response => response.json())
               .then(data => {
