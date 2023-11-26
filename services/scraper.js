@@ -222,7 +222,7 @@ async function isLoggedIn() {
   try {
     await page.waitForFunction(
       (url) => window.location.href.includes(url),
-      { timeout: 60000 },
+      { timeout: 30000 },
       accountURL
     );
     console.log('Navigation to', accountURL, 'completed within the timeout');
@@ -408,6 +408,10 @@ async function selectElements(resortID, suiteType) {
           calendarUrl
         );
         console.log("Already on the calendar URL");
+        // await Promise.all([
+        //   page.waitForNavigation(), 
+        //   page.reload()
+        // ]);
       } catch (error) {
         console.error("Not on the calendar URL yet: ", error.message);
         console.log("Navigating now..");
@@ -498,7 +502,6 @@ async function selectElements(resortID, suiteType) {
       }
 
       if (optionExists) {
-        let selectedSuiteType = await page.select(suiteSelector, "All Suites");
 
         let purchaseType = null;
         const purchaseSelector = "#purchaseType";
@@ -516,19 +519,9 @@ async function selectElements(resortID, suiteType) {
 
         await page.waitForTimeout(5000);
 
-        while (selectedSuiteType !== suiteType) {
-          await page.select(suiteSelector, suiteType);
-
-          selectedSuiteType = await page.evaluate((selector) => {
-            const select = document.querySelector(selector);
-            const selectedOption = select.options[select.selectedIndex];
-            return selectedOption.text;
-          }, suiteSelector);
-
-          console.log("This is the selected suite type:",selectedSuiteType);
-        }
-
         setupSelect = 5;
+
+
   
         return selectedOptionText;
       } else {
@@ -555,187 +548,201 @@ async function selectElements(resortID, suiteType) {
   }
 }
 
-
-async function findDateSelector(month, day, suiteType) {
-  const page = sharedData.page;
-  let dateElement = null;
-  let dayClass = `.react-datepicker__day--0${day}[aria-label*="${month}"]`;
-
-  const suiteSelector = "#suiteType";
-                    
-  let selectedSuiteType = await page.evaluate((selector) => {
-      const select = document.querySelector(selector);
-      const selectedOption = select.options[select.selectedIndex];
-      return selectedOption.text;
-  }, suiteSelector);
-
-
-  if (selectedSuiteType !== suiteType) {
-    console.log("Sayop ang suite type");
-    return null;
-  } else {
-    try {
-      dateElement = await page.waitForSelector(dayClass, {
-        timeout: 5000,
-      });
-      await dateElement.scrollIntoView();
-    } catch (error) {
-      console.log("Can't find date element. Error: ", error.message)
-    
-    }
-  }
-
-  return dateElement;
-
-}
-
 async function checkAvailability(months, resortID, suiteType) {
   const page = sharedData.page;
 
   try {
-    var { currentDate, EndDate } = getCurrentAndEndDate(months);
-    let initialCurrentDate = currentDate;
+    var { currentDate } = getCurrentAndEndDate(months);
     var dates = [];
-    var available;
+    let monthNow = 0;
+    let responses = [];
 
-    var month = currentDate.toLocaleDateString(undefined, {
-      month: "long",
-    });
-    var day = currentDate.toLocaleDateString(undefined, {
-      day: "2-digit",
-    });
+    //====================================================================
+    // SELECTING SUITE TYPE
+    //====================================================================
 
-    await page.waitForTimeout(5000);
+    const suiteSelector = "#suiteType";
 
-    await findDateSelector(month, day, suiteType)
+    let selectedSuiteType = await page.select(suiteSelector, "All Suites");
 
-    while (currentDate <= EndDate) {
-      try {
-        month = currentDate.toLocaleDateString(undefined, {
-          month: "long",
-        });
-        day = currentDate.toLocaleDateString(undefined, {
-          day: "2-digit",
-        });
+    while (selectedSuiteType !== suiteType) {
+      await page.select(suiteSelector, suiteType);
 
-        var dateElement = await findDateSelector(month, day, suiteType);
+      selectedSuiteType = await page.evaluate((selector) => {
+        const select = document.querySelector(selector);
+        const selectedOption = select.options[select.selectedIndex];
+        return selectedOption.text;
+      }, suiteSelector);
 
-        if (dateElement !== null) {
-          await dateElement.scrollIntoView();
+      console.log("This is the selected suite type:",selectedSuiteType);
+    }
 
-          var ariaDisabledValue = await dateElement.evaluate((element) => {
-            // Use the element.getAttribute() method to get the value of aria-disabled
-            return element.getAttribute("aria-disabled");
-          });
+    //====================================================================
+    // END OF SELECTING SUITE TYPE
+    //====================================================================
 
-          available =
-            ariaDisabledValue === "true" ? "unavailable" : "available";
-          dates.push({
-            date: currentDate.toLocaleDateString("en-CA"),
-            availability: available,
-          });
+    while (monthNow <= months) {   
 
-          currentDate = addDays(currentDate, 1);
+      let currentMonth = currentDate.toLocaleDateString(undefined, {
+        month: "2-digit",
+      });   
+      let initialDate = monthNow === 0 ? currentDate.toLocaleDateString(undefined, { day: "2-digit" }) : '01';
+      let currentYear = currentDate.getFullYear();
+
+      let secondResponseStart =
+      parseInt(currentMonth, 10) < 8
+        ? parseInt(currentMonth, 10) % 2 !== 0
+          ? "18"
+          : "17"
+        : (parseInt(currentMonth, 10) + 1) % 2 !== 0
+        ? "18"
+        : "17";
+
+      let dateForSecondResponse;
+      let numResponses = 0;
+      let secondResponsePromise = true;
+      const selectedResort = [`${selectedSuiteType}`];
+
+      // Wait for a specific request with the target payload
+      const requestPromise = page.waitForRequest(request => {
+        return (
+          request.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability') &&
+          request.method() === 'POST' &&
+          request.postData() && request.postData().includes(resortID) && request.postData().includes(suiteType)
+        );
+      });
+      
+      // Wait for a specific response based on conditions
+      const firstResponsePromise = await page.waitForResponse(async (response) => {
+        const responseStatus = await response.status();
+        const responseURL = await response.url();
+        const responseText = await (responseStatus !== 302 ? response.text() : ''); 
+
+        if (
+          responseStatus === 200 &&
+          responseURL.includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability') &&
+          numResponses < 2
+        ) {
+          const firstObjectFound = isCorrectResponse(responseText, `${currentYear}-${currentMonth}-${initialDate}`, suiteType, resortID);
+
+          if (firstObjectFound) {
+            dateForSecondResponse = `${currentYear}-${currentMonth}-${secondResponseStart}`;
+
+            responses.push(responseText);
+            console.log(`F1: Response with the date string ${currentYear}-${currentMonth}-${initialDate} pushed.`);
+            numResponses++;
+            return true;
+          } else if (isCorrectResponse(responseText, `${currentYear}-${currentMonth}-${secondResponseStart}`, suiteType, resortID)) {
+            dateForSecondResponse = `${currentYear}-${currentMonth}-${initialDate}`;
+
+            responses.push(responseText);
+            console.log(`F2: Response with the date string ${currentYear}-${currentMonth}-${secondResponseStart} pushed.`);
+            numResponses++;
+            return true;
+          }
+        }
+
+        return false;
+      });
+
+      if ((parseInt(initialDate, 10) < parseInt(secondResponseStart, 10)) && numResponses < 2) {
+        // Handle redirect responses for the second response
+        secondResponsePromise = await page.waitForResponse(async (response) => {
+          const responseStatus = await response.status();
+          const responseURL = await response.url();
+          const responseText = await (responseStatus !== 302 ? response.text() : '');  
 
           if (
-            month !=
-            currentDate.toLocaleDateString(undefined, { month: "long" })
+            responseStatus === 200 &&
+            responseURL.includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability') &&
+            isCorrectResponse(responseText, `${dateForSecondResponse}`, suiteType, resortID) &&
+            numResponses < 2
           ) {
-            let findNextButtonAttempts = 0
-            while (findNextButtonAttempts < 5) {
-              try {
-                var nextClass = `.react-datepicker__navigation--next[aria-label="Next Month"]`;
-                var nextButton = await page.waitForSelector(nextClass, {
-                  timeout: 10000,
-                });
-                if (nextButton) {
-                  await nextButton.click();
-                  console.log("Clicked next button.");
+            responses.push(responseText);
+            console.log(`S: Response with the date string ${dateForSecondResponse} pushed.`);
+            numResponses++;
 
-                  const parentClass = '.react-datepicker__month-container';
-                  const monthClass = '.react-datepicker__current-month';
-
-                  let checkMonthAttempts = 0;
-                  let monthNowText = null;
-
-                  let currentMonth = currentDate.toLocaleDateString(undefined, {
-                    month: "long",
-                  });
-
-                  let monthCheck = currentMonth.substring(0, 3).toUpperCase() + ' ' + currentDate.getFullYear();
-          
-                  while (checkMonthAttempts < 5 ) {
-                    await page.waitForTimeout(2000);
-
-                    monthNowText = await page.evaluate((parentSelector, monthSelector) => {
-                      const parentElement = document.querySelector(parentSelector);
-                      if (parentElement) {
-                        const monthElement = parentElement.querySelector(monthSelector);
-                        return monthElement ? monthElement.textContent.trim().toUpperCase() : null;
-                      }
-                      return null;
-                    }, parentClass, monthClass);
-          
-                    if (monthNowText === monthCheck) {
-                      checkMonthAttempts = 5;
-                      console.log(monthNowText + " is equal to ", monthCheck);
-                    } else { 
-                      console.log("Target month: ", monthCheck);
-                      console.log("Current month: ", monthNowText);
-
-                      if (checkMonthAttempts === 4) {
-                        await page.reload();
-                        let doneSelect = await selectElements(resortID, suiteType);
-                        console.log("Reselected elements successfully: ", doneSelect);
-                        let doneScraping = await checkAvailability(months, resortID, suiteType);
-                        console.log("Checked availability successfully: ", doneScraping !== null);
-                        return doneScraping;
-                      }
-                      checkMonthAttempts++;
-                    }
-                  }
-
-                } else {
-                  console.log("did not find the button");
-                }
-                findNextButtonAttempts = 5;
-              } catch (error) {
-                findNextButtonAttempts++;
-                console.log("Can't find next button. Reloading again.");
-                console.log("Error: ", error.message);
-                dates = [];
-                await page.reload();
-                let doneSelect = await selectElements(resortID, suiteType);
-                console.log("Reselected elements successfully: ", doneSelect);
-                let doneScraping = await checkAvailability(months, resortID, suiteType);
-                console.log("Checked availability successfully: ", doneScraping !== null);
-                return doneScraping;
-
-              }
-            }
+            return true;
+          } else if (numResponses >= 2) {
+            return true;
           }
-        } else {
-          console.log("Can't find date element. Reloading again.");
-          console.log("Error: ", error.message);
-          await page.reload();
-          let doneSelect = await selectElements(resortID, suiteType);
-          console.log("Reselected elements successfully: ", doneSelect);
-          let doneScraping = await checkAvailability(months, resortID, suiteType);
-          console.log("Checked availability successfully: ", doneScraping !== null);
-          return doneScraping;         
+
+          return false;
+        });
+      }
+
+
+      // Wait for both promises to resolve
+      await Promise.all([requestPromise, firstResponsePromise, secondResponsePromise]);
+
+
+      if (firstResponsePromise && secondResponsePromise) {
+
+        let findNextButtonAttempts = 0;
+        while (findNextButtonAttempts < 5) {
+          try {
+            numResponses = 0;
+            await page.waitForTimeout(2000);
+
+            var nextClass = `.react-datepicker__navigation--next[aria-label="Next Month"]`;
+            var nextButton = await page.waitForSelector(nextClass, {
+              timeout: 10000,
+            });
+      
+            // Click the next button
+            await nextButton.click();
+            console.log("Clicked next button.");
+
+            currentDate = addMonths(currentDate, 1);
+            firstResponseNotResolved = true;
+            monthNow++;
+            
+
+            findNextButtonAttempts = 5;
+          } catch (error) {
+            findNextButtonAttempts++;
+            console.log("Can't find or click next button. Reloading again.");
+            await page.reload();
+            let doneSelect = await selectElements(resortID, suiteType);
+            console.log("Reselected elements successfully: ", doneSelect);
+            let doneScraping = await checkAvailability(
+              months,
+              resortID,
+              suiteType
+            );
+            console.log(
+              "Checked availability successfully: ",
+              doneScraping !== null
+            );
+            return doneScraping;
+          }
+      
+
         }
-        
-      } catch (error) {
-        console.error("Error:", error.message);
-        console.log("Possible select options became null.");
-        await page.reload();
-        let doneSelect = await selectElements(resortID, suiteType);
-        console.log("Reselected elements successfully: ", doneSelect);
-        let doneScraping = await checkAvailability(months, resortID, suiteType);
-        console.log("Checked availability successfully: ", doneScraping !== null);
+      } else {
+        console.log("Incomplete response.");
       }
     }
 
+    await page.waitForTimeout(2000);
+
+    let calendarObj = [];
+
+    // Now you can access all captured responses outside the while loop
+    for (const responseText of responses) {
+      // const responseText = JSON.parse(await response.text());
+      const calendarDays = JSON.parse(responseText).calendarDays;
+      calendarObj = calendarObj.concat(calendarDays);
+    }
+
+    dates = await checkCalendarObject(calendarObj);
+
+    // start of grouping dates together
+
+    dates = filterUniqueKeys(dates);
+    const compareDates = (a,b) => new Date(a.date) - new Date(b.date);
+    dates = dates.sort(compareDates);
+    
     var index = 0;
     var currentItem;
     var nextItem;
@@ -789,6 +796,74 @@ async function checkAvailability(months, resortID, suiteType) {
     console.error("Error:", error.message);
     return null;
   } 
+}
+
+function isCorrectResponse(responseText, dateString, suiteType, resortID) {
+  try {
+    const response = JSON.parse(responseText);
+    const responseDate = response.calendarDays[0].date;  
+
+    let responseSuite, resID;
+    const calendarDays = response.calendarDays
+    for (const item of calendarDays) {
+      const inventoryOfferings = item.inventoryOfferings;
+
+      if (inventoryOfferings !== undefined) {
+        for(const obj of inventoryOfferings) {
+          responseSuite = obj.pointsRoomType;
+          resID = obj.productOffrngId;
+
+          if (responseSuite !== undefined && resID !== undefined) {
+            break;
+          }
+        }
+      }
+
+      if (responseSuite !== undefined && resID !== undefined) {
+        break;
+      }
+    }
+
+    if (responseSuite === undefined || resID === undefined) return true;
+    else return responseDate === dateString && responseSuite.toUpperCase().includes(suiteType.toUpperCase()) && resID.toUpperCase().includes(resortID.toUpperCase());
+
+  } catch (error) {
+    console.log("Error parsing response: ", error.message);
+    return false;
+  }
+
+}
+
+function filterUniqueKeys(array) {
+  //acc is an object, obj is the value
+  const lastOccurrences = array.reduceRight((acc, obj) => {
+    if (!acc[obj.date]) {
+      acc[obj.date] = obj;
+    }
+    return acc;
+  }, {});
+  
+  const resultArray = Object.values(lastOccurrences);
+  
+  return resultArray;
+  
+}
+
+
+async function checkCalendarObject(calendarObj) {
+  let dateArr = [];
+  
+  for (const item of calendarObj) {
+    let available = item.continuousFlag ? "available" : "unavailable";
+    dateArr.push({
+      date: item.date,
+      availability: available,
+    });
+
+  }
+  
+  return dateArr;
+
 }
 
 function getCurrentAndEndDate(months) {
