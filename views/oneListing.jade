@@ -17,7 +17,7 @@ block content
           //- Retry Responses
           p(id='retry_attempt', style='display:none;color:green') Please wait for a moment while we retry verification...
           p(id='retry_success', style='display:none;color:green') Retried successfully! Please wait for the code sent.
-          p(id='retry_fail', style='display:none;color:green') Retry failed. 
+          p(id='retry_fail', style='display:none;color:green') Device already verified.
           p(id='retry_error', style='display:none;color:red') Please wait for a while before retrying.
 
           //- Send Responses
@@ -281,7 +281,9 @@ block content
                   }
                 }
 
-                document.getElementById('retry').disabled = false;
+                setTimeout(() => {
+                  document.getElementById('retry').disabled = false;
+                }, 40000); 
 
               })
               .catch(error => {
