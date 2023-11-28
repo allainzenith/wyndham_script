@@ -32,7 +32,7 @@ async function globals() {
         ],
         headless: false, 
         // headless: 'new',
-        // userDataDir: customProfileDir
+        userDataDir: customProfileDir
       });
       
       // Open a new page
