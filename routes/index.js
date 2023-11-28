@@ -60,6 +60,8 @@ router.get('/duplicateListingLinks', (req, res) => {
 
 router.post('/sendOTP', async(req, res, next) => {
   let verOTP = req.body.OTP;
+  let execID = req.body.execID;
+  let event = await findByPk(execID, "execution");
 
   if (isVerified === false) {
     if (verOTP === "") {
@@ -72,22 +74,23 @@ router.post('/sendOTP', async(req, res, next) => {
         // Trigger the login process asynchronously
         processVerification(verOTP)
           .then(loggedIn => {
-            let eventCreated = findByPk(req.body.execID, "execution");
+
             isVerified = loggedIn;  
             const message = "successOrFail";
-            res.json({ loggedIn, message });
 
             if (isVerified){
-              updateEventStatus(eventCreated, "SCRAPING");
+              updateEventStatus(event, "SCRAPING");
             } else {
               if (loggedIn === "MAINTENANCE") {
-                updateEventStatus(eventCreated, "MAINTENANCE");
+                updateEventStatus(event, "MAINTENANCE");
               } else if (loggedIn === null) {
-                updateEventStatus(eventCreated, "OTP_ERROR");
+                updateEventStatus(event, "OTP_ERROR");
               } else {
-                updateEventStatus(eventCreated, "UNVERIFIED");
+                updateEventStatus(event, "UNVERIFIED");
               }
             }
+
+            res.json({ loggedIn, message });
 
           })
           .catch(error => {
@@ -159,7 +162,7 @@ router.post('/one', async(req, res, next) => {
         console.log('Task completed');
       }, resortID, suiteType, months, resort, eventCreated)
         .then(loggedIn => {
-          let event = findByPk(eventCreated.execID, "execution");
+          let event = findByPk(execID, "execution");
 
           isVerified = loggedIn;
           

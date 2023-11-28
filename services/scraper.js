@@ -273,32 +273,23 @@ async function sendOTP(verOTP) {
     console.log("Clicked remember device");
     await page.waitForTimeout(2000);
     await page.waitForSelector('input[type="submit"]', {timeout:3000});
-
-    await Promise.all([
-      page.waitForNavigation(), 
-      page.click('input[type="submit"]')
-    ]);
-
+    await page.click('input[type="submit"]');
     console.log("Hit submit button");
+      
+    let doneLogin = await isLoggedIn();
+  
+    if(doneLogin) {
+      console.log("No need for OTP verification");
+      console.log("Logged in successfullyyyy!!");  
+      needtoLogin = false;
+      return true;
+    } else {
+      console.log("Hit submit button but didn't navigate");
 
-    try {
       await page.waitForSelector('#error-fragment', {timeout:3000, visible: true});
       console.log("error selector found")
       console.log("The token code is incorrect");
       return false;
-    } catch (error) {
-
-      let doneLogin = await isLoggedIn();
-    
-      if(doneLogin) {
-        console.log("No need for OTP verification");
-        console.log("Logged in successfullyyyy!!");  
-        needtoLogin = false;
-        return true;
-      } else {
-        console.log("Error: ", error.message);
-        return null;
-      }
     }
 
   } catch (error) {
@@ -318,7 +309,7 @@ async function resendSmsCode() {
         await browser.close();
       } else {
         let needsVerify = await findSendSmsCode();
-        resolve(needsVerify);
+        resolve(!needsVerify);
       }
     } catch (error) {
       console.error("Error:", error.message);
