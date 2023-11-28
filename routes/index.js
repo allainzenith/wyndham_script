@@ -1,14 +1,22 @@
 const express = require('express');
+const { sequelize } = require("../config/config");
+const { Op } = require("sequelize");
 const router = express.Router();
 const { format } = require('date-fns-tz');
 const { joinTwoTables, countRecords, findLikeRecords, findByPk, updateRecord } = require('../sequelizer/controller/controller');
 const { addToQueue, resourceIntensiveTask, processVerification } = require('../scripts/queueProcessor');
 const { findOrCreateAResort, createAnEvent, updateEventStatus } = require('../scripts/scrapeAndUpdate');
-const { login, resendSmsCode, sendOTP } = require('../services/scraper')
-const { sequelize } = require("../config/config");
-const { Op } = require("sequelize");
+const { resendSmsCode } = require('../services/scraper')
+
 
 let isVerified = false;
+const THREAD_COUNT = 2;
+
+function createWorker() {
+  return new Promise((resolve, reject) => {
+
+  });
+}
 
 router.get('/', async(req, res, next) => {
   const amount = await countRecords("execution", {execType:"ONE_RESORT"});

@@ -11,30 +11,59 @@ let needtoLogin;
 
 async function executeScraper(resortID, suiteType, months, resortHasNoRecord) {
   try {
-    console.log("I need to log in: " + needtoLogin);
-    let doneLogin = needtoLogin ? await login() : true;
-    console.log("Done login: " + doneLogin);
+    let doneLogin, doneSelecting, doneScraping, doneGettingAddress, address, updatedAvail, sElement;
 
-    let sElement = doneLogin === true ? await selectElements(resortID, suiteType) : null;
-    console.log("Selected Option Text:", sElement);
-    let doneSelecting = sElement !== null;
-    console.log("Done selecting: " + doneSelecting);
+    try {
+      console.log("I need to log in: " + needtoLogin);
+      doneLogin = needtoLogin ? await login() : true;
+      console.log("Done login: " + doneLogin);
+    } catch (error) {
+      console.log(
+        "Login process failed."
+      );
+      return null;      
+    }
 
-    let updatedAvail = doneSelecting ? await checkAvailability(months, resortID, suiteType) : null;
-    let doneScraping = updatedAvail !== null;
-    console.log("Done scraping: " + doneScraping);
+    try {
+      sElement = doneLogin === true ? await selectElements(resortID, suiteType) : null;
+      console.log("Selected Option Text:", sElement);
+      doneSelecting = sElement !== null;
+      console.log("Done selecting: " + doneSelecting);
+    } catch (error) {
+      console.log(
+        "Selecting process failed."
+      );
+      return null;      
+    }
 
-    let address, doneGettingAddress;
+    try {
+      updatedAvail = doneSelecting ? await checkAvailability(months, resortID, suiteType) : null;
+      doneScraping = updatedAvail !== null;
+      console.log("Done scraping: " + doneScraping);
+    } catch (error) {
+      console.log(
+        "Getting availability failed."
+      );
+      return null;      
+    }
+
     if (resortHasNoRecord) {
       console.log(
         "No existing listing ID. Getting resort address to match resort with the Guesty listing."
       );
-      address = doneScraping
-        ? await getResortAddress(resortID, sElement)
-        : null;
-      doneGettingAddress = address !== null;
-      console.log("Done getting address: " + doneGettingAddress);
-      console.log("address: " + address);
+      try {
+        address = doneScraping
+          ? await getResortAddress(resortID, sElement)
+          : null;
+        doneGettingAddress = address !== null;
+        console.log("Done getting address: " + doneGettingAddress);
+        console.log("address: " + address);
+      } catch (error) {
+        console.log(
+          "Getting address failed."
+        );
+        return null;      
+      }
     } else {
       console.log(
         "The fields for this record are populated. No need to get the address for matching."
@@ -65,7 +94,6 @@ async function launchPuppeteer() {
     await globals();
     let loggedIn = await login();
     return loggedIn;
-    // return true;
   } catch (error) {
     return null;
   }
@@ -574,12 +602,32 @@ async function selectElements(resortID, suiteType) {
 
 async function checkAvailability(months, resortID, suiteType) {
   const page = sharedData.page;
+      await page.setRequestInterception(true);
+
+  // Define the request listener function
+  const requestListener = async interceptedRequest => {
+    // Check if the request URL meets a certain condition
+    if (interceptedRequest.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability' && interceptedRequest.method() === 'POST')) {
+      // Access the request post data (payload)
+      const postData = interceptedRequest.postData();
+
+      if (postData && postData.includes(resortID) && postData.includes(suiteType)) {
+        interceptedRequest.continue();
+      } else {
+        interceptedRequest.abort();
+      }
+    } else {
+      interceptedRequest.continue();
+    }
+  };
 
   try {
     var { currentDate } = getCurrentAndEndDate(months);
     var dates = [];
     let monthNow = 0;
     let responses = [];
+
+    await page.on('request', requestListener);
 
     while (monthNow <= months) {   
 
@@ -598,132 +646,103 @@ async function checkAvailability(months, resortID, suiteType) {
         ? "18"
         : "17";
 
-      let dateForSecondResponse;
       let numResponses = 0;
-      let secondResponsePromise = true;
-      // const selectedResort = [`${selectedSuiteType}`];
+      let resolveResponsesPromise;
 
-      // Wait for a specific request with the target payload
-      const requestPromise = page.waitForRequest(request => {
-        return (
-          request.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability') &&
-          request.method() === 'POST' &&
-          request.postData() && request.postData().includes(resortID) && request.postData().includes(suiteType)
-        );
-      });
-      
-      // Wait for a specific response based on conditions
-      const firstResponsePromise = await page.waitForResponse(async (response) => {
-        const responseStatus = await response.status();
-        const responseURL = await response.url();
-        const responseText = await (responseStatus !== 302 ? response.text() : ''); 
-
+      // Set up event listener for intercepted responses
+      const responseListener = async interceptedResponse => {
+        // Check if the response URL meets a certain condition
         if (
-          responseStatus === 200 &&
-          responseURL.includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability') &&
-          numResponses < 2
+          interceptedResponse.status() !== 302 && interceptedResponse.status()  === 200 &&
+          interceptedResponse.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability')
         ) {
-          const firstObjectFound = isCorrectResponse(responseText, `${currentYear}-${currentMonth}-${initialDate}`, suiteType, resortID);
+          const responseText = await interceptedResponse.text();
 
-          if (firstObjectFound) {
-            dateForSecondResponse = `${currentYear}-${currentMonth}-${secondResponseStart}`;
+          firstObjectFound = responseText.includes(`${currentYear}-${currentMonth}-${initialDate}`);
+          secondObjectFound = responseText.includes(`${currentYear}-${currentMonth}-${secondResponseStart}`);
 
+          if(firstObjectFound || secondObjectFound) {
             responses.push(responseText);
-            console.log(`F1: Response with the date string ${currentYear}-${currentMonth}-${initialDate} pushed.`);
             numResponses++;
-            return true;
-          } else if (isCorrectResponse(responseText, `${currentYear}-${currentMonth}-${secondResponseStart}`, suiteType, resortID)) {
-            dateForSecondResponse = `${currentYear}-${currentMonth}-${initialDate}`;
 
-            responses.push(responseText);
-            console.log(`F2: Response with the date string ${currentYear}-${currentMonth}-${secondResponseStart} pushed.`);
-            numResponses++;
-            return true;
+            if (firstObjectFound) {
+              console.log(`F: Response with the date string ${currentYear}-${currentMonth}-${initialDate} pushed.`);  
+            } if (secondObjectFound) {
+              console.log(`S: Response with the date string ${currentYear}-${currentMonth}-${secondResponseStart} pushed.`);
+            }
+
+            let expectedResponses = (parseInt(initialDate, 10) < parseInt(secondResponseStart, 10)) ? 2 : 1;
+
+            // Check if all expected responses are received
+            if (numResponses >= expectedResponses) {
+              resolveResponsesPromise(); 
+            }
+
           }
         }
+      };
 
-        return false;
+      // Function to create a promise that resolves when all responses are received
+      const waitForResponses = () => new Promise(resolve => (resolveResponsesPromise = resolve));
+
+      const timeoutPromise = new Promise((_, reject) => {
+        timeoutId = setTimeout(() => reject(new Error('Timeout waiting for responses')), 30000); // 30 seconds timeout
       });
 
-      if ((parseInt(initialDate, 10) < parseInt(secondResponseStart, 10)) && numResponses < 2) {
-        // Handle redirect responses for the second response
-        secondResponsePromise = await page.waitForResponse(async (response) => {
-          const responseStatus = await response.status();
-          const responseURL = await response.url();
-          const responseText = await (responseStatus !== 302 ? response.text() : '');  
 
-          if (
-            responseStatus === 200 &&
-            responseURL.includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability') &&
-            isCorrectResponse(responseText, `${dateForSecondResponse}`, suiteType, resortID) &&
-            numResponses < 2
-          ) {
-            responses.push(responseText);
-            console.log(`S: Response with the date string ${dateForSecondResponse} pushed.`);
-            numResponses++;
-
-            return true;
-          } else if (numResponses >= 2) {
-            return true;
-          }
-
-          return false;
-        });
-      }
+      // Add the request listener
+      await page.on('response', responseListener);
 
 
-      // Wait for both promises to resolve
-      await Promise.all([requestPromise, firstResponsePromise, secondResponsePromise]);
+      await Promise.race([timeoutPromise, waitForResponses()]);
 
+      console.log("Done fetching responses..");
 
-      if (firstResponsePromise && secondResponsePromise) {
+      let findNextButtonAttempts = 0;
+      while (findNextButtonAttempts < 5) {
+        try {
+          numResponses = 0;
+          await page.waitForTimeout(2000);
+          var nextClass = `.react-datepicker__navigation--next[aria-label="Next Month"]`;
+          var nextButton = await page.waitForSelector(nextClass, {
+            timeout: 10000,
+          });
+    
+          // Click the next button
+          await nextButton.click();
+          console.log("Clicked next button.");
 
-        let findNextButtonAttempts = 0;
-        while (findNextButtonAttempts < 5) {
-          try {
-            numResponses = 0;
-            await page.waitForTimeout(2000);
+          currentDate = addMonths(currentDate, 1);
+          firstResponseNotResolved = true;
+          monthNow++;
 
-            var nextClass = `.react-datepicker__navigation--next[aria-label="Next Month"]`;
-            var nextButton = await page.waitForSelector(nextClass, {
-              timeout: 10000,
-            });
-      
-            // Click the next button
-            await nextButton.click();
-            console.log("Clicked next button.");
+          findNextButtonAttempts = 5;
 
-            currentDate = addMonths(currentDate, 1);
-            firstResponseNotResolved = true;
-            monthNow++;
-            
-
-            findNextButtonAttempts = 5;
-          } catch (error) {
-            findNextButtonAttempts++;
-            console.log("Can't find or click next button. Reloading again.");
-            await page.reload();
-            let doneSelect = await selectElements(resortID, suiteType);
-            console.log("Reselected elements successfully: ", doneSelect);
-            let doneScraping = await checkAvailability(
-              months,
-              resortID,
-              suiteType
-            );
-            console.log(
-              "Checked availability successfully: ",
-              doneScraping !== null
-            );
-            return doneScraping;
-          }
-      
-
+          await page.off('response', responseListener);
+        } catch (error) {
+          findNextButtonAttempts++;
+          console.log("Can't find or click next button. Reloading again.");
+          await page.off('request', requestListener);
+          await page.off('response', responseListener);
+          await page.reload();
+          let doneSelect = await selectElements(resortID, suiteType);
+          console.log("Reselected elements successfully: ", doneSelect);
+          let doneScraping = await checkAvailability(
+            months,
+            resortID,
+            suiteType
+          );
+          console.log(
+            "Checked availability successfully: ",
+            doneScraping !== null
+          );
+          return doneScraping;
         }
-      } else {
-        console.log("Incomplete response.");
-      }
-    }
+    
 
+      }
+
+    }
     await page.waitForTimeout(2000);
 
     let calendarObj = [];
@@ -790,10 +809,16 @@ async function checkAvailability(months, resortID, suiteType) {
         index++;
       }
     }
+    await page.off('request', requestListener);
+    await page.setRequestInterception(false);
 
     return updatedAvail;
   } catch (error) {
     console.error("Error:", error.message);
+    await page.off('request', requestListener);
+    await page.setRequestInterception(false);
+
+    //try the process one more time
     await page.reload();
     let doneSelect = await selectElements(resortID, suiteType);
     console.log("Reselected elements successfully: ", doneSelect);

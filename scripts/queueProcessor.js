@@ -84,6 +84,7 @@ async function addToQueue(task, callback, ...args) {
     }
 
     resolve(loggedIn);
+
   });
 }
 
@@ -108,10 +109,9 @@ async function addToScheduledQueue(task, callback, ...args) {
 
     if (loggedIn === true) { await processQueue() }
     if (loggedIn === "MAINTENANCE" || loggedIn === null) { 
-      // scheduledtaskQueue = [];
+      scheduledtaskQueue = [];
       await processQueue();
     }
-
     resolve(loggedIn);
   });
 
