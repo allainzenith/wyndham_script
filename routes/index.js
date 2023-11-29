@@ -314,9 +314,9 @@ const updateExecutionRecords = async(req, res, firstModel, secondModel, eventCon
     }
   };
 
-  createExecHook = createExecHook === undefined ? await setupCreateHook("execution", update) : createExecHook;
-  bulkCreateExecHook = bulkCreateExecHook === undefined ? await setupBulkCreateHook("execution", update) : bulkCreateExecHook;
-  updateExecHook = updateExecHook === undefined ? await setupUpdateHook("execution", update) : updateExecHook;
+  await setupCreateHook("execution", update);
+  await setupBulkCreateHook("execution", update);
+  await setupUpdateHook("execution", update);
 
   update();
 

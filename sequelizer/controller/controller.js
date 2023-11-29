@@ -8,7 +8,6 @@ const { sequelize } = require("../../config/config");
 const { Op } = require("sequelize");
 
 async function setupUpdateHook(objectType, functionName){
-  console.log("update hook function is called");
   const typeofObject = objectType == "execution" ? execution : resorts;
 
   try {
@@ -24,7 +23,6 @@ async function setupUpdateHook(objectType, functionName){
 }
 
 async function setupCreateHook(objectType, functionName){
-  console.log("create hook function is called");
   const typeofObject = objectType == "execution" ? execution : resorts;
 
   try {
@@ -42,7 +40,6 @@ async function setupCreateHook(objectType, functionName){
 }
 
 async function setupBulkCreateHook(objectType, functionName){
-  console.log("bulk create hook function is called");
   const typeofObject = objectType == "execution" ? execution : resorts;
 
   try {
