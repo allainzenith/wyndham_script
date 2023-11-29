@@ -51,12 +51,7 @@ async function scheduledUpdates(tierType) {
 
         const joinedArray = allResorts.map(item1 => {
             const resortRefNum = item1.dataValues.resortRefNum;
-            const matchingItem = batchEvents.find(item2 => {
-                if (item2.resortRefNum === resortRefNum) {
-                    console.log(item2.resortRefNum + " is equal to " + resortRefNum);
-                    return true;
-                }
-            });
+            const matchingItem = batchEvents.find(item2 => item2.resortRefNum === resortRefNum);
             
             // If a matching item is found, merge the properties, otherwise, return the original item from array1
             return matchingItem ? { res: item1, eventCreated: matchingItem } : item1;
