@@ -700,6 +700,7 @@ async function checkAvailability(months, resortID, suiteType) {
           });
     
           // Click the next button
+          await nextButton.scrollIntoView();
           await nextButton.click();
           console.log("Clicked next button.");
 

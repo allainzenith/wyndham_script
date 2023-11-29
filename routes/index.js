@@ -3,7 +3,7 @@ const { sequelize } = require("../config/config");
 const { Op } = require("sequelize");
 const router = express.Router();
 const { format } = require('date-fns-tz');
-const { joinTwoTables, countRecords, findLikeRecords, findByPk, updateRecord } = require('../sequelizer/controller/controller');
+const { joinTwoTables, countRecords, findLikeRecords, findByPk, updateRecord, setupCreateHook, setupUpdateHook, setupBulkCreateHook } = require('../sequelizer/controller/controller');
 const { addToQueue, resourceIntensiveTask, processVerification } = require('../scripts/queueProcessor');
 const { findOrCreateAResort, createAnEvent, updateEventStatus } = require('../scripts/scrapeAndUpdate');
 const { resendSmsCode } = require('../services/scraper')
@@ -265,24 +265,10 @@ router.get('/retry', async(req, res, next) => {
 // SSE ENDPOINTS                
 ///////////////////////////////////////////////////////////////////////////////
 
-router.get('/sse/oneListing', (req, res) => {
-  let limit = parseInt(req.query.limit);
-  let offset = parseInt(req.query.offset);
+let updateExecHook, createExecHook, bulkCreateExecHook, updateResortHook, createResortHook;
 
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-
-  setInterval(async () => {
-    const eventCond = {
-      execType: "ONE_RESORT"
-    }
-
-    const order = [
-      [sequelize.col("createdAt"), 'DESC'],  
-    ];
-
-    let data = await joinTwoTables("execution", "resorts", eventCond, order, limit, offset);
+const mapExecutionData = (data) => {
+  try {
     let formattedRecords = [];
     if (Array.isArray(data)) {
       formattedRecords = data.map(item => ({
@@ -301,51 +287,106 @@ router.get('/sse/oneListing', (req, res) => {
 
     }
 
-    res.write(`data: ${JSON.stringify(formattedRecords)}\n\n`);
-  }, 1000);
-});
+    return formattedRecords;
+  } catch (error) {
+    console.error("Error mapping the records: ", error);
+    return [];
+  }
+}
 
-router.get('/sse/scheduledUpdates', (req, res) => {
+const updateExecutionRecords = async(req, res, firstModel, secondModel, eventCond, order) => {
   let limit = parseInt(req.query.limit);
-  let offset = parseInt(req.query.offset);
+  let offset = parseInt(req.query.offset); 
 
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
 
-  setInterval(async () => {
-    const eventCond = {
-      execType: "SCHEDULED"
+  let update = async() => {
+    try {
+      let data = await joinTwoTables(firstModel, secondModel, eventCond, order, limit, offset);
+      let formattedRecords = mapExecutionData(data);
+
+      res.write(`data: ${JSON.stringify(formattedRecords)}\n\n`);
+
+    } catch (error) {
+      console.error("An error happened while joining records: ", error);
     }
+  };
 
-    const order = [
-      [sequelize.col("createdAt"), 'DESC'],  
-      [sequelize.col("resortID"), 'ASC'],  
-      [sequelize.col("resort.unitType"), 'ASC'],  
-    ];
+  createExecHook = createExecHook === undefined ? await setupCreateHook("execution", update) : createExecHook;
+  bulkCreateExecHook = bulkCreateExecHook === undefined ? await setupBulkCreateHook("execution", update) : bulkCreateExecHook;
+  updateExecHook = updateExecHook === undefined ? await setupUpdateHook("execution", update) : updateExecHook;
 
-    let data = await joinTwoTables("execution", "resorts", eventCond, order, limit, offset);
+  update();
 
-    let formattedRecords = [];
-    if (Array.isArray(data)) {
-      formattedRecords = data.map(item => ({
-        ...item.toJSON(), 
-        resort: {
-          listingName: item.resort.listingName === null? "To be updated": item.resort.listingName, 
-          listingID: item.resort.listingID === null? "To be updated": item.resort.listingID, 
-          resortName: item.resort.resortName === null? "To be updated": item.resort.resortName, 
-          unitType: item.resort.unitType === null? "To be updated": item.resort.unitType, 
-          resortID: item.resort.resortID === null? "To be updated": item.resort.resortID, 
-        },  
-        createdAt: format(item.createdAt, 'MM-dd-yyyy HH:mm:ss', { timeZone: 'America/New_York' }),
-        updatedAt: format(item.updatedAt, 'MM-dd-yyyy HH:mm:ss', { timeZone: 'America/New_York' }),
-      }));
-    }
+}
 
-    res.write(`data: ${JSON.stringify(formattedRecords)}\n\n`);
-  }, 1000);
+router.get('/sse/oneListing', async (req, res) => {
+  const eventCond = {
+    execType: "ONE_RESORT"
+  }
+
+  const order = [
+    [sequelize.col("createdAt"), 'DESC'],
+  ];
+
+  try {
+    await updateExecutionRecords(req, res, "execution", "resorts", eventCond, order)
+  } catch (error) {
+    console.error('Error sending SSE data:', error);
+  }
+
 });
 
+router.get('/sse/scheduledUpdates', async(req, res) => {
+
+  const eventCond = {
+    execType: "SCHEDULED"
+  }
+
+  const order = [
+    [sequelize.col("createdAt"), 'DESC'],  
+    [sequelize.col("resortID"), 'ASC'],  
+    [sequelize.col("resort.unitType"), 'ASC'],  
+  ];
+
+  try {
+    await updateExecutionRecords(req, res, "execution", "resorts", eventCond, order)
+  } catch (error) {
+    console.error('Error sending SSE data:', error);
+  }
+
+});
+
+router.get('/sse/events', async(req, res) => {
+
+  let search = req.query.search;
+
+  const eventCond = {
+    [Op.or]: [
+      // { "resort.resortID": { [Op.substring]: search } },
+      // { "resort.resortName": { [Op.substring]: search } },
+      // { "resort.listingName": { [Op.substring]: search } },
+      // { "resort.unitType": { [Op.substring]: search } },
+      { "execStatus": { [Op.substring]: search } },
+      { "monthstoScrape": { [Op.substring]: search } },
+      { "createdAt": { [Op.substring]: search } },
+      { "updatedAt": { [Op.substring]: search } },
+    ],
+  }
+
+  const order = [
+    [sequelize.col("createdAt"), 'DESC'],  
+  ];
+
+  try {
+    await updateExecutionRecords(req, res, "execution", "resorts", eventCond, order)
+  } catch (error) {
+    console.error('Error sending SSE data:', error);
+  }
+
+});
 
 router.get('/sse/resorts', async(req, res) => {
   let limit = parseInt(req.query.limit);
@@ -361,74 +402,37 @@ router.get('/sse/resorts', async(req, res) => {
     [sequelize.col("resortID"), 'DESC'], 
   ];
 
-  let data = await findLikeRecords(search, "resorts", order, limit, offset);
-  let formattedRecords = [];
-  if (Array.isArray(data)) {
-    formattedRecords = data.map(item => ({
-      ...item.toJSON(),  
-      resortRefNum: item.resortRefNum === null? "To be updated": item.resortRefNum,
-      listingID: item.listingID === null? "To be updated": item.listingID,
-      resortID: item.resortID === null? "To be updated": item.resortID,
-      resortName: item.resortName === null? "To be updated": item.resortName,
-      listingName: item.listingName === null? "To be updated": item.listingName,
-      unitType: item.unitType === null? "To be updated": item.unitType,
-      notes: item.notes === null? "": item.notes,
 
-    }));
-  }
+  let update = async() => {
+    try {
+      let data = await findLikeRecords(search, "resorts", order, limit, offset);
+      let formattedRecords = [];
+      if (Array.isArray(data)) {
+        formattedRecords = data.map(item => ({
+          ...item.toJSON(),  
+          resortRefNum: item.resortRefNum === null? "To be updated": item.resortRefNum,
+          listingID: item.listingID === null? "To be updated": item.listingID,
+          resortID: item.resortID === null? "To be updated": item.resortID,
+          resortName: item.resortName === null? "To be updated": item.resortName,
+          listingName: item.listingName === null? "To be updated": item.listingName,
+          unitType: item.unitType === null? "To be updated": item.unitType,
+          notes: item.notes === null? "": item.notes,
+    
+        }));
+      }
 
-  res.write(`data: ${JSON.stringify(formattedRecords)}\n\n`);
-});
+      res.write(`data: ${JSON.stringify(formattedRecords)}\n\n`);
 
-router.get('/sse/events', (req, res) => {
-  let limit = parseInt(req.query.limit);
-  let offset = parseInt(req.query.offset);
-
-  let search = req.query.search;
-
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-
-  setInterval(async () => {
-    const eventCond = {
-      [Op.or]: [
-        // { "resort.resortID": { [Op.substring]: search } },
-        // { "resort.resortName": { [Op.substring]: search } },
-        // { "resort.listingName": { [Op.substring]: search } },
-        // { "resort.unitType": { [Op.substring]: search } },
-        { "execStatus": { [Op.substring]: search } },
-        { "monthstoScrape": { [Op.substring]: search } },
-        { "createdAt": { [Op.substring]: search } },
-        { "updatedAt": { [Op.substring]: search } },
-      ],
+    } catch (error) {
+      console.error("An error happened while joining records: ", error);
     }
+  };
 
-    const order = [
-      [sequelize.col("createdAt"), 'DESC'],  
-    ];
+  createResortHook = createResortHook === undefined ? await setupCreateHook("resorts", update) : createResortHook;
+  updateResortHook = updateResortHook === undefined ? await setupUpdateHook("resorts", update) : updateResortHook;
 
-    let data = await joinTwoTables("execution", "resorts", eventCond, order, limit, offset);
-    let formattedRecords = [];
-    if (Array.isArray(data)) {
-      formattedRecords = data.map(item => ({
-        ...item.toJSON(), 
-        resort: {
-          listingName: item.resort.listingName === null? "To be updated": item.resort.listingName, 
-          listingID: item.resort.listingID === null? "To be updated": item.resort.listingID, 
-          resortName: item.resort.resortName === null? "To be updated": item.resort.resortName, 
-          unitType: item.resort.unitType === null? "To be updated": item.resort.unitType, 
-          resortID: item.resort.resortID === null? "To be updated": item.resort.resortID, 
-        },  
-        createdAt: format(item.createdAt, 'MM-dd-yyyy HH:mm:ss', { timeZone: 'America/New_York' }),
-        updatedAt: format(item.updatedAt, 'MM-dd-yyyy HH:mm:ss', { timeZone: 'America/New_York' }),
-      }));
-    }
+  update();
 
-    // console.log(JSON.stringify(formattedRecords, null, 2));
-
-    res.write(`data: ${JSON.stringify(formattedRecords)}\n\n`);
-  }, 1000);
 });
 
 
