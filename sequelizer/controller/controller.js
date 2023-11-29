@@ -7,6 +7,58 @@ const { execution, resorts } = require("../models/model");
 const { sequelize } = require("../../config/config");
 const { Op } = require("sequelize");
 
+async function setupUpdateHook(objectType, functionName){
+  console.log("update hook function is called");
+  const typeofObject = objectType == "execution" ? execution : resorts;
+
+  try {
+    typeofObject.addHook('afterUpdate', () => {
+      functionName();
+    });
+  
+    return true;   
+  } catch (error) {
+    console.error("Error setting up update hook: ", error);
+    return false;
+  }
+}
+
+async function setupCreateHook(objectType, functionName){
+  console.log("create hook function is called");
+  const typeofObject = objectType == "execution" ? execution : resorts;
+
+  try {
+    typeofObject.addHook('afterCreate', () => {
+      console.log('After create hook is triggered..');
+      functionName();
+    });
+  
+    return true;   
+  } catch (error) {
+    console.error("Error setting up update hook: ", error);
+    return false;
+  }
+
+}
+
+async function setupBulkCreateHook(objectType, functionName){
+  console.log("bulk create hook function is called");
+  const typeofObject = objectType == "execution" ? execution : resorts;
+
+  try {
+    typeofObject.addHook('afterBulkCreate', () => {
+      console.log('After bulk create hook is triggered..');
+      functionName();
+    });
+  
+    return true;   
+  } catch (error) {
+    console.error("Error setting up update hook: ", error);
+    return false;
+  }
+
+}
+
 async function saveRecord(recordJson, objectType) {
   const typeofObject = objectType == "execution" ? execution : resorts;
 
@@ -18,6 +70,27 @@ async function saveRecord(recordJson, objectType) {
     console.error("Error saving record: " + error);
     return null;
   }
+}
+
+async function bulkSaveRecord(recordArr, objectType) {
+  const typeofObject = objectType == "execution" ? execution : resorts;
+
+  // create() function instantiates the object and saves it to the database
+  try {
+    const records = await typeofObject.bulkCreate(recordArr);
+
+    let finalRecords = await typeofObject.findAll({
+      where: {
+        [Op.or]: records.map(record => ({ execID: record.execID }))
+      }
+    });
+
+    return finalRecords;
+  } catch (error) {
+    console.error("Error saving record: " + error);
+    return null;
+  }
+
 }
 
 async function countRecords(objectType, condJson) {
@@ -126,18 +199,6 @@ async function joinTwoTables(fModel, sModel, condJson, order, limit, offset) {
   }
 }
 
-async function buildInstance(objectType, jsonObject){
-
-  const typeofObject = objectType == "execution" ? execution : resorts;
-  try {
-    const instance = typeofObject.build(jsonObject);
-    return instance;
-  } catch (error) {
-    console.error("Error building instance: ", error.message);
-    return null;
-  }
-
-}
 async function updateRecord(recordJson, recordObject) {
   // update() function updates fields only specified and makes other fields as-is
   // save() saves the record to the database
@@ -175,5 +236,8 @@ module.exports = {
   deleteRecord,
   updateRecord,
   countRecords,
-  buildInstance
+  setupUpdateHook,
+  setupCreateHook,
+  bulkSaveRecord,
+  setupBulkCreateHook
 };

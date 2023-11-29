@@ -8,6 +8,9 @@ let searchTimeout = null;
 let paginationTimeout = null;
 let refreshTimeout = null;
 
+let newLimit
+let newOffset
+
 function createEventSource(limit, offset, endpoint, searchInput) {
     return new EventSource(`${endpoint}?limit=${limit}&offset=${offset}&search=${searchInput}`);
 }
