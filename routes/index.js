@@ -311,7 +311,7 @@ const updateExecutionRecords = async (req, res, firstModel, secondModel, eventCo
 
   // Handle client disconnection
   req.on('close', async () => {
-    console.log("One res disconnected");
+    console.log("One res disconnected in execution");
     await removeHooks("execution", ['afterCreate', 'afterUpdate', 'afterBulkCreate'], clientUuid);
     // Remove the response object from the array when the client disconnects
     const index = clients.findIndex(client => client.res === res);
@@ -419,23 +419,6 @@ router.get('/sse/resorts', async(req, res) => {
     [sequelize.col("resortID"), 'DESC'], 
   ];
 
-  // Use UUIDv5 generated from the string representation of the response object
-  const clientUuid = uuidv5(res.toString(), namespace);
-
-  // Store the response object and associated UUID for later use
-  clients.push({ res, clientUuid });
-
-  // Handle client disconnection
-  req.on('close', async () => {
-    console.log("One res disconnected");
-    await removeHooks("resorts", ['afterCreate', 'afterUpdate', 'afterBulkCreate'], clientUuid);
-    // Remove the response object from the array when the client disconnects
-    const index = clients.findIndex(client => client.res === res);
-    if (index !== -1) {
-      clients.splice(index, 1);
-    }
-  });
-
 
   let update = async() => {
     try {
@@ -462,9 +445,6 @@ router.get('/sse/resorts', async(req, res) => {
     }
   };
 
-
-  await setupCreateHook("resorts", update);
-  await setupUpdateHook("resorts", update);
 
   update();
 
