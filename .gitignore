@@ -1,4 +1,4 @@
-node_modules/
+node_modules
 .env
 config/chrome_profile/
 config/jsons/token.json
