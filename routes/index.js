@@ -3,11 +3,11 @@ const { sequelize } = require("../config/config");
 const { Op } = require("sequelize");
 const router = express.Router();
 const { format } = require('date-fns-tz');
-const { joinTwoTables, countRecords, findLikeRecords, findByPk, updateRecord, setupCreateHook, setupUpdateHook, setupBulkCreateHook } = require('../sequelizer/controller/controller');
+const { joinTwoTables, countRecords, findLikeRecords, findByPk, updateRecord, setupCreateHook, setupUpdateHook, setupBulkCreateHook, removeHooks } = require('../sequelizer/controller/controller');
 const { addToQueue, resourceIntensiveTask, processVerification } = require('../scripts/queueProcessor');
 const { findOrCreateAResort, createAnEvent, updateEventStatus } = require('../scripts/scrapeAndUpdate');
 const { resendSmsCode } = require('../services/scraper')
-
+const { v5: uuidv5 } = require('uuid');
 
 let isVerified = false;
 const THREAD_COUNT = 2;
@@ -265,9 +265,7 @@ router.get('/retry', async(req, res, next) => {
 // SSE ENDPOINTS                
 ///////////////////////////////////////////////////////////////////////////////
 
-let updateExecHook, createExecHook, bulkCreateExecHook, updateResortHook, createResortHook;
-
-const mapExecutionData = (data) => {
+const mapExecutionData = async(data) => {
   try {
     let formattedRecords = [];
     if (Array.isArray(data)) {
@@ -294,18 +292,38 @@ const mapExecutionData = (data) => {
   }
 }
 
-const updateExecutionRecords = async(req, res, firstModel, secondModel, eventCond, order) => {
+let createHook, updateHook, bulkHook;
+const clients = [];
+const namespace = '1b671a64-40d5-491e-99b0-da01ff1f3341';
+const updateExecutionRecords = async (req, res, firstModel, secondModel, eventCond, order) => {
   let limit = parseInt(req.query.limit);
-  let offset = parseInt(req.query.offset); 
+  let offset = parseInt(req.query.offset);
 
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
 
-  let update = async() => {
+  // Use UUIDv5 generated from the string representation of the response object
+  const clientUuid = uuidv5(res.toString(), namespace);
+
+  // Store the response object and associated UUID for later use
+  clients.push({ res, clientUuid });
+
+  // Handle client disconnection
+  req.on('close', async () => {
+    console.log("One res disconnected");
+    await removeHooks("execution", ['afterCreate', 'afterUpdate', 'afterBulkCreate'], clientUuid);
+    // Remove the response object from the array when the client disconnects
+    const index = clients.findIndex(client => client.res === res);
+    if (index !== -1) {
+      clients.splice(index, 1);
+    }
+  });
+
+  let update = async () => {
     try {
       let data = await joinTwoTables(firstModel, secondModel, eventCond, order, limit, offset);
-      let formattedRecords = mapExecutionData(data);
+      let formattedRecords = await mapExecutionData(data);
 
       res.write(`data: ${JSON.stringify(formattedRecords)}\n\n`);
 
@@ -314,13 +332,12 @@ const updateExecutionRecords = async(req, res, firstModel, secondModel, eventCon
     }
   };
 
-  await setupCreateHook("execution", update);
-  await setupBulkCreateHook("execution", update);
-  await setupUpdateHook("execution", update);
+  await setupUpdateHook("execution", update, clientUuid);
+  await setupCreateHook("execution", update, clientUuid);
+  await setupBulkCreateHook("execution", update, clientUuid);
 
   update();
-
-}
+};
 
 router.get('/sse/oneListing', async (req, res) => {
   const eventCond = {
@@ -428,15 +445,16 @@ router.get('/sse/resorts', async(req, res) => {
     }
   };
 
-  createResortHook = createResortHook === undefined ? await setupCreateHook("resorts", update) : createResortHook;
-  updateResortHook = updateResortHook === undefined ? await setupUpdateHook("resorts", update) : updateResortHook;
+
+  await setupCreateHook("resorts", update);
+  await setupUpdateHook("resorts", update);
 
   update();
 
 });
 
 
-module.exports = router;
+  module.exports = router;
 
 
 

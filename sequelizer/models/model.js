@@ -70,7 +70,7 @@ const execution = sequelize.define('execution', {
 
 }, {
   // Other model options go here
-  timestamps: true
+  timestamps: true,
 });
 
 

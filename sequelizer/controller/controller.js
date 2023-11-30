@@ -7,53 +7,81 @@ const { execution, resorts } = require("../models/model");
 const { sequelize } = require("../../config/config");
 const { Op } = require("sequelize");
 
-async function setupUpdateHook(objectType, functionName){
+let updateHook = null, createHook = null, bulkHook = null;
+
+let numberOfHooks = 0;
+async function setupUpdateHook(objectType, functionName, offset) {
   const typeofObject = objectType == "execution" ? execution : resorts;
 
   try {
-    typeofObject.addHook('afterUpdate', () => {
-      functionName();
+    updateHook = typeofObject.addHook('afterUpdate', offset, async () => {
+      console.log('After update hook is triggered..');
+      await functionName();
     });
-  
-    return true;   
+
+    numberOfHooks++;
+    return true;
   } catch (error) {
     console.error("Error setting up update hook: ", error);
     return false;
   }
 }
 
-async function setupCreateHook(objectType, functionName){
+async function setupCreateHook(objectType, functionName, offset) {
   const typeofObject = objectType == "execution" ? execution : resorts;
 
   try {
-    typeofObject.addHook('afterCreate', () => {
+    createHook = typeofObject.addHook('afterCreate', offset, async () => {
       console.log('After create hook is triggered..');
-      functionName();
+      await functionName();
     });
-  
-    return true;   
+
+    numberOfHooks++;
+    return true;
   } catch (error) {
-    console.error("Error setting up update hook: ", error);
+    console.error("Error setting up create hook: ", error);
     return false;
   }
-
 }
 
-async function setupBulkCreateHook(objectType, functionName){
+async function setupBulkCreateHook(objectType, functionName, offset) {
   const typeofObject = objectType == "execution" ? execution : resorts;
 
   try {
-    typeofObject.addHook('afterBulkCreate', () => {
+    bulkHook = typeofObject.addHook('afterBulkCreate', offset, async () => {
       console.log('After bulk create hook is triggered..');
-      functionName();
+      await functionName();
     });
-  
-    return true;   
+
+    numberOfHooks++;
+
+    await displayNumberHooks();
+    return true;
   } catch (error) {
-    console.error("Error setting up update hook: ", error);
+    console.error("Error setting up bulk create hook: ", error);
     return false;
   }
+}
 
+async function removeHooks(objectType, hookArr, hookName) {
+  const typeofObject = objectType == "execution" ? execution : resorts;
+
+  try {
+    for (const hook of hookArr) {
+      typeofObject.removeHook(hook, hookName);
+      numberOfHooks--;
+      console.log("Hook removed.")
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error removing hooks: ", error);
+    return false;
+  }
+}
+
+async function displayNumberHooks(){
+  console.log("This is the number of hooks: ", numberOfHooks);
 }
 
 async function saveRecord(recordJson, objectType) {
@@ -236,5 +264,6 @@ module.exports = {
   setupUpdateHook,
   setupCreateHook,
   bulkSaveRecord,
-  setupBulkCreateHook
+  setupBulkCreateHook,
+  removeHooks
 };
