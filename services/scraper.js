@@ -814,11 +814,11 @@ async function checkAvailability(months, resortID, suiteType) {
     await page.reload();
     let doneSelect = await selectElements(resortID, suiteType);
     console.log("Reselected elements successfully: ", doneSelect);
-    let doneScraping = await checkAvailability(
+    let doneScraping = doneSelect !== null ? await checkAvailability(
       months,
       resortID,
       suiteType
-    );
+    ) : null;
     console.log(
       "Checked availability successfully: ",
       doneScraping !== null
