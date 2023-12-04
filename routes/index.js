@@ -60,8 +60,6 @@ router.get('/duplicateListingLinks', (req, res) => {
 
 router.post('/sendOTP', async(req, res, next) => {
   let verOTP = req.body.OTP;
-  let execID = req.body.execID;
-  let event = await findByPk(execID, "execution");
 
   if (isVerified === false) {
     if (verOTP === "") {
@@ -74,6 +72,8 @@ router.post('/sendOTP', async(req, res, next) => {
         // Trigger the login process asynchronously
         processVerification(verOTP)
           .then(loggedIn => {
+            let execID = req.body.execID;
+            let event = findByPk(execID, "execution");
 
             isVerified = loggedIn;  
             const message = "successOrFail";

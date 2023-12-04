@@ -1,0 +1,19 @@
+2023/12/04-17:02:00.166 35cc Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_two_tier\Default\Session Storage/MANIFEST-000001
+2023/12/04-17:02:00.167 35cc Recovering log #11
+2023/12/04-17:02:00.172 35cc Reusing old log C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_two_tier\Default\Session Storage/000011.log 
+2023/12/04-17:02:06.342 2e90 Level-0 table #15: started
+2023/12/04-17:02:06.429 2e90 Level-0 table #15: 608650 bytes OK
+2023/12/04-17:02:06.475 2e90 Delete type=0 #11
+2023/12/04-17:02:10.970 2e90 Level-0 table #17: started
+2023/12/04-17:02:11.073 2e90 Level-0 table #17: 854555 bytes OK
+2023/12/04-17:02:11.109 2e90 Delete type=0 #14
+2023/12/04-17:02:11.121 2e90 Compacting 4@0 + 1@1 files
+2023/12/04-17:02:11.322 2e90 Generated table #18@0: 98 keys, 2136814 bytes
+2023/12/04-17:02:11.439 2e90 Generated table #19@0: 88 keys, 1580075 bytes
+2023/12/04-17:02:11.439 2e90 Compacted 4@0 + 1@1 files => 3716889 bytes
+2023/12/04-17:02:11.463 2e90 compacted to: files[ 0 2 1 0 0 0 0 ]
+2023/12/04-17:02:11.466 2e90 Delete type=2 #7
+2023/12/04-17:02:11.466 2e90 Delete type=2 #10
+2023/12/04-17:02:11.467 2e90 Delete type=2 #12
+2023/12/04-17:02:11.467 2e90 Delete type=2 #15
+2023/12/04-17:02:11.467 2e90 Delete type=2 #17

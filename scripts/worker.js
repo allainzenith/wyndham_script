@@ -2,15 +2,16 @@ const { workerData, parentPort } = require("worker_threads");
 const { executeScript } = require("./scrapeAndUpdate");
 
 async function scheduled() {
-  const queueType = workerData.queueType;
-  const resortID = workerData.resortID;
-  const suiteType = workerData.suiteType;
-  const months = workerData.months;
-  const resort = workerData.resort;
-  const eventCreated = workerData.eventCreated;
+
 
   try {
-    // Perform resource-intensive work
+    const queueType = workerData.queueType;
+    const resortID = workerData.resortID;
+    const suiteType = workerData.suiteType;
+    const months = workerData.months;
+    const resort = workerData.resort;
+    const eventCreated = workerData.eventCreated;
+
     let executedScript = await executeScript(
       queueType,
       resortID,
@@ -20,7 +21,8 @@ async function scheduled() {
       eventCreated
     );
 
-    parentPort.postMessage({ result: `Executed Script Successfully: ${executedScript}` });
+
+    parentPort.postMessage({ result: executedScript });
   } catch (error) {
     console.log(error);
   }

@@ -4,8 +4,8 @@ const path = require('path');
 require("dotenv").config();
 
 const scriptDir = __dirname;
-const customProfileRelPath = 'chrome_profile'; 
-const customProfileDir = path.join(scriptDir, customProfileRelPath);
+// const customProfileRelPath = 'chrome_profile'; 
+
 
 let sharedData = {
     oneTimeBrowser: null,
@@ -22,10 +22,11 @@ let sharedData = {
 
   };
 
+
 // Make the module an async module
 async function oneTimeTaskPuppeteer() {
 
-    sharedData.oneTimeBrowser = await initializeBrowser(sharedData.oneTimeBrowser);
+    sharedData.oneTimeBrowser = await initializeBrowser("chrome_one_time");
     sharedData.oneTimePage = await initializePage(sharedData.oneTimePage, sharedData.oneTimeBrowser);
     sharedData.oneTimeAddressPage = await initializePage(sharedData.oneTimeAddressPage, sharedData.oneTimeBrowser);
 
@@ -34,7 +35,7 @@ async function oneTimeTaskPuppeteer() {
 
 async function tierOnePuppeteer() {
 
-  sharedData.tierOneBrowser = await initializeBrowser(sharedData.tierOneBrowser);
+  sharedData.tierOneBrowser = await initializeBrowser("chrome_one_tier");
   sharedData.tierOnePage = await initializePage(sharedData.tierOnePage, sharedData.tierOneBrowser);
   sharedData.tierOneAddressPage = await initializePage(sharedData.tierOneAddressPage, sharedData.tierOneBrowser);
 
@@ -43,24 +44,26 @@ async function tierOnePuppeteer() {
 
 async function tierTwoThreePuppeteer() {
 
-  sharedData.tierTwoThreeBrowser = await initializeBrowser(sharedData.tierTwoThreeBrowser);
+  sharedData.tierTwoThreeBrowser = await initializeBrowser("chrome_two_tier");
   sharedData.tierTwoThreePage = await initializePage(sharedData.tierTwoThreePage, sharedData.tierTwoThreeBrowser);
   sharedData.tierTwoThreeAddressPage = await initializePage(sharedData.tierTwoThreeAddressPage, sharedData.tierTwoThreeBrowser);
 
   return sharedData;
 }
 
-async function initializeBrowser(browser) {
+async function initializeBrowser(customProfileRelPath) {
+  const customProfileDir = path.join(scriptDir, customProfileRelPath);
 
-  // Check if the custom profile directory exists
   if (!fs.existsSync(customProfileDir)) {
-    // If it doesn't exist, create the directory
     fs.mkdirSync(customProfileDir);
   }
 
+
+  let newBrowser;
+
   try {
     // Launch Puppeteer with the custom profile directory
-    browser = await puppeteer.launch({
+    newBrowser = await puppeteer.launch({
       args: [
         "--disable-setuid-sandbox",
         "--no-sandbox",
@@ -71,16 +74,13 @@ async function initializeBrowser(browser) {
       userDataDir: customProfileDir
     });
 
-    return browser;
+    return newBrowser;
 
   } catch (error) {
-    console.log("Launching of puppeteer failed: " + error);
-    if(browser !== null){
-      await browser.close();
-    }
-
-    return null;
+    console.error("Error during initialization:", error.message);
+    throw new Error("Initialization failed: " + error.message);
   }
+  
 }
 
 async function initializePage(page, browser) {
@@ -92,14 +92,12 @@ async function initializePage(page, browser) {
     return page;
 
   } catch (error) {
-    console.log("Launching of puppeteer failed: " + error);
-    if(browser !== null){
-      await browser.close();
-    }
-
-    return null;
+    console.error("Error during initialization:", error.message);
+    throw new Error("Initialization failed: " + error.message);
   }
+  
 }
+
 
 
 module.exports = { 

@@ -126,9 +126,13 @@ async function addToQueue(task, callback, ...args) {
         case "TIER 2":
           launch["TIER 3"] = false;
           schedTierTwoThreeTaskQueue.push({ task, args, callback });
+          break;
         case "TIER 3":
           launch["TIER 2"] = false;
           schedTierTwoThreeTaskQueue.push({ task, args, callback });
+          break;
+        default:
+          console.error(`Unknown task type for launching puppeteer: ${taskType}`);
       }
 
       if (launch[taskType]) {
@@ -170,39 +174,6 @@ async function addToQueue(task, callback, ...args) {
 
   });
 }
-// function createWorker(   
-//   queueType,
-//   resortID,
-//   suiteType,
-//   months,
-//   resort,
-//   eventCreated,
-//   callback
-//   ) {
-//   const worker = new Worker('./scripts/worker.js', {
-//     workerData: { 
-//       queueType,
-//       resortID,
-//       suiteType,
-//       months,
-//       resort,
-//       eventCreated,
-//       callback
-//     }
-//   });
-//   worker.on('message', result => {
-//     console.log(`Result for ${queueType}: `, result);
-//     worker.terminate();
-    
-//   });
-
-//   worker.on('exit', (code) => {
-//     console.log(`Worker has been terminated with code ${code}`);
-//     callback(); 
-//   });
-
-//   return worker;
-// }
 
 async function resourceIntensiveTask(
   queueType,
@@ -227,7 +198,7 @@ async function resourceIntensiveTask(
         resortID,
         suiteType,
         months,
-        resort,
+        resort.toJSON(),
         eventCreated
       );
       console.log("Executed Script Successfully: " + executedScript);
@@ -237,27 +208,45 @@ async function resourceIntensiveTask(
     }
 
   } else {
-    const worker = new Worker('./scripts/worker.js', {
-      workerData: { 
-        queueType : queueType,
-        resortID: resortID,
-        suiteType: suiteType,
-        months: months,
-        resort: resort,
-        eventCreated: resort
-      }
-    });
+
+    // const worker = new Worker('./scripts/worker.js', {
+    //   workerData: {
+    //     queueType: queueType,
+    //     resortID: resortID,
+    //     suiteType: suiteType,
+    //     months: months,
+    //     resort: resort.toJSON(),
+    //     eventCreated 
+    //   }
+    // });
+
     
-    worker.on('message', result => {
-      console.log(`Result for ${queueType}: `, result);
-      callback(); 
-      worker.terminate();
+    // worker.on('message', result => {
+    //   console.log(`Result for ${queueType}: `, result);
+    //   callback(); 
+    //   worker.terminate();
       
-    });
+    // });
   
-    worker.on('exit', (code) => {
-      console.log(`Worker has been terminated with code ${code}`);
-    });
+    // worker.on('exit', (code) => {
+    //   console.log(`Worker has been terminated with code ${code}`);
+    // });
+
+    try {
+      // Perform resource-intensive work
+      let executedScript = await executeScript(
+        queueType,
+        resortID,
+        suiteType,
+        months,
+        resort.toJSON(),
+        eventCreated
+      );
+      console.log("Executed Script Successfully: " + executedScript);
+      callback();
+    } catch (error) {
+      console.log(error);
+    }
   }
 
 }
