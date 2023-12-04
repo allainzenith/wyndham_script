@@ -899,7 +899,7 @@ async function checkCalendarObject(calendarObj) {
   
   for (const item of calendarObj) {
 
-    let available = item.hasOwnProperty('inventoryOfferings') ? "available" : "unavailable";
+    let available = item.continuousFlag ? "available" : "unavailable";
     dateArr.push({
       date: item.date,
       availability: available,
