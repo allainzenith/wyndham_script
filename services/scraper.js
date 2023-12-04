@@ -72,6 +72,8 @@ async function executeScraper(resortID, suiteType, months, resortHasNoRecord) {
       doneGettingAddress = true;
     }
 
+    const page = sharedData.page;
+
     if (doneLogin && doneSelecting && doneScraping && doneGettingAddress) {
       console.log("Done scraping. Calendar updating...");
       return { address, updatedAvail, sElement };
@@ -522,19 +524,23 @@ async function selectElements(resortID, suiteType) {
       }
 
       if (optionExists) {
+        try {
+          let purchaseType = null;
+          const purchaseSelector = "#purchaseType";
+          await page.waitForSelector(purchaseSelector, {timeout: 10000});
+          while (purchaseType !== "Developer") {
+            await page.select(purchaseSelector, "Developer");
 
-        let purchaseType = null;
-        const purchaseSelector = "#purchaseType";
-        while (purchaseType !== "Developer") {
-          await page.select(purchaseSelector, "Developer");
+            purchaseType = await page.evaluate((selector) => {
+              const select = document.querySelector(selector);
+              const selectedOption = select.options[select.selectedIndex];
+              return selectedOption.text;
+            }, purchaseSelector);
 
-          purchaseType = await page.evaluate((selector) => {
-            const select = document.querySelector(selector);
-            const selectedOption = select.options[select.selectedIndex];
-            return selectedOption.text;
-          }, purchaseSelector);
-
-          console.log("This is the selected purchase type:",purchaseType);
+            console.log("This is the selected purchase type:",purchaseType);
+          } 
+        } catch (error) {
+          console.log("Purchase type can't be selected.")
         }
 
         await page.waitForTimeout(5000);
@@ -594,8 +600,8 @@ async function selectElements(resortID, suiteType) {
 
 async function checkAvailability(months, resortID, suiteType) {
   const page = sharedData.page;
-  await page.setRequestInterception(true);
 
+  await page.setRequestInterception(true);
 
   // Define the request listener function
   const requestListener = async interceptedRequest => {
@@ -620,51 +626,37 @@ async function checkAvailability(months, resortID, suiteType) {
   let responses = [];
 
 
-  let currentMonth = currentDate.toLocaleDateString(undefined, {
-    month: "2-digit",
-  });   
-  let initialDate = monthNow === 0 ? currentDate.toLocaleDateString(undefined, { day: "2-digit" }) : '01';
-  let currentYear = currentDate.getFullYear();
-
-  let secondResponseStart =
-  parseInt(currentMonth, 10) < 8
-    ? parseInt(currentMonth, 10) % 2 !== 0
-      ? "18"
-      : "17"
-    : (parseInt(currentMonth, 10) + 1) % 2 !== 0
-    ? "18"
-    : "17";
+  let currentMonth;
+  let currentYear;
 
   let numResponses = 0;
   let resolveResponsesPromise;
+
+  let initialDate;
 
   // Set up event listener for intercepted responses
   const responseListener = async interceptedResponse => {
     // Check if the response URL meets a certain condition
     if (
       interceptedResponse.status() !== 302 && interceptedResponse.status()  === 200 &&
-      interceptedResponse.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability')
+      interceptedResponse.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability') 
     ) {
       const responseText = await interceptedResponse.text();
 
-      firstObjectFound = responseText.includes(`${currentYear}-${currentMonth}-${initialDate}`);
-      secondObjectFound = responseText.includes(`${currentYear}-${currentMonth}-${secondResponseStart}`);
+      firstFound = responseText.includes(`${currentYear}-${currentMonth}-${initialDate}`);
+      secondFound = responseText.includes(`${currentYear}-${currentMonth}-28`);
 
-      if(firstObjectFound || secondObjectFound) {
+      if(firstFound || secondFound) {
         responses.push(responseText);
 
-        if (firstObjectFound) {
-          console.log(`F: Response with the date string ${currentYear}-${currentMonth}-${initialDate} pushed.`);  
-          numResponses++;
-        } if (secondObjectFound) {
-          console.log(`S: Response with the date string ${currentYear}-${currentMonth}-${secondResponseStart} pushed.`);
-          numResponses++;
-        }
+        let date = JSON.parse(responseText).calendarDays[0].date;
+        console.log(`Response with the date string ${date} pushed.`);  
 
-        let expectedResponses = (parseInt(initialDate, 10) < parseInt(secondResponseStart, 10)) ? 2 : 1;
+        if (firstFound) numResponses++;
+        if (secondFound) numResponses++;
 
         // Check if all expected responses are received
-        if (numResponses >= expectedResponses) {
+        if (numResponses >= 2) {
           resolveResponsesPromise(); 
         } 
 
@@ -684,17 +676,15 @@ async function checkAvailability(months, resortID, suiteType) {
       initialDate = monthNow === 0 ? currentDate.toLocaleDateString(undefined, { day: "2-digit" }) : '01';
       currentYear = currentDate.getFullYear();
 
-      secondResponseStart =
-      parseInt(currentMonth, 10) < 8
-        ? parseInt(currentMonth, 10) % 2 !== 0
-          ? "18"
-          : "17"
-        : (parseInt(currentMonth, 10) + 1) % 2 !== 0
-        ? "18"
-        : "17";
+      // secondResponseStart = 
+      // parseInt(currentMonth, 10) < 8
+      //   ? parseInt(currentMonth, 10) % 2 !== 0
+      //     ? "18"
+      //     : "17"
+      //   : (parseInt(currentMonth, 10) + 1) % 2 !== 0
+      //   ? "18"
+      //   : "17";
 
-      // let numResponses = 0;
-      // let resolveResponsesPromise;
 
       // Function to create a promise that resolves when all responses are received
       const waitForResponses = () => new Promise(resolve => (resolveResponsesPromise = resolve));
@@ -776,7 +766,8 @@ async function checkAvailability(months, resortID, suiteType) {
     dates = filterUniqueKeys(dates);
     const compareDates = (a,b) => new Date(a.date) - new Date(b.date);
     dates = dates.sort(compareDates);
-    
+
+
     var index = 0;
     var currentItem;
     var nextItem;
@@ -907,7 +898,8 @@ async function checkCalendarObject(calendarObj) {
   let dateArr = [];
   
   for (const item of calendarObj) {
-    let available = item.continuousFlag ? "available" : "unavailable";
+
+    let available = item.hasOwnProperty('inventoryOfferings') ? "available" : "unavailable";
     dateArr.push({
       date: item.date,
       availability: available,
