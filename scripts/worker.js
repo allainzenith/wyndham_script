@@ -9,10 +9,9 @@ async function scheduled() {
   const resort = workerData.resort;
   const eventCreated = workerData.eventCreated;
 
-  let executedScript = true;
   try {
     // Perform resource-intensive work
-    executedScript = await executeScript(
+    let executedScript = await executeScript(
       queueType,
       resortID,
       suiteType,
@@ -20,7 +19,6 @@ async function scheduled() {
       resort,
       eventCreated
     );
-
 
     parentPort.postMessage({ result: `Executed Script Successfully: ${executedScript}` });
   } catch (error) {
