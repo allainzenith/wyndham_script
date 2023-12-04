@@ -41,6 +41,7 @@ async function executeScraper(resortID, suiteType, months, resortHasNoRecord) {
       doneScraping = updatedAvail !== null;
       console.log("Done scraping: " + doneScraping);
     } catch (error) {
+      console.log("eRROR: " , error);
       console.log(
         "Getting availability failed."
       );
@@ -593,7 +594,8 @@ async function selectElements(resortID, suiteType) {
 
 async function checkAvailability(months, resortID, suiteType) {
   const page = sharedData.page;
-      await page.setRequestInterception(true);
+  await page.setRequestInterception(true);
+
 
   // Define the request listener function
   const requestListener = async interceptedRequest => {
@@ -612,23 +614,77 @@ async function checkAvailability(months, resortID, suiteType) {
     }
   };
 
+  var { currentDate } = getCurrentAndEndDate(months);
+  let monthNow = 0;
+  var dates = [];
+  let responses = [];
+
+
+  let currentMonth = currentDate.toLocaleDateString(undefined, {
+    month: "2-digit",
+  });   
+  let initialDate = monthNow === 0 ? currentDate.toLocaleDateString(undefined, { day: "2-digit" }) : '01';
+  let currentYear = currentDate.getFullYear();
+
+  let secondResponseStart =
+  parseInt(currentMonth, 10) < 8
+    ? parseInt(currentMonth, 10) % 2 !== 0
+      ? "18"
+      : "17"
+    : (parseInt(currentMonth, 10) + 1) % 2 !== 0
+    ? "18"
+    : "17";
+
+  let numResponses = 0;
+  let resolveResponsesPromise;
+
+  // Set up event listener for intercepted responses
+  const responseListener = async interceptedResponse => {
+    // Check if the response URL meets a certain condition
+    if (
+      interceptedResponse.status() !== 302 && interceptedResponse.status()  === 200 &&
+      interceptedResponse.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability')
+    ) {
+      const responseText = await interceptedResponse.text();
+
+      firstObjectFound = responseText.includes(`${currentYear}-${currentMonth}-${initialDate}`);
+      secondObjectFound = responseText.includes(`${currentYear}-${currentMonth}-${secondResponseStart}`);
+
+      if(firstObjectFound || secondObjectFound) {
+        responses.push(responseText);
+
+        if (firstObjectFound) {
+          console.log(`F: Response with the date string ${currentYear}-${currentMonth}-${initialDate} pushed.`);  
+          numResponses++;
+        } if (secondObjectFound) {
+          console.log(`S: Response with the date string ${currentYear}-${currentMonth}-${secondResponseStart} pushed.`);
+          numResponses++;
+        }
+
+        let expectedResponses = (parseInt(initialDate, 10) < parseInt(secondResponseStart, 10)) ? 2 : 1;
+
+        // Check if all expected responses are received
+        if (numResponses >= expectedResponses) {
+          resolveResponsesPromise(); 
+        } 
+
+      }
+    }
+  };
+
   try {
-    var { currentDate } = getCurrentAndEndDate(months);
-    var dates = [];
-    let monthNow = 0;
-    let responses = [];
 
     await page.on('request', requestListener);
 
     while (monthNow <= months) {   
 
-      let currentMonth = currentDate.toLocaleDateString(undefined, {
+      currentMonth = currentDate.toLocaleDateString(undefined, {
         month: "2-digit",
       });   
-      let initialDate = monthNow === 0 ? currentDate.toLocaleDateString(undefined, { day: "2-digit" }) : '01';
-      let currentYear = currentDate.getFullYear();
+      initialDate = monthNow === 0 ? currentDate.toLocaleDateString(undefined, { day: "2-digit" }) : '01';
+      currentYear = currentDate.getFullYear();
 
-      let secondResponseStart =
+      secondResponseStart =
       parseInt(currentMonth, 10) < 8
         ? parseInt(currentMonth, 10) % 2 !== 0
           ? "18"
@@ -637,41 +693,8 @@ async function checkAvailability(months, resortID, suiteType) {
         ? "18"
         : "17";
 
-      let numResponses = 0;
-      let resolveResponsesPromise;
-
-      // Set up event listener for intercepted responses
-      const responseListener = async interceptedResponse => {
-        // Check if the response URL meets a certain condition
-        if (
-          interceptedResponse.status() !== 302 && interceptedResponse.status()  === 200 &&
-          interceptedResponse.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability')
-        ) {
-          const responseText = await interceptedResponse.text();
-
-          firstObjectFound = responseText.includes(`${currentYear}-${currentMonth}-${initialDate}`);
-          secondObjectFound = responseText.includes(`${currentYear}-${currentMonth}-${secondResponseStart}`);
-
-          if(firstObjectFound || secondObjectFound) {
-            responses.push(responseText);
-            numResponses++;
-
-            if (firstObjectFound) {
-              console.log(`F: Response with the date string ${currentYear}-${currentMonth}-${initialDate} pushed.`);  
-            } if (secondObjectFound) {
-              console.log(`S: Response with the date string ${currentYear}-${currentMonth}-${secondResponseStart} pushed.`);
-            }
-
-            let expectedResponses = (parseInt(initialDate, 10) < parseInt(secondResponseStart, 10)) ? 2 : 1;
-
-            // Check if all expected responses are received
-            if (numResponses >= expectedResponses) {
-              resolveResponsesPromise(); 
-            }
-
-          }
-        }
-      };
+      // let numResponses = 0;
+      // let resolveResponsesPromise;
 
       // Function to create a promise that resolves when all responses are received
       const waitForResponses = () => new Promise(resolve => (resolveResponsesPromise = resolve));
@@ -808,6 +831,7 @@ async function checkAvailability(months, resortID, suiteType) {
   } catch (error) {
     console.error("Error:", error.message);
     await page.off('request', requestListener);
+    await page.off('response', responseListener);
     await page.setRequestInterception(false);
 
     //try the process one more time
