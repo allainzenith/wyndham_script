@@ -8,141 +8,103 @@ const customProfileRelPath = 'chrome_profile';
 const customProfileDir = path.join(scriptDir, customProfileRelPath);
 
 let sharedData = {
-    browser: null,
-    page: null,
-    pageForAddress: null,
+    oneTimeBrowser: null,
+    oneTimePage: null,
+    oneTimeAddressPage: null,
 
-    browserQueue: null,
-    browserTierOne: null,
-    browserTierTwoThree: null,
+    tierOneBrowser: null,
+    tierOnePage: null,
+    tierOneAddressPage: null,
 
-    pageQueue: null,
-    pageTierOne: null,
-    pageTierTwoThree: null,
-
-    pageForAddressQueue: null,
-    pageForAddressTierOne: null,
-    pageForAddressTierTwoThree: null,
+    tierTwoThreeBrowser: null,
+    tierTwoThreePage: null,
+    tierTwoThreeAddressPage: null,
 
   };
 
 // Make the module an async module
-async function globals() {
-    
-    // Check if the custom profile directory exists
-    if (!fs.existsSync(customProfileDir)) {
-      // If it doesn't exist, create the directory
-      fs.mkdirSync(customProfileDir);
-    }
-    
-    try {
-      // Launch Puppeteer with the custom profile directory
-      sharedData.browser = await puppeteer.launch({
-        args: [
-          "--disable-setuid-sandbox",
-          "--no-sandbox",
-          "--no-zygote",
-        ],
-        headless: false, 
-        // headless: 'new',
-        userDataDir: customProfileDir
-      });
-      
-      // Open a new page
-      sharedData.page = await sharedData.browser.newPage();
-      sharedData.pageForAddress = await sharedData.browser.newPage();
-      sharedData.page.setDefaultNavigationTimeout(120000);
-      sharedData.pageForAddress.setDefaultNavigationTimeout(120000);
+async function oneTimeTaskPuppeteer() {
 
-    } catch (error) {
-      console.log("Launching of puppeteer failed: " + error);
-      if(sharedData.browser !== null){
-        await sharedData.browser.close();
-      }
-    }
+    sharedData.oneTimeBrowser = await initializeBrowser(sharedData.oneTimeBrowser);
+    sharedData.oneTimePage = await initializePage(sharedData.oneTimePage, sharedData.oneTimeBrowser);
+    sharedData.oneTimeAddressPage = await initializePage(sharedData.oneTimeAddressPage, sharedData.oneTimeBrowser);
 
     return sharedData;
 }
 
-// Make the module an async module
-// async function globalsTierOne() {
-    
-//   // Check if the custom profile directory exists
-//   if (!fs.existsSync(customProfileDir)) {
-//     // If it doesn't exist, create the directory
-//     fs.mkdirSync(customProfileDir);
-//   }
-  
-//   try {
-//     // Launch Puppeteer with the custom profile directory
-//     sharedData.browserTierOne = await puppeteer.launch({
-//       args: [
-//         "--disable-setuid-sandbox",
-//         "--no-sandbox",
-//         "--no-zygote",
-//       ],
-//       headless: false, 
-//       // headless: 'new',
-//       userDataDir: customProfileDir
-//     });
-    
-//     // Open a new page
-//     sharedData.pageTierOne = await sharedData.browser.newPage();
-//     sharedData.pageForAddressTierOne = await sharedData.browser.newPage();
-//     sharedData.pageTierOne.setDefaultNavigationTimeout(120000);
-//     sharedData.pageForAddressTierOne.setDefaultNavigationTimeout(120000);
+async function tierOnePuppeteer() {
 
-//   } catch (error) {
-//     console.log("Launching of puppeteer failed: " + error);
-//     if(sharedData.browserTierOne !== null){
-//       await sharedData.browserTierOne.close();
-//     }
-//   }
+  sharedData.tierOneBrowser = await initializeBrowser(sharedData.tierOneBrowser);
+  sharedData.tierOnePage = await initializePage(sharedData.tierOnePage, sharedData.tierOneBrowser);
+  sharedData.tierOneAddressPage = await initializePage(sharedData.tierOneAddressPage, sharedData.tierOneBrowser);
 
-//   return sharedData;
-// }
+  return sharedData;
+}
 
-// // Make the module an async module
-// async function globalsTierOne() {
-    
-//   // Check if the custom profile directory exists
-//   if (!fs.existsSync(customProfileDir)) {
-//     // If it doesn't exist, create the directory
-//     fs.mkdirSync(customProfileDir);
-//   }
-  
-//   try {
-//     // Launch Puppeteer with the custom profile directory
-//     sharedData.browserTierOne = await puppeteer.launch({
-//       args: [
-//         "--disable-setuid-sandbox",
-//         "--no-sandbox",
-//         "--no-zygote",
-//       ],
-//       headless: false, 
-//       // headless: 'new',
-//       userDataDir: customProfileDir
-//     });
-    
-//     // Open a new page
-//     sharedData.pageTierOne = await sharedData.browser.newPage();
-//     sharedData.pageForAddressTierOne = await sharedData.browser.newPage();
-//     sharedData.pageTierOne.setDefaultNavigationTimeout(120000);
-//     sharedData.pageForAddressTierOne.setDefaultNavigationTimeout(120000);
+async function tierTwoThreePuppeteer() {
 
-//   } catch (error) {
-//     console.log("Launching of puppeteer failed: " + error);
-//     if(sharedData.browserTierOne !== null){
-//       await sharedData.browserTierOne.close();
-//     }
-//   }
+  sharedData.tierTwoThreeBrowser = await initializeBrowser(sharedData.tierTwoThreeBrowser);
+  sharedData.tierTwoThreePage = await initializePage(sharedData.tierTwoThreePage, sharedData.tierTwoThreeBrowser);
+  sharedData.tierTwoThreeAddressPage = await initializePage(sharedData.tierTwoThreeAddressPage, sharedData.tierTwoThreeBrowser);
 
-//   return sharedData;
-// }
+  return sharedData;
+}
 
+async function initializeBrowser(browser) {
+
+  // Check if the custom profile directory exists
+  if (!fs.existsSync(customProfileDir)) {
+    // If it doesn't exist, create the directory
+    fs.mkdirSync(customProfileDir);
+  }
+
+  try {
+    // Launch Puppeteer with the custom profile directory
+    browser = await puppeteer.launch({
+      args: [
+        "--disable-setuid-sandbox",
+        "--no-sandbox",
+        "--no-zygote",
+      ],
+      headless: false, 
+      // headless: 'new',
+      userDataDir: customProfileDir
+    });
+
+    return browser;
+
+  } catch (error) {
+    console.log("Launching of puppeteer failed: " + error);
+    if(browser !== null){
+      await browser.close();
+    }
+
+    return null;
+  }
+}
+
+async function initializePage(page, browser) {
+  try {   
+    // Open a new page
+    page = await browser.newPage();
+    page.setDefaultNavigationTimeout(120000);
+
+    return page;
+
+  } catch (error) {
+    console.log("Launching of puppeteer failed: " + error);
+    if(browser !== null){
+      await browser.close();
+    }
+
+    return null;
+  }
+}
 
 
 module.exports = { 
-    globals,
+    oneTimeTaskPuppeteer,
+    tierOnePuppeteer,
+    tierTwoThreePuppeteer,
     sharedData
 };

@@ -6,29 +6,35 @@ var { saveRecord, updateRecord, findRecords } = require('../sequelizer/controlle
 const { sequelize } = require("../config/config");
 
 // async function executeScript(token, resortID, suiteType, months, resortFoundorCreated, eventCreated){
-async function executeScript(resortID, suiteType, months, resortFoundorCreated, eventCreated){
+async function executeScript(queueType, resortID, suiteType, months, resortFoundorCreated, eventCreated){
 
-    var resortJSON = await resortFoundorCreated.toJSON()
-    var resortJSONlistingID = await resortJSON.listingID;
-    var resortHasNoRecord = (resortJSONlistingID === undefined || resortJSONlistingID === null);
+    console.log(queueType);
+    console.log(resortID);
+    console.log(suiteType);
+    console.log(months);
+    console.log(resortFoundorCreated);
+    console.log(eventCreated);
+    // var resortJSON = await resortFoundorCreated.toJSON()
+    // var resortJSONlistingID = await resortJSON.listingID;
+    // var resortHasNoRecord = (resortJSONlistingID === undefined || resortJSONlistingID === null);
 
-    const scraped = eventCreated !== null ? await executeScraper(
-        resortID, suiteType, months, resortHasNoRecord) : null;
+    // const scraped = eventCreated !== null ? await executeScraper(
+    //     queueType, resortID, suiteType, months, resortHasNoRecord) : null;
 
-    let success;
-    if ( scraped !== null) {
-        if (scraped === "MAINTENANCE") {
-            success = false;
-            await updateEventStatus(eventCreated, "MAINTENANCE");
-        } else {
-            success = await updateGuestyandRecord(resortFoundorCreated, eventCreated, scraped, suiteType, months);
-        }
-    }  else {
-        success = false;
-        await updateEventStatus(eventCreated, "SCRAPE_FAILED");
-    } 
+    // let success;
+    // if ( scraped !== null) {
+    //     if (scraped === "MAINTENANCE") {
+    //         success = false;
+    //         await updateEventStatus(eventCreated, "MAINTENANCE");
+    //     } else {
+    //         success = await updateGuestyandRecord(resortFoundorCreated, eventCreated, scraped, suiteType, months);
+    //     }
+    // }  else {
+    //     success = false;
+    //     await updateEventStatus(eventCreated, "SCRAPE_FAILED");
+    // } 
 
-    return success;
+    // return success;
 
 }
 

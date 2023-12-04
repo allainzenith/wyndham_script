@@ -5,108 +5,174 @@
 const path = require("path");
 const { addMonths, addDays } = require("date-fns");
 const { userName, passWord } = require("../config/config");
-const { globals, sharedData } = require("../config/puppeteerOptions");
+const { oneTimeTaskPuppeteer, tierOnePuppeteer, tierTwoThreePuppeteer, sharedData } = require("../config/puppeteerOptions");
 
 let needtoLogin;
+let currentTaskType;
 
-async function executeScraper(resortID, suiteType, months, resortHasNoRecord) {
+let page;
+let browser;
+let pageForAddress;
+
+let oneTimeNeedLogin;
+let tierOneNeedLogin;
+let tierTwoThreeNeedLogin;
+
+async function executeScraper(queueType, resortID, suiteType, months, resortHasNoRecord) {
   try {
-    let doneLogin, doneSelecting, doneScraping, doneGettingAddress, address, updatedAvail, sElement;
+    let doneInititalizing, doneLogin, doneSelecting, doneScraping, doneGettingAddress, address, updatedAvail, sElement;
 
-    try {
-      console.log("I need to log in: " + needtoLogin);
-      doneLogin = needtoLogin ? await login() : true;
-      console.log("Done login: " + doneLogin);
-    } catch (error) {
-      console.log(
-        "Login process failed."
-      );
-      return null;      
+    switch(queueType) {
+      case "ONE TIME":
+        doneInititalizing = await initializePages(sharedData.oneTimeBrowser, sharedData.oneTimePage, sharedData.oneTimeAddressPage);
+        needtoLogin = oneTimeNeedLogin;
+        break;
+      case "TIER 1":
+        doneInititalizing = await initializePages(sharedData.tierOneBrowser, sharedData.tierOnePage, sharedData.tierOneAddressPage);
+        needtoLogin = tierOneNeedLogin;
+        break;
+      case "TIER 2":
+      case "TIER 3":
+        doneInititalizing = await initializePages(sharedData.tierTwoThreeBrowser, sharedData.tierTwoThreePage, sharedData.tierTwoThreeAddressPage);
+        needtoLogin = tierTwoThreeNeedLogin;
+        break;
+      default:
+        console.error(`Unknown task type for launching puppeteer: ${taskType}`);
+        doneInititalizing = false;
     }
 
-    try {
-      sElement = doneLogin === true ? await selectElements(resortID, suiteType) : null;
-      console.log("Selected Option Text:", sElement);
-      doneSelecting = sElement !== null;
-      console.log("Done selecting: " + doneSelecting);
-    } catch (error) {
-      console.log(
-        "Selecting process failed."
-      );
-      return null;      
-    }
-
-    try {
-      updatedAvail = doneSelecting ? await checkAvailability(months, resortID, suiteType) : null;
-      doneScraping = updatedAvail !== null;
-      console.log("Done scraping: " + doneScraping);
-    } catch (error) {
-      console.log(
-        "Getting availability failed."
-      );
-      return null;      
-    }
-
-    if (resortHasNoRecord) {
-      console.log(
-        "No existing listing ID. Getting resort address to match resort with the Guesty listing."
-      );
+    if (doneInititalizing) {
       try {
-        address = doneScraping
-          ? await getResortAddress(resortID, sElement)
-          : null;
-        doneGettingAddress = address !== null;
-        console.log("Done getting address: " + doneGettingAddress);
-        console.log("address: " + address);
+        console.log("I need to log in: " + needtoLogin);
+        doneLogin = needtoLogin ? await login() : true;
+        console.log("Done login: " + doneLogin);
       } catch (error) {
         console.log(
-          "Getting address failed."
+          "Login process failed."
         );
         return null;      
       }
-    } else {
-      console.log(
-        "The fields for this record are populated. No need to get the address for matching."
-      );
-      doneGettingAddress = true;
-    }
 
-    if (doneLogin && doneSelecting && doneScraping && doneGettingAddress) {
-      console.log("Done scraping. Calendar updating...");
-      return { address, updatedAvail, sElement };
-    } if (doneLogin === "MAINTENANCE") {
-      return "MAINTENANCE";
+      try {
+        sElement = doneLogin === true ? await selectElements(resortID, suiteType) : null;
+        console.log("Selected Option Text:", sElement);
+        doneSelecting = sElement !== null;
+        console.log("Done selecting: " + doneSelecting);
+      } catch (error) {
+        console.log(
+          "Selecting process failed."
+        );
+        return null;      
+      }
+
+      try {
+        updatedAvail = doneSelecting ? await checkAvailability(months, resortID, suiteType) : null;
+        doneScraping = updatedAvail !== null;
+        console.log("Done scraping: " + doneScraping);
+      } catch (error) {
+        console.log(
+          "Getting availability failed."
+        );
+        return null;      
+      }
+
+      if (resortHasNoRecord) {
+        console.log(
+          "No existing listing ID. Getting resort address to match resort with the Guesty listing."
+        );
+        try {
+          address = doneScraping
+            ? await getResortAddress(resortID, sElement)
+            : null;
+          doneGettingAddress = address !== null;
+          console.log("Done getting address: " + doneGettingAddress);
+          console.log("address: " + address);
+        } catch (error) {
+          console.log(
+            "Getting address failed."
+          );
+          return null;      
+        }
+      } else {
+        console.log(
+          "The fields for this record are populated. No need to get the address for matching."
+        );
+        doneGettingAddress = true;
+      }
+
+      if (doneLogin && doneSelecting && doneScraping && doneGettingAddress) {
+        console.log("Done scraping. Calendar updating...");
+        return { address, updatedAvail, sElement };
+      } if (doneLogin === "MAINTENANCE") {
+        return "MAINTENANCE";
+      } else {
+        console.log(
+          "One or more of the scraping processes did not execute successfully. Please try again."
+        );
+        return null;
+      }
     } else {
-      console.log(
-        "One or more of the scraping processes did not execute successfully. Please try again."
-      );
-      return null;
+      console.error("Error:", error.message);
+      return null;     
     }
   } catch (error) {
     console.error("Error:", error.message);
     return null;
   }
+
 }
 
-async function launchPuppeteer() {
+async function initializePages(thisBrowser, thisPage, thisPageForAddress) {
   try {
-    needtoLogin = true;
-    await globals();
-    let loggedIn = await login();
+    browser = thisBrowser;
+    page = thisPage;
+    pageForAddress = thisPageForAddress;
+
+    return true;
+  } catch (error) {
+    console.error("Error initializing pages: ", error);
+    return false;
+  }
+}
+
+async function launchPuppeteer(taskType) {
+  try {
+    switch(taskType) {
+      case "ONE TIME":
+        await oneTimeTaskPuppeteer();
+        await initializePages(sharedData.oneTimeBrowser, sharedData.oneTimePage, sharedData.oneTimeAddressPage);
+        oneTimeNeedLogin = true;
+        break;
+      case "TIER 1":
+        await tierOnePuppeteer();
+        await initializePages(sharedData.tierOneBrowser, sharedData.tierOnePage, sharedData.tierOneAddressPage);
+        tierOneNeedLogin = true;
+        break;
+      case "TIER 2":
+      case "TIER 3":
+        await tierTwoThreePuppeteer();
+        await initializePages(sharedData.tierTwoThreeBrowser, sharedData.tierTwoThreePage, sharedData.tierTwoThreeAddressPage);
+        tierTwoThreeNeedLogin = true;
+        break;
+      default:
+        console.error(`Unknown task type for launching puppeteer: ${taskType}`);
+    }
+    
+    let loggedIn = await login(taskType);
     return loggedIn;
   } catch (error) {
     return null;
   }
 }
 
-async function login() {
+async function login(taskType) {
   let checkToBegin = true;
 
   while (checkToBegin) {
     await new Promise(resolve => setTimeout(resolve, 1000));
     try {
-      sharedData.page;
-      sharedData.pageForAddress;
+      page;
+      pageForAddress;
       checkToBegin = false;
     } catch (error) {
       console.log("Error: ", error.message);
@@ -114,8 +180,8 @@ async function login() {
   }
 
   try {
-    const page = sharedData.page;
-    const pageForAddress = sharedData.pageForAddress;
+    // const page = sharedData.page;
+    // const pageForAddress = sharedData.pageForAddress;
 
     try {
       await Promise.all([
@@ -178,7 +244,7 @@ async function login() {
       await page.waitForTimeout(5000);
       await page.click(`.button-primary[value*="Login"]`)
 
-      let isVerified = await findSendSmsCode();
+      let isVerified = await findSendSmsCode(taskType);
 
       return isVerified;
     }
@@ -191,8 +257,8 @@ async function login() {
 
 }
 
-async function findSendSmsCode(){
-  const page = sharedData.page;
+async function findSendSmsCode(taskType){
+  // const page = sharedData.page;
 
   // Click the <a> tag with a specific data-se attribute value
   const dataSeValue = "sms-send-code";
@@ -217,9 +283,21 @@ async function findSendSmsCode(){
         console.log("No need for OTP verification");
         console.log("Logged in successfullyyyy!!");  
   
-        // let canSelect = await enableSessionCalendar();
-        // returnValue = canSelect;
-        needtoLogin = false;
+        switch(taskType) {
+          case "ONE TIME":
+            oneTimeNeedLogin = false;
+            break;
+          case "TIER 1":
+            tierOneNeedLogin = false;
+            break;
+          case "TIER 2":
+          case "TIER 3":
+            tierTwoThreeNeedLogin = false;
+            break;
+          default:
+            console.error(`Unknown task type for launching puppeteer: ${taskType}`);
+        }
+        
         checkIfLoggedIn = 5;
         return true;
       } else {
@@ -245,7 +323,7 @@ async function findSendSmsCode(){
 }
 
 async function isLoggedIn() {
-  const page = sharedData.page;
+  // const page = sharedData.page;
   const accountURL = 'https://clubwyndham.wyndhamdestinations.com/us/en/owner/account';
   try {
     await page.waitForFunction(
@@ -262,7 +340,7 @@ async function isLoggedIn() {
 }
 
 async function sendOTP(verOTP) {
-  const page = sharedData.page;
+  // const page = sharedData.page;
 
   try {
     await page.waitForSelector('#input60', {timeout:3000});
@@ -281,7 +359,22 @@ async function sendOTP(verOTP) {
     if(doneLogin) {
       console.log("No need for OTP verification");
       console.log("Logged in successfullyyyy!!");  
-      needtoLogin = false;
+
+      switch(taskType) {
+        case "ONE TIME":
+          oneTimeNeedLogin = false;
+          break;
+        case "TIER 1":
+          tierOneNeedLogin = false;
+          break;
+        case "TIER 2":
+        case "TIER 3":
+          tierTwoThreeNeedLogin = false;
+          break;
+        default:
+          console.error(`Unknown task type for launching puppeteer: ${taskType}`);
+      }
+
       return true;
     } else {
       console.log("Hit submit button but didn't navigate");
@@ -302,8 +395,8 @@ async function sendOTP(verOTP) {
 async function resendSmsCode() {
   return new Promise(async(resolve) => {
     try {
-      const page = sharedData.page;
-      const browser = sharedData.browser;
+      // const page = sharedData.page;
+      // const browser = sharedData.browser;
       if (await page.url() !== "https://clubwyndham.wyndhamdestinations.com/us/en/login"){
         resolve("MAINTENANCE");
         await browser.close();
@@ -326,7 +419,7 @@ async function resendSmsCode() {
   });
 }
 async function enableSessionCalendar(){
-  const page = sharedData.page;
+  // const page = sharedData.page;
   try {
     await page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results');
 
@@ -387,7 +480,7 @@ async function enableSessionCalendar(){
 }
 
 async function checkOverlay() {
-  const page = sharedData.page;
+  // const page = sharedData.page;
   const overlaySelector = '.onetrust-close-btn-handler[aria-label*="Close"]'
   
   const overlayExists = await page.evaluate((selector) => {
@@ -409,7 +502,7 @@ async function checkOverlay() {
 }
 
 async function selectElements(resortID, suiteType) {
-  const page = sharedData.page;
+  // const page = sharedData.page;
 
 
   let setupSelect = 0;
@@ -592,8 +685,8 @@ async function selectElements(resortID, suiteType) {
 }
 
 async function checkAvailability(months, resortID, suiteType) {
-  const page = sharedData.page;
-      await page.setRequestInterception(true);
+  // const page = sharedData.page;
+  await page.setRequestInterception(true);
 
   // Define the request listener function
   const requestListener = async interceptedRequest => {
@@ -904,7 +997,7 @@ function getCurrentAndEndDate(months) {
 }
 
 async function getResortAddress(resortID, sElement) {
-  const pageForAddress = sharedData.pageForAddress;
+  // const pageForAddress = sharedData.pageForAddress;
   try {
     await pageForAddress.bringToFront();
     const placeholderText = "Enter a location";

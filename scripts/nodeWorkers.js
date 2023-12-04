@@ -1,1 +1,0 @@
-const { workerData, ParentPort } = require("worker_threads");

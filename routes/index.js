@@ -160,7 +160,7 @@ router.post('/one', async(req, res, next) => {
       // Trigger the login process asynchronously
       addToQueue(resourceIntensiveTask, () => {
         console.log('Task completed');
-      }, resortID, suiteType, months, resort, eventCreated)
+      }, "ONE TIME", resortID, suiteType, months, resort, eventCreated)
         .then(loggedIn => {
           let event = findByPk(execID, "execution");
 
@@ -222,6 +222,7 @@ router.get('/retry', async(req, res, next) => {
   let resort = await findOrCreateAResort(resortID, suiteType); 
   let eventCreated = await findByPk((req.query.execID).trim(), "execution");
 
+
   await updateEventStatus(eventCreated, "SCRAPING");
   
   if (eventCreated !== null){
@@ -230,12 +231,12 @@ router.get('/retry', async(req, res, next) => {
       // Trigger the login process asynchronously
       addToQueue(resourceIntensiveTask, () => {
         console.log('Task completed');
-      }, resortID, suiteType, months, resort, eventCreated)
+      }, "ONE TIME", resortID, suiteType, months, resort, eventCreated)
         .then(loggedIn => {
 
           isVerified = loggedIn;
 
-          eventCreated = findByPk((req.query.execID).trim(), "execution");
+          eventCreated = findByPk((execID).trim(), "execution");
           
           if (loggedIn === "MAINTENANCE") {
             updateEventStatus(eventCreated, "MAINTENANCE");
