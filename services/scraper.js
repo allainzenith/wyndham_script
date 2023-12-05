@@ -767,6 +767,10 @@ async function checkAvailability(months, resortID, suiteType) {
     const compareDates = (a,b) => new Date(a.date) - new Date(b.date);
     dates = dates.sort(compareDates);
 
+    for(const date of dates) {
+      console.log(date);
+    }
+
 
     var index = 0;
     var currentItem;
