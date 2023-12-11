@@ -27,7 +27,7 @@ async function executeScraper(resortID, suiteType, months, resortHasNoRecord) {
     try {
       sElement = doneLogin === true ? await selectElements(resortID, suiteType) : null;
       console.log("Selected Option Text:", sElement);
-      doneSelecting = sElement !== null;
+      doneSelecting = sElement !== null && sElement !== undefined;
       console.log("Done selecting: " + doneSelecting);
     } catch (error) {
       console.log(
@@ -38,7 +38,7 @@ async function executeScraper(resortID, suiteType, months, resortHasNoRecord) {
 
     try {
       updatedAvail = doneSelecting ? await checkAvailability(months, resortID, suiteType) : null;
-      doneScraping = updatedAvail !== null;
+      doneScraping = updatedAvail !== null && updatedAvail !== undefined;
       console.log("Done scraping: " + doneScraping);
     } catch (error) {
       console.log("eRROR: " , error);
@@ -56,7 +56,7 @@ async function executeScraper(resortID, suiteType, months, resortHasNoRecord) {
         address = doneScraping
           ? await getResortAddress(resortID, sElement)
           : null;
-        doneGettingAddress = address !== null;
+        doneGettingAddress = address !== null && address !== undefined;
         console.log("Done getting address: " + doneGettingAddress);
         console.log("address: " + address);
       } catch (error) {
@@ -484,6 +484,14 @@ async function selectElements(resortID, suiteType) {
         }, resortSelector);
     
         console.log("This is the selected resort:",selectedResort);
+
+        let error = await page.waitForSelector("#error-message", {
+          timeout: 15000,
+        });
+
+        if(error) {
+          return null;
+        }
       }
 
       let selectedOptionText = await page.evaluate((selector) => {
@@ -732,14 +740,14 @@ async function checkAvailability(months, resortID, suiteType) {
           await page.reload();
           let doneSelect = await selectElements(resortID, suiteType);
           console.log("Reselected elements successfully: ", doneSelect);
-          let doneScraping = doneSelect !== null ? await checkAvailability(
+          let doneScraping = doneSelect !== null && doneSelect !== undefined ? await checkAvailability(
             months,
             resortID,
             suiteType
           ): null;
           console.log(
             "Checked availability successfully: ",
-            doneScraping !== null
+            doneScraping !== null && doneScraping !== undefined
           );
           return doneScraping;
         }
@@ -833,14 +841,14 @@ async function checkAvailability(months, resortID, suiteType) {
     await page.reload();
     let doneSelect = await selectElements(resortID, suiteType);
     console.log("Reselected elements successfully: ", doneSelect);
-    let doneScraping = doneSelect !== null ? await checkAvailability(
+    let doneScraping = doneSelect !== null && doneSelect !== undefined ? await checkAvailability(
       months,
       resortID,
       suiteType
     ) : null;
     console.log(
       "Checked availability successfully: ",
-      doneScraping !== null
+      doneScraping !== null && doneScraping !== undefined
     );
     return doneScraping;
   } 
