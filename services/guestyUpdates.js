@@ -75,6 +75,7 @@ async function executeUpdates(resortFoundorCreated, address, updatedAvail, suite
             console.log(avail);
         }
 
+
         for (const listing of listingJsonArray) {
             try {
                 console.log("Listing id: ", listing._id);

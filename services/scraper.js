@@ -61,6 +61,7 @@ async function executeScraper(queueType, resortID, suiteType, months, resortHasN
       doneScraping = updatedAvail !== null && updatedAvail !== undefined && updatedAvail !== "MAINTENANCE";
       console.log("Done scraping: " + doneScraping);
     } catch (error) {
+      console.log("eRROR: " , error);
       console.log(
         "Getting availability failed.", error.message
       );
@@ -90,6 +91,8 @@ async function executeScraper(queueType, resortID, suiteType, months, resortHasN
       );
       doneGettingAddress = true;
     }
+
+    const page = sharedData.page;
 
     if (doneLogin && doneSelecting && doneScraping && doneGettingAddress) {
       console.log("Done scraping. Calendar updating...");
@@ -623,19 +626,23 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
       }
 
       if (optionExists) {
+        try {
+          let purchaseType = null;
+          const purchaseSelector = "#purchaseType";
+          await page.waitForSelector(purchaseSelector, {timeout: 10000});
+          while (purchaseType !== "Developer") {
+            await page.select(purchaseSelector, "Developer");
 
-        let purchaseType = null;
-        const purchaseSelector = "#purchaseType";
-        while (purchaseType !== "Developer") {
-          await page.select(purchaseSelector, "Developer");
+            purchaseType = await page.evaluate((selector) => {
+              const select = document.querySelector(selector);
+              const selectedOption = select.options[select.selectedIndex];
+              return selectedOption.text;
+            }, purchaseSelector);
 
-          purchaseType = await page.evaluate((selector) => {
-            const select = document.querySelector(selector);
-            const selectedOption = select.options[select.selectedIndex];
-            return selectedOption.text;
-          }, purchaseSelector);
-
-          console.log("This is the selected purchase type:",purchaseType);
+            console.log("This is the selected purchase type:",purchaseType);
+          } 
+        } catch (error) {
+          console.log("Purchase type can't be selected.")
         }
 
         await page.waitForTimeout(5000);
@@ -692,6 +699,7 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
     }
   }
 }
+
 
 async function checkAvailability(queueType, months, resortID, suiteType, page, pageForAddress) {
 
@@ -805,15 +813,11 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
         firstResponseNotResolved = true;
         monthNow++;
 
-        findNextButtonAttempts = 5;
-
         // await page.removeListener('response', responseListener);
         await page.removeAllListeners('response');
         
       } catch (error) {
         //error-message (id)
-        
-        findNextButtonAttempts++;
         
         console.log("Can't find or click next button. Reloading again.", error.message);
 
@@ -867,6 +871,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
     let nextItem;
     let updatedAvail = [];
     let start = null;
+
     while (index <= dates.length - 2) {
       currentItem = dates[index];
       nextItem = dates[index + 1];
@@ -923,6 +928,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
     // await page.removeListener('request', requestListener);
     await page.removeAllListeners('response');
     await page.removeAllListeners('request');
+
     await page.setRequestInterception(false);
 
     let doneSelect = await selectElements(queueType, resortID, suiteType, page, pageForAddress);
