@@ -51,19 +51,19 @@ async function processQueue() {
     return;
   }
 
-  if (oneTimeTaskQueue.length > 0 && isOneTimeProcessing === false && oneTimeLoggedIn !== false) {
+  if (oneTimeTaskQueue.length > 0 && isOneTimeProcessing === false && (oneTimeLoggedIn !== false && oneTimeLoggedIn !== "test")) {
     console.log("One time task found..");
     isOneTimeProcessing = true;
     processTask(oneTimeTaskQueue, oneTimeLoggedIn, "ONE TIME");
   }
 
-  if (schedTierOneTaskQueue.length > 0 && isOneTierProcessing === false && oneTierLoggedIn !== false) {
+  if (schedTierOneTaskQueue.length > 0 && isOneTierProcessing === false && (oneTierLoggedIn !== false && oneTierLoggedIn !== "test")) {
     console.log("One tier task found..");
     isOneTierProcessing = true;
     processTask(schedTierOneTaskQueue, oneTierLoggedIn, "TIER 1");
   }
 
-  if (schedTierTwoThreeTaskQueue.length > 0 && isTwoTierProcessing === false && twoThreeTierLoggedIn !== false) {
+  if (schedTierTwoThreeTaskQueue.length > 0 && isTwoTierProcessing === false && (twoThreeTierLoggedIn !== false && twoThreeTierLoggedIn !== "test")) {
     console.log("Two/three tier task found..");
     isTwoTierProcessing = true;
     processTask(schedTierTwoThreeTaskQueue, twoThreeTierLoggedIn, "TIER 2");

@@ -10,6 +10,8 @@ const eventEmitter = new EventEmitter();
 
 async function scheduledUpdates(tierType) {
 
+    eventEmitter.emit('modalStateChanged', { displayModal:false, execID:"123" });
+
     const order = [
         [sequelize.col("resortID"), 'DESC'], 
         [sequelize.col("unitType"), 'DESC'], 
