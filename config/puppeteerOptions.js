@@ -65,7 +65,7 @@ async function initializeBrowser(customProfileRelPath) {
     newBrowser = await puppeteer.launch({
       args: [
         "--disable-setuid-sandbox",
-        "--disable-web-security",
+        // "--disable-web-security",
         "--no-sandbox",
         "--no-zygote",
       ],

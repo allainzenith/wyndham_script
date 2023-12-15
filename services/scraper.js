@@ -743,13 +743,13 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
     // Check if the response URL meets a certain condition
     if (
       interceptedResponse.status() !== 302 && interceptedResponse.status() === 200 &&
-      interceptedResponse.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability') 
+      interceptedResponse.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability') &&
+      interceptedResponse.request().postData().includes(resortID) && interceptedResponse.request().postData().includes(suiteType)
     ) {
       const responseText = await interceptedResponse.text();
-      const request = await interceptedResponse.request().postData();
   
-      firstFound = responseText.includes(`${currentYear}-${currentMonth}-${initialDate}`) && (request.includes(resortID) && request.includes(suiteType));
-      secondFound = responseText.includes(`${currentYear}-${currentMonth}-28`) && (request.includes(resortID) && request.includes(suiteType));
+      firstFound = responseText.includes(`${currentYear}-${currentMonth}-${initialDate}`);
+      secondFound = responseText.includes(`${currentYear}-${currentMonth}-28`);
   
       if(firstFound || secondFound) {
         responses.push(responseText);
