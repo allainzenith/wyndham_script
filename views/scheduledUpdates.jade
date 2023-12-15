@@ -2,6 +2,37 @@ extends layout
 include layout
 
 block content
+  form(action='/sendOTP', method='post', id='otp')
+    .w3-modal#myModal
+      .w3-modal-content(style="width: 30%") 
+        header.w3-container.w3-sand
+          span.w3-button.w3-display-topright#closeModal &times;
+          h2 OTP verification
+        .w3-container
+          //- Opening message
+          p Please go to the Business Inbox and wait patiently for the OTP sent by Wyndham.
+          p Enter the OTP to verify your device.
+          p After a minute, the OTP in Wyndham expires. If a minute already passed, the "Retry" button will be enabled.
+          
+          //- Retry Responses
+          p(id='retry_attempt', style='display:none;color:green') Please wait for a moment while we retry verification...
+          p(id='retry_success', style='display:none;color:green') Retried successfully! Please wait for the code sent.
+          p(id='retry_fail', style='display:none;color:green') Device already verified.
+          p(id='retry_error', style='display:none;color:red') Please wait for a while before retrying.
+
+          //- Send Responses
+          p(id='wait_message', style='display:none;color:green') Please wait for a moment while we verify your device...
+          p(id='success_message', style='display:none;color:green') Device verified successfully! You can now close this dialog.
+          p(id='fail_message', style='display:none;color:red') Wrong OTP! Please retry.
+          p(id='error_message', style='display:none;color:red') An error happened while processing the request. Please retry.
+          p(id='already_verified', style='display:none;color:green') Device already verified.
+          p(id='empty_message', style='display:none;color:red') Cannot be empty. Please try again.
+          input.w3-input.w3-padding-small(type="text", id='OTP', name='OTP', placeholder="Enter OTP", value="")         
+        footer.w3-container.w3-padding-large
+            input(type='hidden', id='submitButtonUsed', name='submitButtonUsed', value='')
+            input(id='retry', type='submit', value='Retry', class='w3-btn w3-round w3-dark-gray w3-left', disabled)
+            input(id='send', type='submit', value='Send', class='w3-btn w3-round w3-green w3-right')
+
   .w3-row-padding.w3-padding-32
     input.w3-input(type='text', placeholder='Search', id='searchString', name='searchString', style='display: none;')
     .w3-padding-16
@@ -22,9 +53,193 @@ block content
 
       script(src='/javascripts/showRecords.js')
       script.
-        var limit = 10, offset = 0, search='';
-        var records = !{JSON.stringify(records)};
+        let limit = 10, offset = 0, search='';
+        let records = !{JSON.stringify(records)};
         let endpoint = `/sse/scheduledUpdates`;
         let eventSource = new EventSource(`/sse/scheduledUpdates?limit=${limit}&offset=${offset}&search=${search}`);
+
+        let execID, enableInitial = true;
+
         showRecords(eventSource, "events");
-        updatePagination(eventSource, limit, offset, "events", 1, records, endpoint, search)
+        updatePagination(eventSource, limit, offset, "events", 1, records, endpoint, search);
+
+        //for modal buttons
+        document.addEventListener('DOMContentLoaded', function() {
+          let modal = document.getElementById('myModal');
+          let closeModalButton = document.getElementById('closeModal');
+
+          const eventSource = new EventSource('/sse/scheduledUpdatesModal');
+
+          eventSource.onmessage = function(event) {
+              const eventData = JSON.parse(event.data);
+              execID = eventData.execID;
+
+              console.log(eventData.displayModal);
+
+              if (eventData.displayModal) {
+                  modal.style.display = 'block';
+              } else {
+                  console.log('Modal should not be displayed.');
+              }
+          };
+
+          closeModalButton.onclick = function() {
+            modal.style.display = 'none';
+            document.getElementById('retry_success').style.display = 'none';
+            document.getElementById('retry_fail').style.display = 'none';
+            document.getElementById('retry_error').style.display = 'none';
+            document.getElementById('retry_attempt').style.display = 'none';
+
+            document.getElementById('wait_message').style.display = 'none';
+            document.getElementById('success_message').style.display = 'none';
+            document.getElementById('fail_message').style.display = 'none';
+            document.getElementById('error_message').style.display = 'none';
+            document.getElementById('empty_message').style.display = 'none';
+
+            document.getElementById('retry').disabled = true;
+
+          }; 
+
+        });
+
+
+
+        document.getElementById('retry').addEventListener('click', function() {
+          document.getElementById('submitButtonUsed').value = 'retry';
+        });
+
+        document.getElementById('send').addEventListener('click', function() {
+          document.getElementById('submitButtonUsed').value = 'send';
+        });
+
+        //for sending OTP
+        const formOTP = document.getElementById('otp');
+        formOTP.addEventListener('submit', function (e) {
+            e.preventDefault(); 
+
+            const submitButtonUsed = document.getElementById('submitButtonUsed').value;
+
+            if(submitButtonUsed === 'retry') {
+
+              document.getElementById('retry_success').style.display = 'none';
+              document.getElementById('retry_fail').style.display = 'none';
+              document.getElementById('retry_error').style.display = 'none';
+              document.getElementById('retry_attempt').style.display = 'block';
+
+              document.getElementById('success_message').style.display = 'none';
+              document.getElementById('fail_message').style.display = 'none';
+              document.getElementById('error_message').style.display = 'none';
+              document.getElementById('empty_message').style.display = 'none';
+              document.getElementById('already_verified').style.display = 'none';
+
+              document.getElementById('retry').disabled = true;
+              document.getElementById('send').disabled = true;
+
+              fetch('/resendOTP', { 
+                method: 'POST',
+                body: JSON.stringify(
+                { 
+                  execID: execID !== undefined ? execID : retryExecID 
+                }),
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                
+              })
+              .then(response => response.json())
+              .then(data => {
+                // Update client-side state with the verification value
+                const needsVerify = data.needsVerify;
+
+                document.getElementById('retry_attempt').style.display = 'none';
+                // Perform additional actions based on the verification value
+                if (needsVerify) {
+                  document.getElementById('retry_success').style.display = 'block';
+                } else if (needsVerify === null) {
+                  document.getElementById('retry_error').style.display = 'block';
+                } else {
+                  document.getElementById('retry_fail').style.display = 'block';
+                }
+
+                setTimeout(() => {
+                  document.getElementById('retry').disabled = false;
+                }, 60000); 
+
+                document.getElementById('send').disabled = false;
+
+              })
+              .catch(error => {
+                console.error('Error triggering login:', error);
+              });
+            }
+
+            else {
+              let OTP = document.getElementById('OTP').value;
+              document.getElementById('OTP').value = "";
+
+              document.getElementById('retry_attempt').style.display = 'none';
+              document.getElementById('retry_success').style.display = 'none';
+              document.getElementById('retry_fail').style.display = 'none';
+              document.getElementById('retry_error').style.display = 'none';
+
+              document.getElementById('success_message').style.display = 'none';
+              document.getElementById('fail_message').style.display = 'none';
+              document.getElementById('error_message').style.display = 'none';
+              document.getElementById('empty_message').style.display = 'none';
+              document.getElementById('already_verified').style.display = 'none';
+
+              document.getElementById('send').disabled = true;
+              document.getElementById('retry').disabled = true;
+
+              let waitMessage = document.getElementById('wait_message');
+              waitMessage.style.display = 'block';
+
+              fetch('/sendOTP', { 
+                method: 'POST',
+                body: JSON.stringify(
+                  { 
+                    OTP: OTP, 
+                    execID: execID !== undefined ? execID : retryExecID 
+                  }),
+                headers: {
+                  'Content-Type': 'application/json'
+                }
+              })
+              .then(response => response.json())
+              .then(data => {
+                // Update client-side state with the verification value
+                const loggedIn = data.loggedIn;
+                const message = data.message;
+
+
+                waitMessage.style.display = 'none';
+
+                // Perform additional actions based on the verification value
+                if (loggedIn) {
+                  document.getElementById('success_message').style.display = 'block';
+                } else if(loggedIn === null) {
+                  document.getElementById('error_message').style.display = 'block';
+                } else {
+                  if (message === "empty") {
+                    document.getElementById('empty_message').style.display = 'block';
+              
+                  } else if (message === "already verified") {
+                    document.getElementById('already_verified').style.display = 'block';
+                  } else {
+                    document.getElementById('fail_message').style.display = 'block';     
+
+                  }
+                }
+
+                document.getElementById('send').disabled = false;  
+
+                setTimeout(() => {
+                  document.getElementById('retry').disabled = false;
+                }, 40000); 
+
+              })
+              .catch(error => {
+                console.error('Error triggering login:', error);
+              });
+            }
+        });

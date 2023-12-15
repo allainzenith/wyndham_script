@@ -55,7 +55,7 @@ html(lang='en')
       if(id !== "resorts" && id !== "events"){
         selectItemformAccordion(id);
       } else {
-        var parItem = document.getElementById(id);
+        let parItem = document.getElementById(id);
 
         //becomes true if item is not highlighted as green
         if (parItem.className.indexOf("w3-green") == -1) {
@@ -71,7 +71,7 @@ html(lang='en')
     }
 
     function selectItemformAccordion(id){  
-      var item = document.getElementById("updateItems");
+      let item = document.getElementById("updateItems");
       if (item.className.indexOf("w3-show") == -1) {
         item.className += " w3-show";
         //set the parent item's color to green
@@ -81,15 +81,15 @@ html(lang='en')
         item.previousElementSibling.className = item.previousElementSibling.className.replace(" w3-green", "");
       }
 
-      var accordionItems = item.querySelectorAll(".w3-button");
+      let accordionItems = item.querySelectorAll(".w3-button");
 
-      for (var i = 0; i < accordionItems.length; i++) {
+      for (let i = 0; i < accordionItems.length; i++) {
         accordionItem = accordionItems[i];
         accordionItem.className = accordionItem.className.replace(" w3-sand", "");
 
       }
 
-      var selectedAccordionItem = document.getElementById(id);
+      let selectedAccordionItem = document.getElementById(id);
       selectedAccordionItem.className += " w3-sand"
     }
 

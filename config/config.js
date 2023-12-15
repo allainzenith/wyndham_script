@@ -41,7 +41,7 @@ MAP_API_KEY = "pk.bf6f09004152aac4733ac98034c6c838";
 async function returnAValidToken(clientID, clientSecret){
     let token;
     // Get the current date and time
-    var currentDate = new Date();
+    let currentDate = new Date();
 
     try {
 
@@ -75,7 +75,7 @@ async function returnAValidToken(clientID, clientSecret){
                     console.log(response.data)
                     const responseData = response.data;
                     token = responseData.access_token
-                    var futureDateTime = new Date(currentDate.getTime() + (23 * 60 * 60 * 1000));
+                    let futureDateTime = new Date(currentDate.getTime() + (23 * 60 * 60 * 1000));
                     
                     //write json object in an existing json file
                     tokenSpecs = {

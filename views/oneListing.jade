@@ -74,19 +74,20 @@ block content
       script.
 
         //for showing records
-        var limit = 10, offset = 0, search = '';
-        var records = !{JSON.stringify(records)};
+        let limit = 10, offset = 0, search = '';
+        let records = !{JSON.stringify(records)};
         let endpoint = `/sse/oneListing`;
         let eventSource = new EventSource(`/sse/oneListing?limit=${limit}&offset=${offset}&search=${search}`);
 
         let resortRefNum, eventCreated, execID, resort_id, suite_type, months, enableInitial = true;
+
         showRecords(eventSource, "events");
         updatePagination(eventSource, limit, offset, "events", 1, records, endpoint, search)
 
         //for modal buttons
-        var modal = document.getElementById('myModal');
+        let modal = document.getElementById('myModal');
         document.addEventListener('DOMContentLoaded', function() {
-          var closeModalButton = document.getElementById('closeModal');
+          let closeModalButton = document.getElementById('closeModal');
 
           closeModalButton.onclick = function() {
             modal.style.display = 'none';
@@ -187,7 +188,7 @@ block content
                 method: 'POST',
                 body: JSON.stringify(
                 { 
-                  execID: execID 
+                  execID: execID === undefined ? retryExecID : execID  
                 }),
                 headers: {
                   'Content-Type': 'application/json'
@@ -222,7 +223,7 @@ block content
             }
 
             else {
-              var OTP = document.getElementById('OTP').value;
+              let OTP = document.getElementById('OTP').value;
               document.getElementById('OTP').value = "";
 
               document.getElementById('retry_attempt').style.display = 'none';
@@ -247,7 +248,7 @@ block content
                 body: JSON.stringify(
                   { 
                     OTP: OTP, 
-                    execID: execID 
+                    execID: execID === undefined ? retryExecID : execID 
                   }),
                 headers: {
                   'Content-Type': 'application/json'
@@ -265,23 +266,22 @@ block content
                 // Perform additional actions based on the verification value
                 if (loggedIn) {
                   document.getElementById('success_message').style.display = 'block';
-                  document.getElementById('send').disabled = false;
                 } else if(loggedIn === null) {
                   document.getElementById('error_message').style.display = 'block';
                 } else {
                   if (message === "empty") {
                     document.getElementById('empty_message').style.display = 'block';
-                    document.getElementById('send').disabled = false;
               
                   } else if (message === "already verified") {
                     document.getElementById('already_verified').style.display = 'block';
-                    document.getElementById('send').disabled = false;
 
                   } else {
                     document.getElementById('fail_message').style.display = 'block';
 
                   }
                 }
+
+                document.getElementById('send').disabled = false; 
 
                 setTimeout(() => {
                   document.getElementById('retry').disabled = false;

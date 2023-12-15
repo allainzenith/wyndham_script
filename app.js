@@ -34,7 +34,10 @@ app.use(async (req, res, next) => {
 
   if (updateOnce) {
     updateOnce = false;
-    await scheduledUpdates("TIER 3");
+    // await scheduledUpdates("TIER 3");
+    // await new Promise(resolve => setTimeout(resolve, 120000));
+    // console.log("HALA SHARK");
+    // await scheduledUpdates("TIER 3");
   }
   next();
 });
@@ -58,7 +61,7 @@ app.use(function (err, req, res, next) {
 });
 
 // Schedule the update every 6 hours, 24 hours, and 1 week
-// schedule.scheduleJob('*/30 * * * * *', async () => {
+// schedule.scheduleJob('0 */8 * * * *', async () => {
 //   console.log("Tier 1 schedule function is called");
 //   await scheduledUpdates("TIER 3");
 // });

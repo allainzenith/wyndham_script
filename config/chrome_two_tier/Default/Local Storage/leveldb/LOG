@@ -1,5 +1,14 @@
-2023/12/04-17:01:57.009 2e90 Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_two_tier\Default\Local Storage\leveldb/MANIFEST-000001
-2023/12/04-17:01:57.012 2e90 Recovering log #4
-2023/12/04-17:01:57.017 2e90 Level-0 table #7: started
-2023/12/04-17:02:00.365 2e90 Level-0 table #7: 166174 bytes OK
-2023/12/04-17:02:00.616 2e90 Delete type=0 #4
+2023/12/14-13:39:38.742 36ec Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_two_tier\Default\Local Storage\leveldb/MANIFEST-000001
+2023/12/14-13:39:38.750 36ec Recovering log #171
+2023/12/14-13:39:38.752 36ec Level-0 table #173: started
+2023/12/14-13:39:38.924 36ec Level-0 table #173: 103636 bytes OK
+2023/12/14-13:39:38.945 36ec Delete type=0 #171
+2023/12/14-13:39:38.945 1f04 Compacting 4@0 + 1@1 files
+2023/12/14-13:39:38.978 1f04 Generated table #175@0: 61 keys, 104386 bytes
+2023/12/14-13:39:38.978 1f04 Compacted 4@0 + 1@1 files => 104386 bytes
+2023/12/14-13:39:39.018 1f04 compacted to: files[ 0 1 1 0 0 0 0 ]
+2023/12/14-13:39:39.019 1f04 Delete type=2 #162
+2023/12/14-13:39:39.019 1f04 Delete type=2 #164
+2023/12/14-13:39:39.037 1f04 Delete type=2 #167
+2023/12/14-13:39:39.037 1f04 Delete type=2 #170
+2023/12/14-13:39:39.037 1f04 Delete type=2 #173

@@ -31,8 +31,8 @@ block content
 
             script(src='/javascripts/showRecords.js')
             script.
-                var limit = 10, offset = 0, search = '';
-                var records = !{JSON.stringify(records)};
+                let limit = 10, offset = 0, search = '';
+                let records = !{JSON.stringify(records)};
                 let endpoint = `/sse/resorts`;
                 let eventSource = new EventSource(`/sse/resorts?limit=${limit}&offset=${offset}&search=${search}`); 
 

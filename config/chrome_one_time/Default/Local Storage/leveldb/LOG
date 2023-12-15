@@ -1,3 +1,5 @@
-2023/12/04-17:03:26.035 3644 Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_one_time\Default\Local Storage\leveldb/MANIFEST-000001
-2023/12/04-17:03:26.037 3644 Recovering log #3
-2023/12/04-17:03:26.043 3644 Reusing old log C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_one_time\Default\Local Storage\leveldb/000003.log 
+2023/12/14-16:45:37.756 34f4 Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_one_time\Default\Local Storage\leveldb/MANIFEST-000001
+2023/12/14-16:45:37.757 34f4 Recovering log #181
+2023/12/14-16:45:37.764 34f4 Level-0 table #183: started
+2023/12/14-16:45:37.869 34f4 Level-0 table #183: 184711 bytes OK
+2023/12/14-16:45:37.909 34f4 Delete type=0 #181

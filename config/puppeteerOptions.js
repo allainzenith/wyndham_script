@@ -8,20 +8,19 @@ const scriptDir = __dirname;
 
 
 let sharedData = {
-    oneTimeBrowser: null,
-    oneTimePage: null,
-    oneTimeAddressPage: null,
+  oneTimeBrowser: null,
+  oneTimePage: null,
+  oneTimeAddressPage: null,
 
-    tierOneBrowser: null,
-    tierOnePage: null,
-    tierOneAddressPage: null,
+  tierOneBrowser: null,
+  tierOnePage: null,
+  tierOneAddressPage: null,
 
-    tierTwoThreeBrowser: null,
-    tierTwoThreePage: null,
-    tierTwoThreeAddressPage: null,
+  tierTwoThreeBrowser: null,
+  tierTwoThreePage: null,
+  tierTwoThreeAddressPage: null,
 
   };
-
 
 // Make the module an async module
 async function oneTimeTaskPuppeteer() {
@@ -66,6 +65,7 @@ async function initializeBrowser(customProfileRelPath) {
     newBrowser = await puppeteer.launch({
       args: [
         "--disable-setuid-sandbox",
+        "--disable-web-security",
         "--no-sandbox",
         "--no-zygote",
       ],

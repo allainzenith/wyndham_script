@@ -3,6 +3,10 @@ const { addToQueue, resourceIntensiveTask } = require('./queueProcessor');
 const { saveRecord, bulkSaveRecord } = require('../sequelizer/controller/controller');
 const { updateEventStatus } = require('./scrapeAndUpdate');
 const { sequelize } = require("../config/config");
+const { EventEmitter } = require('events');
+
+const eventEmitter = new EventEmitter();
+
 
 async function scheduledUpdates(tierType) {
 
@@ -74,11 +78,17 @@ async function scheduledUpdates(tierType) {
                 } else if (loggedIn === null) {
                     updateEventStatus(eventCreated, "LOGIN_ERROR");
                 }
+
+                let displayModal =  !loggedIn ;
+                let execID = eventCreated.execID;
+            
+                eventEmitter.emit('modalStateChanged', { displayModal, execID });
     
                 })
             .catch(error => {
             console.error('Scheduled updates error:', error);
             });
+
         }
 
     }
@@ -86,5 +96,6 @@ async function scheduledUpdates(tierType) {
 }
 
 module.exports = {
-    scheduledUpdates
+    scheduledUpdates,
+    eventEmitter
 }

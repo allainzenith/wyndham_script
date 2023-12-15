@@ -1,9 +1,5 @@
-2023/12/04-16:59:57.140 2fa0 Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_two_tier\Default\Session Storage/MANIFEST-000001
-2023/12/04-16:59:57.141 2fa0 Recovering log #6
-2023/12/04-16:59:57.148 2fa0 Reusing old log C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_two_tier\Default\Session Storage/000006.log 
-2023/12/04-17:00:06.477 3644 Level-0 table #10: started
-2023/12/04-17:00:06.549 3644 Level-0 table #10: 557357 bytes OK
-2023/12/04-17:00:06.592 3644 Delete type=0 #6
-2023/12/04-17:00:06.963 2fa0 Level-0 table #12: started
-2023/12/04-17:00:07.060 2fa0 Level-0 table #12: 851694 bytes OK
-2023/12/04-17:00:07.109 2fa0 Delete type=0 #9
+2023/12/14-13:39:26.803 33d0 Reusing MANIFEST C:\Users\unnamed89201\Desktop\Allain Documents\OTHERS\mittenhousing-new\config\chrome_two_tier\Default\Session Storage/MANIFEST-000001
+2023/12/14-13:39:26.805 33d0 Recovering log #706
+2023/12/14-13:39:26.806 33d0 Level-0 table #708: started
+2023/12/14-13:39:26.976 33d0 Level-0 table #708: 97610 bytes OK
+2023/12/14-13:39:27.011 33d0 Delete type=0 #706
