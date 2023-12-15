@@ -742,7 +742,8 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
   const responseListener = async interceptedResponse => {
     // Check if the response URL meets a certain condition
     if (
-      interceptedResponse.status() !== 302 && interceptedResponse.status() === 200 &&
+      interceptedResponse.request().method().toUpperCase() != "OPTIONS" &&
+      interceptedResponse.status() === 200 &&
       interceptedResponse.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability') &&
       interceptedResponse.request().postData().includes(resortID) && interceptedResponse.request().postData().includes(suiteType)
     ) {
