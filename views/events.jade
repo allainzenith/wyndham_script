@@ -22,8 +22,8 @@ block content
 
       script(src='/javascripts/showRecords.js')
       script.
-        var limit = 10, offset = 0, search='';
-        var records = !{JSON.stringify(records)};
+        let limit = 10, offset = 0, search='';
+        let records = !{JSON.stringify(records)};
         let endpoint = `/sse/events`;
         let eventSource = new EventSource(`/sse/events?limit=${limit}&offset=${offset}&search=${search}`);
         showRecords(eventSource, "events");

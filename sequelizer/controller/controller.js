@@ -149,7 +149,7 @@ async function findAllRecords(objectType, order) {
 async function findLikeRecords(search, objectType, order, limit, offset) {
   try {
     const typeofObject = objectType == "execution" ? execution : resorts;
-    var records = await typeofObject.findAll({
+    let records = await typeofObject.findAll({
       where: {
         [Op.or]: [
           { resortID: { [Op.substring]: search } },
@@ -173,7 +173,7 @@ async function findLikeRecords(search, objectType, order, limit, offset) {
 async function findRecords(condJson, objectType, order, limit, offset) {
   try {
     const typeofObject = objectType == "execution" ? execution : resorts;
-    var records = await typeofObject.findAll({
+    let records = await typeofObject.findAll({
       where: condJson,
       order: order,
       limit: limit,
@@ -204,7 +204,7 @@ async function joinTwoTables(fModel, sModel, condJson, order, limit, offset) {
     const firstModel = fModel == "execution" ? execution : resorts;
     const secondModel = sModel == "execution" ? execution : resorts;
 
-    var records = await firstModel.findAll({
+    let records = await firstModel.findAll({
       where: condJson,
       include: [
         {

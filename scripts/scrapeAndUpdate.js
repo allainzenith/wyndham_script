@@ -1,19 +1,19 @@
 
 
-var { executeScraper } = require('../services/scraper')
-var { executeUpdates } = require('../services/guestyUpdates')
-var { saveRecord, updateRecord, findRecords } = require('../sequelizer/controller/controller')
+const { executeScraper } = require('../services/scraper')
+const { executeUpdates } = require('../services/guestyUpdates')
+const { saveRecord, updateRecord, findRecords } = require('../sequelizer/controller/controller')
 const { sequelize } = require("../config/config");
 
 // async function executeScript(token, resortID, suiteType, months, resortFoundorCreated, eventCreated){
-async function executeScript(resortID, suiteType, months, resortFoundorCreated, eventCreated){
+async function executeScript(queueType, resortID, suiteType, months, resortFoundorCreated, eventCreated, browser, page, pageForAddress){
 
-    var resortJSON = await resortFoundorCreated.toJSON()
-    var resortJSONlistingID = await resortJSON.listingID;
-    var resortHasNoRecord = (resortJSONlistingID === undefined || resortJSONlistingID === null);
+    // var resortJSON = await resortFoundorCreated.toJSON()
+    let resortJSONlistingID = await resortFoundorCreated.listingID;
+    let resortHasNoRecord = (resortJSONlistingID === undefined || resortJSONlistingID === null);
 
     const scraped = eventCreated !== null ? await executeScraper(
-        resortID, suiteType, months, resortHasNoRecord) : null;
+        queueType, resortID, suiteType, months, resortHasNoRecord, browser, page, pageForAddress) : null;
 
     let success;
     if ( scraped !== null) {

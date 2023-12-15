@@ -1,48 +1,92 @@
-const { workerData, ParentPort } = require("worker_threads");
-const { scheduledUpdates } =  require("./scheduledUpdates");
+const { workerData, parentPort } = require("worker_threads");
+const { executeScript } = require("./scrapeAndUpdate");
+const { launchPuppeteer } = require("../services/scraper");
+const { sharedData } = require("../config/puppeteerOptions");
 
+// Create the browser and page instances
+let browser, page, pageForAddress;
 
-async function task1() {
-  const browser = await puppeteer.launch();
-  // Your Puppeteer code for task 1 here
-  console.log('Executing Task 1');
-  await browser.close();
+async function scheduled() {
+  // try {
+  //   const queueType = workerData.queueType;
+  //   const resortID = workerData.resortID;
+  //   const suiteType = workerData.suiteType;
+  //   const months = workerData.months;
+  //   const resort = workerData.resort;
+  //   const eventCreated = workerData.eventCreated;
+
+  //   if (browser !== undefined && page !== undefined && pageForAddress !== undefined) {
+  //     let executedScript = await executeScript(
+  //       queueType,
+  //       resortID,
+  //       suiteType,
+  //       months,
+  //       resort,
+  //       eventCreated,
+  //       browser,
+  //       page,
+  //       pageForAddress
+  //     );
+
+  //     parentPort.postMessage({ result: executedScript });
+  //   } else {
+  //     console.log('UNDEFINED GIHAPON');
+  //   }
+
+  // } catch (error) {
+  //   console.log(error);
+  // }
+
+  // const queueType = workerData.queueType;
+  // const queueLength = workerData.queueLength;
+
+  
+
+  // if (browser === undefined || page === undefined || pageForAddress === undefined) {
+  //   console.log("launching because browser and pages are undefined")
+  //   await launchPuppeteer(queueType);
+  // } else {
+  //   console.log("Browser and pages already defined for this task type.")
+  //   browser = sharedData.oneTimeBrowser;
+  //   page = sharedData.oneTimePage;
+  //   pageForAddress = sharedData.oneTimeAddressPage;
+  // }
+
+  // switch(queueType) {
+  //   case "ONE TIME":
+
+  //     console.log(browser);
+  //     console.log(page);
+  //     console.log(pageForAddress);
+
+  //     if (queueLength === 0) {
+  //       await browser.close();
+  //     }
+
+  //     break;
+  //   case "TIER 1":
+  //     browser = sharedData.tierOneBrowser;
+  //     page = sharedData.tierOnePage;
+  //     pageForAddress = sharedData.tierOneAddressPage;
+  //     break;
+  //   case "TIER 2":
+  //   case "TIER 3":
+  //     browser = sharedData.tierTwoThreeBrowser;
+  //     page = sharedData.tierTwoThreePage; 
+  //     pageForAddress = sharedData.tierTwoThreeAddressPage;
+  //     break;
+  //   default:
+  //     console.error(`Unknown task type for launching puppeteer: ${taskType}`);
+  // }
+
+  parentPort.postMessage({ result: true });
 }
 
-async function task2() {
-  const browser = await puppeteer.launch();
-  // Your Puppeteer code for task 2 here
-  console.log('Executing Task 2');
-  await browser.close();
+// Invoke scheduled function only if it's not being required as a module
+if (require.main === module) {
+  scheduled();
 }
 
-async function task3() {
-  const browser = await puppeteer.launch();
-  // Your Puppeteer code for task 3 here
-  console.log('Executing Task 3');
-  await browser.close();
-}
 
-// Listen for messages from the main thread
-process.on('message', async message => {
-  const { taskType } = message;
 
-  // Call the appropriate function based on the task type
-  switch (taskType) {
-    case 'TIER 1':
-      await task1();
-      break;
-    case 'TIER 2':
-      await task2();
-      break;
-    case 'TIER 3':
-      await task3();
-      break;
-    default:
-      console.error(`Unknown task type: ${taskType}`);
-  }
-
-  // Send a message back to the main thread (optional)
-  process.send({ result: `Task completed for ${taskType}` });
-});
 

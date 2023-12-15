@@ -8,15 +8,10 @@ const { addToQueue, resourceIntensiveTask, processVerification } = require('../s
 const { findOrCreateAResort, createAnEvent, updateEventStatus } = require('../scripts/scrapeAndUpdate');
 const { resendSmsCode } = require('../services/scraper')
 const { v5: uuidv5 } = require('uuid');
+const { eventEmitter } = require('../scripts/scheduledUpdates');
+
 
 let isVerified = false;
-const THREAD_COUNT = 2;
-
-function createWorker() {
-  return new Promise((resolve, reject) => {
-
-  });
-}
 
 router.get('/', async(req, res, next) => {
   const amount = await countRecords("execution", {execType:"ONE_RESORT"});
@@ -34,7 +29,7 @@ router.get('/allListings', function(req, res, next) {
 
 router.get('/scheduledUpdates', async(req, res, next) => {
   const amount = await countRecords("execution", {execType:"SCHEDULED"});
-  res.render('scheduledUpdates', {records:amount});
+  res.render('scheduledUpdates', { records:amount });
 });
 
 router.get('/resorts', async(req, res, next) => {
@@ -61,7 +56,18 @@ router.get('/duplicateListingLinks', (req, res) => {
 router.post('/sendOTP', async(req, res, next) => {
   let verOTP = req.body.OTP;
   let execID = req.body.execID;
-  let event = await findByPk(execID, "execution");
+
+  console.log(verOTP);
+  console.log(execID);
+
+  const eventCond = {
+    execID: execID
+  }
+
+  let record = await joinTwoTables("execution", "resorts", eventCond, [], null, null);
+  let queueType = record[0].execType === "ONE_RESORT" ? "ONE TIME" : record[0].resort.notes === "TIER 1" ? "TIER 1" : "TIER 2";
+
+  let eventFound = await findByPk(execID, "execution");
 
   if (isVerified === false) {
     if (verOTP === "") {
@@ -72,8 +78,9 @@ router.post('/sendOTP', async(req, res, next) => {
     else {
       try {
         // Trigger the login process asynchronously
-        processVerification(verOTP)
+        processVerification(verOTP, queueType)
           .then(loggedIn => {
+            let event = eventFound
 
             isVerified = loggedIn;  
             const message = "successOrFail";
@@ -108,14 +115,22 @@ router.post('/sendOTP', async(req, res, next) => {
     res.json({ verified, message });
   }
 
-
 });
 
 router.post('/resendOTP', async(req, res, next) => {
   if (isVerified === false) {
     try {
       // Trigger the login process asynchronously
-      resendSmsCode()
+      let execID = req.body.execID;
+
+      const eventCond = {
+        execID: execID
+      }
+    
+      let record = await joinTwoTables("execution", "resorts", eventCond, [], null, null);
+      let queueType = record[0].execType === "ONE_RESORT" ? "ONE TIME" : record[0].resort.notes === "TIER 1" ? "TIER 1" : "TIER 2";
+
+      resendSmsCode(queueType)
         .then(needsVerify => {  
           let eventCreated = findByPk(req.body.execID, "execution");
           res.json({ needsVerify });
@@ -140,36 +155,34 @@ router.post('/resendOTP', async(req, res, next) => {
 });
 
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // Endpoints for forms
 ///////////////////////////////////////////////////////////////////////////////
 router.post('/one', async(req, res, next) => {
 
-  var resortID = (req.body.resort_id).trim();
-  var suiteType = (req.body.suite_type).trim();
-  var months = (req.body.months).trim() > 12 ? 12 : (req.body.months).trim();
+  let resortID = (req.body.resort_id).trim();
+  let suiteType = (req.body.suite_type).trim();
+  let months = (req.body.months).trim() > 12 ? 12 : (req.body.months).trim();
 
   let resort = await findOrCreateAResort(resortID, suiteType); 
   let eventCreated = ( resort !== null) ? await createAnEvent(resort.resortRefNum, months) : null;
   
   if (eventCreated !== null){
     try {
-      let execID = eventCreated.execID;
 
       // Trigger the login process asynchronously
       addToQueue(resourceIntensiveTask, () => {
         console.log('Task completed');
-      }, resortID, suiteType, months, resort, eventCreated)
+      }, "ONE TIME", resortID, suiteType, months, resort, eventCreated)
         .then(loggedIn => {
-          let event = findByPk(execID, "execution");
+          let execID = eventCreated.execID;
 
           isVerified = loggedIn;
           
           if (loggedIn === "MAINTENANCE") {
-            updateEventStatus(event, "MAINTENANCE");
+            updateEventStatus(eventCreated, "MAINTENANCE");
           } else if (loggedIn === null) {
-            updateEventStatus(event, "LOGIN_ERROR");
+            updateEventStatus(eventCreated, "LOGIN_ERROR");
           }
 
           res.json({ loggedIn, execID });
@@ -215,27 +228,34 @@ router.post('/tier/update', async(req, res, next) => {
 
 router.get('/retry', async(req, res, next) => {
 
-  var resortID = (req.query.resort_id).trim();
-  var suiteType = (req.query.suite_type).trim();
-  var months = (req.query.months).trim() > 12 ? 12 : (req.query.months).trim();
+  let resortID = (req.query.resort_id).trim();
+  let suiteType = (req.query.suite_type).trim();
+  let months = (req.query.months).trim() > 12 ? 12 : (req.query.months).trim();
+
+  let execID = (req.query.execID).trim();
   
   let resort = await findOrCreateAResort(resortID, suiteType); 
-  let eventCreated = await findByPk((req.query.execID).trim(), "execution");
+  let eventCreated = await findByPk(execID, "execution");
+
+  const eventCond = {
+    execID: execID
+  }
+
+  let record = await joinTwoTables("execution", "resorts", eventCond, [], null, null);
+  let queueType = record[0].execType === "ONE_RESORT" ? "ONE TIME" : record[0].resort.notes === "TIER 1" ? "TIER 1" : "TIER 2";
+
 
   await updateEventStatus(eventCreated, "SCRAPING");
   
   if (eventCreated !== null){
     try {
-      let execID = eventCreated.execID;
       // Trigger the login process asynchronously
       addToQueue(resourceIntensiveTask, () => {
         console.log('Task completed');
-      }, resortID, suiteType, months, resort, eventCreated)
+      }, queueType, resortID, suiteType, months, resort, eventCreated)
         .then(loggedIn => {
 
           isVerified = loggedIn;
-
-          eventCreated = findByPk((req.query.execID).trim(), "execution");
           
           if (loggedIn === "MAINTENANCE") {
             updateEventStatus(eventCreated, "MAINTENANCE");
@@ -292,7 +312,6 @@ const mapExecutionData = async(data) => {
   }
 }
 
-let createHook, updateHook, bulkHook;
 const clients = [];
 const namespace = '1b671a64-40d5-491e-99b0-da01ff1f3341';
 const updateExecutionRecords = async (req, res, firstModel, secondModel, eventCond, order) => {
@@ -376,6 +395,24 @@ router.get('/sse/scheduledUpdates', async(req, res) => {
 
 });
 
+// SSE Endpoint for displaying modal
+
+router.get('/sse/scheduledUpdatesModal', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  const onModalStateChanged = (data) => {
+      res.write(`data: ${JSON.stringify(data)}\n\n`);
+  };
+
+  eventEmitter.on('modalStateChanged', onModalStateChanged);
+
+  req.on('close', () => {
+      eventEmitter.removeListener('modalStateChanged', onModalStateChanged);
+  });
+});
+
 router.get('/sse/events', async(req, res) => {
 
   let search = req.query.search;
@@ -451,7 +488,7 @@ router.get('/sse/resorts', async(req, res) => {
 });
 
 
-  module.exports = router;
+  module.exports = router ;
 
 
 

@@ -1,8 +1,12 @@
 const { findRecords } = require('../sequelizer/controller/controller');
-const { addToScheduledQueue, resourceIntensiveTask } = require('./queueProcessor');
+const { addToQueue, resourceIntensiveTask } = require('./queueProcessor');
 const { saveRecord, bulkSaveRecord } = require('../sequelizer/controller/controller');
 const { updateEventStatus } = require('./scrapeAndUpdate');
 const { sequelize } = require("../config/config");
+const { EventEmitter } = require('events');
+
+const eventEmitter = new EventEmitter();
+
 
 async function scheduledUpdates(tierType) {
 
@@ -17,9 +21,9 @@ async function scheduledUpdates(tierType) {
 
     const allResorts = await findRecords(condJson, "resorts", order, null, null);
 
-    let resortID, suiteType, eventCreated, resortRef;
+    let resortID, suiteType, resortRef;
     let months = 12;
-    let allEvents = [], finalItems = [];
+    let allEvents = [];
 
     const itemCounts = {};
 
@@ -60,9 +64,9 @@ async function scheduledUpdates(tierType) {
         console.log("outputing final items now...")
 
         for(const {res, eventCreated} of joinedArray){
-            addToScheduledQueue(resourceIntensiveTask, () => {
+            addToQueue(resourceIntensiveTask, () => {
                 console.log('Task completed');
-            }, res.resortID, res.unitType, months, res, eventCreated)
+            }, tierType, res.resortID, res.unitType, months, res, eventCreated)
             .then(loggedIn => {
                 if (loggedIn === true) {
                     updateEventStatus(eventCreated, "SCRAPING");
@@ -74,39 +78,24 @@ async function scheduledUpdates(tierType) {
                 } else if (loggedIn === null) {
                     updateEventStatus(eventCreated, "LOGIN_ERROR");
                 }
+
+                let displayModal =  !loggedIn ;
+                let execID = eventCreated.execID;
+            
+                eventEmitter.emit('modalStateChanged', { displayModal, execID });
     
                 })
             .catch(error => {
             console.error('Scheduled updates error:', error);
             });
+
         }
 
     }
 
 }
-
-
-
-async function createAnEvent(resortRefNum, months){
-    try {
-        const event = {
-            resortRefNum: resortRefNum,
-            execType: "SCHEDULED",
-            execStatus: "SCRAPING",
-            monthstoScrape: parseInt(months)
-        }
-
-        recordObject = await saveRecord(event, "execution");
-
-        return recordObject;
-    } catch (error) {
-        console.log("Error creating event");
-        return null;
-    }
-
-}
-
 
 module.exports = {
-    scheduledUpdates
+    scheduledUpdates,
+    eventEmitter
 }

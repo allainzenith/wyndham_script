@@ -8,6 +8,8 @@ let searchTimeout = null;
 let paginationTimeout = null;
 let refreshTimeout = null;
 
+let retryExecID;
+
 
 function createEventSource(limit, offset, endpoint, searchInput) {
     return new EventSource(`${endpoint}?limit=${limit}&offset=${offset}&search=${searchInput}`);
@@ -125,6 +127,7 @@ function retry(fields){
           .then(response => response.json())
           .then(data => {
             const loggedIn = data.loggedIn;
+            retryExecID = data.execID;
 
             if (loggedIn === false) {
                 var modal = document.getElementById('myModal');

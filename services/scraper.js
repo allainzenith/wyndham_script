@@ -5,45 +5,65 @@
 const path = require("path");
 const { addMonths, addDays } = require("date-fns");
 const { userName, passWord } = require("../config/config");
-const { globals, sharedData } = require("../config/puppeteerOptions");
+const { oneTimeTaskPuppeteer, tierOnePuppeteer, tierTwoThreePuppeteer, sharedData } = require("../config/puppeteerOptions");
 
 let needtoLogin;
 
-async function executeScraper(resortID, suiteType, months, resortHasNoRecord) {
+let oneTimeNeedLogin = true;
+let tierOneNeedLogin = true;
+let tierTwoThreeNeedLogin = true;
+
+async function executeScraper(queueType, resortID, suiteType, months, resortHasNoRecord, browser, page, pageForAddress) {
   try {
     let doneLogin, doneSelecting, doneScraping, doneGettingAddress, address, updatedAvail, sElement;
 
+    switch(queueType) {
+      case "ONE TIME":
+        needtoLogin = oneTimeNeedLogin;
+        break;
+      case "TIER 1":
+        needtoLogin = tierOneNeedLogin;
+        break;
+      case "TIER 2":
+      case "TIER 3":
+        needtoLogin = tierTwoThreeNeedLogin;
+        break;
+      default:
+        console.error(`Unknown task type for launching puppeteer: ${queueType}`);
+        return null;
+    }
+
     try {
       console.log("I need to log in: " + needtoLogin);
-      doneLogin = needtoLogin ? await login() : true;
+      doneLogin = needtoLogin ? await login(queueType, page, pageForAddress) : true;
       console.log("Done login: " + doneLogin);
     } catch (error) {
       console.log(
-        "Login process failed."
+        "Login process failed.", error.message
       );
       return null;      
     }
 
     try {
-      sElement = doneLogin === true ? await selectElements(resortID, suiteType) : null;
+      sElement = doneLogin === true ? await selectElements(queueType, resortID, suiteType, page, pageForAddress) : null;
       console.log("Selected Option Text:", sElement);
-      doneSelecting = sElement !== null && sElement !== undefined;
+      doneSelecting = sElement !== null && sElement !== undefined && sElement !== "MAINTENANCE";
       console.log("Done selecting: " + doneSelecting);
     } catch (error) {
       console.log(
-        "Selecting process failed."
+        "Selecting process failed.", error.message
       );
       return null;      
     }
 
     try {
-      updatedAvail = doneSelecting ? await checkAvailability(months, resortID, suiteType) : null;
-      doneScraping = updatedAvail !== null && updatedAvail !== undefined;
+      updatedAvail = doneSelecting ? await checkAvailability(queueType, months, resortID, suiteType, page, pageForAddress) : null;
+      doneScraping = updatedAvail !== null && updatedAvail !== undefined && updatedAvail !== "MAINTENANCE";
       console.log("Done scraping: " + doneScraping);
     } catch (error) {
       console.log("eRROR: " , error);
       console.log(
-        "Getting availability failed."
+        "Getting availability failed.", error.message
       );
       return null;      
     }
@@ -54,9 +74,9 @@ async function executeScraper(resortID, suiteType, months, resortHasNoRecord) {
       );
       try {
         address = doneScraping
-          ? await getResortAddress(resortID, sElement)
+          ? await getResortAddress(resortID, sElement, pageForAddress)
           : null;
-        doneGettingAddress = address !== null && address !== undefined;
+        doneGettingAddress = address !== null && address !== undefined && address !== "MAINTENANCE";
         console.log("Done getting address: " + doneGettingAddress);
         console.log("address: " + address);
       } catch (error) {
@@ -77,7 +97,7 @@ async function executeScraper(resortID, suiteType, months, resortHasNoRecord) {
     if (doneLogin && doneSelecting && doneScraping && doneGettingAddress) {
       console.log("Done scraping. Calendar updating...");
       return { address, updatedAvail, sElement };
-    } if (doneLogin === "MAINTENANCE") {
+    } if (doneLogin === "MAINTENANCE" || sElement === "MAINTENANCE" || updatedAvail === "MAINTENANCE" || address === "MAINTENANCE") {
       return "MAINTENANCE";
     } else {
       console.log(
@@ -85,41 +105,62 @@ async function executeScraper(resortID, suiteType, months, resortHasNoRecord) {
       );
       return null;
     }
+
   } catch (error) {
-    console.error("Error:", error.message);
+    console.error("Error executing scraper:", error.message);
     return null;
   }
+
 }
 
-async function launchPuppeteer() {
+async function launchPuppeteer(queueType) {
   try {
-    needtoLogin = true;
-    await globals();
-    let loggedIn = await login();
+
+    let page, pageForAddress;
+    switch(queueType) {
+      case "ONE TIME":
+        await oneTimeTaskPuppeteer();
+        page = sharedData.oneTimePage;
+        pageForAddress = sharedData.oneTimeAddressPage;
+        break;
+      case "TIER 1":
+        await tierOnePuppeteer();
+        page = sharedData.tierOnePage;
+        pageForAddress = sharedData.tierOneAddressPage;
+        break;
+      case "TIER 2":
+      case "TIER 3":
+        await tierTwoThreePuppeteer();
+        page = sharedData.tierTwoThreePage;
+        pageForAddress = sharedData.tierTwoThreeAddressPage;
+        break;
+      default:
+        console.error(`Unknown task type for launching puppeteer: ${queueType}`);
+    }
+
+    let loggedIn = await login(queueType, page, pageForAddress);
+    
     return loggedIn;
   } catch (error) {
     return null;
   }
 }
 
-async function login() {
+async function login(queueType, page, pageForAddress) {
   let checkToBegin = true;
 
   while (checkToBegin) {
     await new Promise(resolve => setTimeout(resolve, 1000));
     try {
-      sharedData.page;
-      sharedData.pageForAddress;
+      page;
+      pageForAddress;
       checkToBegin = false;
     } catch (error) {
-      console.log("Error: ", error.message);
+      console.log("Error waiting for pages: ", error.message);
     }
   }
 
   try {
-    const page = sharedData.page;
-    const pageForAddress = sharedData.pageForAddress;
-
     try {
       await Promise.all([
         page.waitForNavigation(), 
@@ -128,7 +169,7 @@ async function login() {
       ]);
 
     } catch (error) {
-      console.log("Error at the start:",error.message);
+      console.log("Error at the start:", error.message);
       return null;
     }
 
@@ -164,7 +205,10 @@ async function login() {
         } catch (error) {
           addressSelectorFound++;
           console.log("Timed out. Reloading the page.");
-          await pageForAddress.reload();
+          await Promise.all([
+            pageForAddress.waitForNavigation(), 
+            pageForAddress.reload()
+          ]);
         }
       }
 
@@ -174,28 +218,27 @@ async function login() {
       let loginSelector = await page.$(`.button-primary[value*="Login"]`);
       await loginSelector.scrollIntoView();
 
-      await checkOverlay();
+      await checkOverlay(page);
 
       await page.type("#okta-signin-username", userName);
       await page.type("#okta-signin-password", passWord);
       await page.waitForTimeout(5000);
       await page.click(`.button-primary[value*="Login"]`)
 
-      let isVerified = await findSendSmsCode();
+      let isVerified = await findSendSmsCode(queueType, page, pageForAddress);
 
       return isVerified;
     }
 
   } catch (error) {
-    console.error("Error:", error.message);
+    console.error("Error logging in:", error.message);
     return null;
 
   } 
 
 }
 
-async function findSendSmsCode(){
-  const page = sharedData.page;
+async function findSendSmsCode(queueType, page, pageForAddress){
 
   // Click the <a> tag with a specific data-se attribute value
   const dataSeValue = "sms-send-code";
@@ -214,23 +257,35 @@ async function findSendSmsCode(){
     let checkIfLoggedIn = 0;
 
     while (checkIfLoggedIn < 5) {
-      let doneLogin = await isLoggedIn();
+      let doneLogin = await isLoggedIn(page);
     
       if(doneLogin) {
         console.log("No need for OTP verification");
         console.log("Logged in successfullyyyy!!");  
   
-        // let canSelect = await enableSessionCalendar();
-        // returnValue = canSelect;
-        needtoLogin = false;
+        switch(queueType) {
+          case "ONE TIME":
+            oneTimeNeedLogin = false;
+            break;
+          case "TIER 1":
+            tierOneNeedLogin = false;
+            break;
+          case "TIER 2":
+          case "TIER 3":
+            tierTwoThreeNeedLogin = false;
+            break;
+          default:
+            console.error(`Unknown task type for launching puppeteer: ${queueType}`);
+        }
+        
         checkIfLoggedIn = 5;
         return true;
       } else {
-        console.log("Error: ", error.message);
+        console.log("Not logged in");
         checkIfLoggedIn++;
 
         try {
-          let doneLogin = await login();
+          let doneLogin = await login(queueType, page, pageForAddress);
           console.log("Done login: ", doneLogin);
 
         } catch (error) {
@@ -247,13 +302,12 @@ async function findSendSmsCode(){
   }
 }
 
-async function isLoggedIn() {
-  const page = sharedData.page;
+async function isLoggedIn(page) {
   const accountURL = 'https://clubwyndham.wyndhamdestinations.com/us/en/owner/account';
   try {
     await page.waitForFunction(
       (url) => window.location.href.includes(url),
-      { timeout: 30000 },
+      { timeout: 20000 },
       accountURL
     );
     console.log('Navigation to', accountURL, 'completed within the timeout');
@@ -264,11 +318,11 @@ async function isLoggedIn() {
   }
 }
 
-async function sendOTP(verOTP) {
-  const page = sharedData.page;
+async function sendOTP(verOTP, queueType, page, pageForAddress) {
 
   try {
     await page.waitForSelector('#input60', {timeout:3000});
+    await page.$eval("#input60", input => input.value = '');
     await page.type("#input60", verOTP);
     console.log("Inputted code");
     await page.waitForSelector('#input69', {timeout:3000});
@@ -279,12 +333,27 @@ async function sendOTP(verOTP) {
     await page.click('input[type="submit"]');
     console.log("Hit submit button");
       
-    let doneLogin = await isLoggedIn();
+    let doneLogin = await isLoggedIn(page);
   
     if(doneLogin) {
       console.log("No need for OTP verification");
       console.log("Logged in successfullyyyy!!");  
-      needtoLogin = false;
+
+      switch(queueType) {
+        case "ONE TIME":
+          oneTimeNeedLogin = false;
+          break;
+        case "TIER 1":
+          tierOneNeedLogin = false;
+          break;
+        case "TIER 2":
+        case "TIER 3":
+          tierTwoThreeNeedLogin = false;
+          break;
+        default:
+          console.error(`Unknown task type for launching puppeteer: ${queueType}`);
+      }
+
       return true;
     } else {
       console.log("Hit submit button but didn't navigate");
@@ -296,17 +365,41 @@ async function sendOTP(verOTP) {
     }
 
   } catch (error) {
-    console.error("Error:", error.message);
-    return null;
+    console.error("Error sending OTP:", error.message);
+    let doneLogin = await login(queueType, page, pageForAddress)
+    let retry = doneLogin ? await sendOTP(verOTP, queueType, page, pageForAddress) : null;
+    return retry;
   } 
 
 }
 
-async function resendSmsCode() {
+async function resendSmsCode(queueType) {
   return new Promise(async(resolve) => {
+    let browser, page, pageForAddress;
+
+    switch(queueType) {
+      case "ONE TIME":
+        browser = sharedData.oneTimeBrowser;
+        page = sharedData.oneTimePage;
+        pageForAddress = sharedData.pageForAddress;
+        break;
+      case "TIER 1":
+        browser = sharedData.tierOneBrowser;
+        page = sharedData.tierOnePage;
+        pageForAddress = sharedData.tierOneAddressPage;
+        break;
+      case "TIER 2":
+      case "TIER 3":
+        browser = sharedData.tierTwoThreeBrowser;
+        page = sharedData.tierTwoThreePage;
+        pageForAddress = sharedData.tierTwoThreeAddressPage;
+        break;
+      default:
+        resolve(null);
+    }
+
     try {
-      const page = sharedData.page;
-      const browser = sharedData.browser;
+
       if (await page.url() !== "https://clubwyndham.wyndhamdestinations.com/us/en/login"){
         resolve("MAINTENANCE");
         await browser.close();
@@ -315,8 +408,8 @@ async function resendSmsCode() {
         resolve(!needsVerify);
       }
     } catch (error) {
-      console.error("Error:", error.message);
-      login()
+      console.error("Error resending OTP:", error.message);
+      login(queueType, page, pageForAddress)
       .then(needsVerify => {
         resolve(needsVerify);
       })
@@ -328,8 +421,7 @@ async function resendSmsCode() {
 
   });
 }
-async function enableSessionCalendar(){
-  const page = sharedData.page;
+async function enableSessionCalendar(page){
   try {
     await page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results');
 
@@ -349,7 +441,10 @@ async function enableSessionCalendar(){
       } catch (error) {
         addressSelectorFound++;
         console.log("Timed out. Reloading the page.");
-        await page.reload();
+        await Promise.all([
+          page.waitForNavigation(), 
+          page.reload()
+        ]);
       }
     }
 
@@ -383,15 +478,14 @@ async function enableSessionCalendar(){
       return null;
     }  
   } catch (error) {
-      console.log("Error: ", error.message);
+      console.log("Error enabling session calendar: ", error.message);
       return null;    
   }
 
 }
 
-async function checkOverlay() {
-  const page = sharedData.page;
-  const overlaySelector = '.onetrust-close-btn-handler[aria-label*="Close"]'
+async function checkOverlay(page) {
+  const overlaySelector = 'button[aria-label*="Close"]'
   
   const overlayExists = await page.evaluate((selector) => {
     const overlayElement = document.querySelector(selector);
@@ -411,8 +505,7 @@ async function checkOverlay() {
 
 }
 
-async function selectElements(resortID, suiteType) {
-  const page = sharedData.page;
+async function selectElements(queueType, resortID, suiteType, page, pageForAddress) {
 
 
   let setupSelect = 0;
@@ -421,7 +514,7 @@ async function selectElements(resortID, suiteType) {
 
       await page.bringToFront();
       await page.waitForTimeout(5000);
-      var calendarUrl = `https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`;
+      let calendarUrl = `https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`;
 
       try {
         await page.waitForFunction(
@@ -430,6 +523,7 @@ async function selectElements(resortID, suiteType) {
           calendarUrl
         );
         console.log("Already on the calendar URL");
+        //IMPORTANT: DO NOT DELETE
         await Promise.all([
           page.waitForNavigation(), 
           page.reload()
@@ -439,11 +533,11 @@ async function selectElements(resortID, suiteType) {
         console.log("Navigating now..");
         await Promise.all([
           page.waitForNavigation(), 
-          page.goto(calendarUrl)
+          page.goto(calendarUrl),
         ]);
       }
 
-      await checkOverlay();
+      await checkOverlay(page);
 
       const resortSelector = "#ResortSelect";
 
@@ -595,10 +689,10 @@ async function selectElements(resortID, suiteType) {
         if (setupSelect === 5) return null;
       }
     } catch (error) {
-      console.error("Error:", error.message);
+      console.error("Error selecting elements:", error.message);
       setupSelect++;
       
-      let doneLogin = await login();
+      let doneLogin = await login(queueType, page, pageForAddress);
       console.log("logged in successfully: ", doneLogin);
       
       if (setupSelect === 5 && doneLogin !== true) return null;
@@ -606,15 +700,16 @@ async function selectElements(resortID, suiteType) {
   }
 }
 
-async function checkAvailability(months, resortID, suiteType) {
-  const page = sharedData.page;
+
+async function checkAvailability(queueType, months, resortID, suiteType, page, pageForAddress) {
 
   await page.setRequestInterception(true);
 
   // Define the request listener function
   const requestListener = async interceptedRequest => {
     // Check if the request URL meets a certain condition
-    if (interceptedRequest.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability' && interceptedRequest.method() === 'POST')) {
+    if (interceptedRequest.method() === 'POST' &&
+        interceptedRequest.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability')) {
       // Access the request post data (payload)
       const postData = interceptedRequest.postData();
 
@@ -628,9 +723,9 @@ async function checkAvailability(months, resortID, suiteType) {
     }
   };
 
-  var { currentDate } = getCurrentAndEndDate(months);
+  let { currentDate } = getCurrentAndEndDate(months);
   let monthNow = 0;
-  var dates = [];
+  let dates = [];
   let responses = [];
 
 
@@ -646,7 +741,7 @@ async function checkAvailability(months, resortID, suiteType) {
   const responseListener = async interceptedResponse => {
     // Check if the response URL meets a certain condition
     if (
-      interceptedResponse.status() !== 302 && interceptedResponse.status()  === 200 &&
+      interceptedResponse.status() !== 302 && interceptedResponse.status() === 200 &&
       interceptedResponse.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability') 
     ) {
       const responseText = await interceptedResponse.text();
@@ -684,16 +779,6 @@ async function checkAvailability(months, resortID, suiteType) {
       initialDate = monthNow === 0 ? currentDate.toLocaleDateString(undefined, { day: "2-digit" }) : '01';
       currentYear = currentDate.getFullYear();
 
-      // secondResponseStart = 
-      // parseInt(currentMonth, 10) < 8
-      //   ? parseInt(currentMonth, 10) % 2 !== 0
-      //     ? "18"
-      //     : "17"
-      //   : (parseInt(currentMonth, 10) + 1) % 2 !== 0
-      //   ? "18"
-      //   : "17";
-
-
       // Function to create a promise that resolves when all responses are received
       const waitForResponses = () => new Promise(resolve => (resolveResponsesPromise = resolve));
 
@@ -705,55 +790,61 @@ async function checkAvailability(months, resortID, suiteType) {
       // Add the request listener
       await page.on('response', responseListener);
 
-
       await Promise.race([timeoutPromise, waitForResponses()]);
 
       console.log("Done fetching responses..");
 
-      let findNextButtonAttempts = 0;
-      while (findNextButtonAttempts < 5) {
-        try {
-          numResponses = 0;
-          await page.waitForTimeout(2000);
-          var nextClass = `.react-datepicker__navigation--next[aria-label="Next Month"]`;
-          var nextButton = await page.waitForSelector(nextClass, {
-            timeout: 10000,
-          });
-    
-          // Click the next button
-          await nextButton.scrollIntoView();
-          await nextButton.click();
-          console.log("Clicked next button.");
+      try {
+        numResponses = 0;
+        await page.waitForTimeout(2000);
+        let nextClass = `.react-datepicker__navigation--next[aria-label="Next Month"]`;
+        let nextButton = await page.waitForSelector(nextClass, {
+          timeout: 10000,
+        });
+  
+        // Click the next button
+        await nextButton.scrollIntoView();
+        await nextButton.click();
+        console.log("Clicked next button.");
+        
+        await checkOverlay(page);
 
-          currentDate = addMonths(currentDate, 1);
-          firstResponseNotResolved = true;
-          monthNow++;
+        currentDate = addMonths(currentDate, 1);
+        firstResponseNotResolved = true;
+        monthNow++;
 
-          findNextButtonAttempts = 5;
+        // await page.removeListener('response', responseListener);
+        await page.removeAllListeners('response');
+        
+      } catch (error) {
+        //error-message (id)
+        
+        console.log("Can't find or click next button. Reloading again.", error.message);
 
-          await page.off('response', responseListener);
-        } catch (error) {
-          findNextButtonAttempts++;
-          console.log("Can't find or click next button. Reloading again.");
-          await page.off('request', requestListener);
-          await page.off('response', responseListener);
-          await page.reload();
-          let doneSelect = await selectElements(resortID, suiteType);
-          console.log("Reselected elements successfully: ", doneSelect);
-          let doneScraping = doneSelect !== null && doneSelect !== undefined ? await checkAvailability(
-            months,
-            resortID,
-            suiteType
-          ): null;
-          console.log(
-            "Checked availability successfully: ",
-            doneScraping !== null && doneScraping !== undefined
-          );
-          return doneScraping;
-        }
-    
+        // await page.removeListener('response', responseListener);
+        // await page.removeListener('request', requestListener);
 
+        await page.removeAllListeners('response');
+        await page.removeAllListeners('request');
+        await page.setRequestInterception(false);
+
+        let doneSelect = await selectElements(queueType, resortID, suiteType, page, pageForAddress);
+        console.log("Reselected elements successfully: ", doneSelect);
+        let doneScraping = doneSelect !== null && doneSelect !== undefined ? await checkAvailability( 
+          queueType,
+          months,
+          resortID,
+          suiteType,
+          page,
+          pageForAddress
+        ): null;
+        console.log(
+          "Checked availability successfully: ",
+          doneScraping !== null && doneScraping !== undefined
+        );
+        return doneScraping;
       }
+       
 
     }
     await page.waitForTimeout(2000);
@@ -762,7 +853,6 @@ async function checkAvailability(months, resortID, suiteType) {
 
     // Now you can access all captured responses outside the while loop
     for (const responseText of responses) {
-      // const responseText = JSON.parse(await response.text());
       const calendarDays = JSON.parse(responseText).calendarDays;
       calendarObj = calendarObj.concat(calendarDays);
     }
@@ -775,16 +865,13 @@ async function checkAvailability(months, resortID, suiteType) {
     const compareDates = (a,b) => new Date(a.date) - new Date(b.date);
     dates = dates.sort(compareDates);
 
-    for(const date of dates) {
-      console.log(date);
-    }
 
+    let index = 0;
+    let currentItem;
+    let nextItem;
+    let updatedAvail = [];
+    let start = null;
 
-    var index = 0;
-    var currentItem;
-    var nextItem;
-    var updatedAvail = [];
-    var start = null;
     while (index <= dates.length - 2) {
       currentItem = dates[index];
       nextItem = dates[index + 1];
@@ -827,24 +914,32 @@ async function checkAvailability(months, resortID, suiteType) {
         index++;
       }
     }
-    await page.off('request', requestListener);
+
+    // await page.removeListener('request', requestListener);
+    await page.removeAllListeners('request');
     await page.setRequestInterception(false);
 
     return updatedAvail;
   } catch (error) {
-    console.error("Error:", error.message);
-    await page.off('request', requestListener);
-    await page.off('response', responseListener);
+    console.error("Error getting availability:", error.message);
+    //try the process one more time
+
+    // await page.removeListener('response', responseListener);
+    // await page.removeListener('request', requestListener);
+    await page.removeAllListeners('response');
+    await page.removeAllListeners('request');
+
     await page.setRequestInterception(false);
 
-    //try the process one more time
-    await page.reload();
-    let doneSelect = await selectElements(resortID, suiteType);
+    let doneSelect = await selectElements(queueType, resortID, suiteType, page, pageForAddress);
     console.log("Reselected elements successfully: ", doneSelect);
-    let doneScraping = doneSelect !== null && doneSelect !== undefined ? await checkAvailability(
+    let doneScraping = doneSelect !== null && doneSelect !== undefined ? await checkAvailability( 
+      queueType,
       months,
       resortID,
-      suiteType
+      suiteType,
+      page,
+      pageForAddress
     ) : null;
     console.log(
       "Checked availability successfully: ",
@@ -852,42 +947,6 @@ async function checkAvailability(months, resortID, suiteType) {
     );
     return doneScraping;
   } 
-}
-
-function isCorrectResponse(responseText, dateString, suiteType, resortID) {
-  try {
-    const response = JSON.parse(responseText);
-    const responseDate = response.calendarDays[0].date;  
-
-    let responseSuite, resID;
-    const calendarDays = response.calendarDays
-    for (const item of calendarDays) {
-      const inventoryOfferings = item.inventoryOfferings;
-
-      if (inventoryOfferings !== undefined) {
-        for(const obj of inventoryOfferings) {
-          responseSuite = obj.pointsRoomType;
-          resID = obj.productOffrngId;
-
-          if (responseSuite !== undefined && resID !== undefined) {
-            break;
-          }
-        }
-      }
-
-      if (responseSuite !== undefined && resID !== undefined) {
-        break;
-      }
-    }
-
-    if (responseSuite === undefined || resID === undefined) return true;
-    else return responseDate === dateString && responseSuite.toUpperCase().includes(suiteType.toUpperCase()) && resID.toUpperCase().includes(resortID.toUpperCase());
-
-  } catch (error) {
-    console.log("Error parsing response: ", error.message);
-    return false;
-  }
-
 }
 
 function filterUniqueKeys(array) {
@@ -924,15 +983,14 @@ async function checkCalendarObject(calendarObj) {
 }
 
 function getCurrentAndEndDate(months) {
-  var numberMonths = parseInt(months, 10);
-  var currentDate = new Date();
-  var EndDate = addDays(addMonths(currentDate, numberMonths), 1);
+  let numberMonths = parseInt(months, 10);
+  let currentDate = new Date();
+  let EndDate = addDays(addMonths(currentDate, numberMonths), 1);
 
   return { currentDate, EndDate };
 }
 
-async function getResortAddress(resortID, sElement) {
-  const pageForAddress = sharedData.pageForAddress;
+async function getResortAddress(resortID, sElement, pageForAddress) {
   try {
     await pageForAddress.bringToFront();
     const placeholderText = "Enter a location";
@@ -957,7 +1015,10 @@ async function getResortAddress(resortID, sElement) {
       } catch (error) {
         console.log("Timed out. Reloading the page.");
         addressSelectorFound++;
-        await pageForAddress.reload();
+        await Promise.all([
+          pageForAddress.waitForNavigation(), 
+          pageForAddress.reload()
+        ]);
       }
     }
 
@@ -980,7 +1041,7 @@ async function getResortAddress(resortID, sElement) {
       return resortAddress;
     }
   } catch (error) {
-    console.error("Error:", error.message);
+    console.error("Error getting resort address:", error.message);
     return null;
   }
 }
