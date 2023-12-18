@@ -675,7 +675,7 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
         // END OF SELECTING SUITE TYPE
         //====================================================================
 
-
+      
   
         return selectedOptionText;
       } else {
@@ -742,10 +742,10 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
   const responseListener = async interceptedResponse => {
     // Check if the response URL meets a certain condition
     if (
-      interceptedResponse.request().method().toUpperCase() != "OPTIONS" &&
-      interceptedResponse.status() === 200 &&
-      interceptedResponse.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability') &&
-      interceptedResponse.request().postData().includes(resortID) && interceptedResponse.request().postData().includes(suiteType)
+      await interceptedResponse.request().method().toUpperCase() !== "OPTIONS" &&
+      await interceptedResponse.status() === 200 &&
+      await interceptedResponse.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability') &&
+      await interceptedResponse.request().postData().includes(resortID) && interceptedResponse.request().postData().includes(suiteType)
     ) {
       const responseText = await interceptedResponse.text();
   

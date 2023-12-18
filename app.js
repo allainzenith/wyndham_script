@@ -13,7 +13,6 @@ const { scheduledUpdates } = require("./scripts/scheduledUpdates");
 
 var app = express();
 
-let thisToken;
 let updateOnce = true;
 
 // view engine setup
@@ -29,18 +28,10 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // Middleware to check token expiration and refresh if necessary
 app.use(async (req, res, next) => {
-  req.token = await returnAValidToken(clientID, clientSecret);
-  thisToken = await req.token;
 
   if (updateOnce) {
     updateOnce = false;
-    // await scheduledUpdates("TIER 1");
-    // await new Promise(resolve => setTimeout(resolve, 60000));
-    // console.log("HALA SHARK");
-    // await scheduledUpdates("TIER 2");
-    // await new Promise(resolve => setTimeout(resolve, 60000));
-    // console.log("HALA SHARK");
-    // await scheduledUpdates("TIER 3");
+    await scheduledUpdates("TIER 1");
   }
   next();
 });
@@ -63,21 +54,22 @@ app.use(function (err, req, res, next) {
   res.render("error");
 });
 
-// Schedule the update every 6 hours, 24 hours, and 1 week
-// schedule.scheduleJob('0 */8 * * * *', async () => {
-//   console.log("Tier 1 schedule function is called");
-//   await scheduledUpdates("TIER 3");
-// });
+// Schedule the update every 8 hours, 24 hours, and 1 week, respectively
+schedule.scheduleJob('0 */8 * * * *', async () => {
+  console.log("Tier 1 schedule function is called");
+  await scheduledUpdates("TIER 1");
+});
 
 
-// schedule.scheduleJob("0 0 */1 * *", async () => {
-//   console.log("Tier 2 schedule function is called");
-//   await scheduledUpdates("TIER 2");
-// });
+schedule.scheduleJob("0 0 */1 * *", async () => {
+  console.log("Tier 2 schedule function is called");
+  await scheduledUpdates("TIER 2");
+});
 
-// schedule.scheduleJob("0 0 * * 1", async () => {
-//   console.log("Tier 3 schedule function is called");
-//   await scheduledUpdates("TIER 3");
-// });
+schedule.scheduleJob("0 0 * * 1", async () => {
+  console.log("Tier 3 schedule function is called");
+  await scheduledUpdates("TIER 3");
+});
+
 
 module.exports = app;

@@ -51,19 +51,19 @@ async function processQueue() {
     return;
   }
 
-  if (oneTimeTaskQueue.length > 0 && isOneTimeProcessing === false && (oneTimeLoggedIn !== false && oneTimeLoggedIn !== "test")) {
+  if (oneTimeTaskQueue.length > 0 && isOneTimeProcessing === false && (oneTimeLoggedIn === true || oneTimeLoggedIn === "MAINTENANCE" || oneTimeLoggedIn === null)) {
     console.log("One time task found..");
     isOneTimeProcessing = true;
     processTask(oneTimeTaskQueue, oneTimeLoggedIn, "ONE TIME");
   }
 
-  if (schedTierOneTaskQueue.length > 0 && isOneTierProcessing === false && (oneTierLoggedIn !== false && oneTierLoggedIn !== "test")) {
+  if (schedTierOneTaskQueue.length > 0 && isOneTierProcessing === false && (oneTierLoggedIn === true || oneTierLoggedIn === "MAINTENANCE" || oneTierLoggedIn === null)) {
     console.log("One tier task found..");
     isOneTierProcessing = true;
     processTask(schedTierOneTaskQueue, oneTierLoggedIn, "TIER 1");
   }
 
-  if (schedTierTwoThreeTaskQueue.length > 0 && isTwoTierProcessing === false && (twoThreeTierLoggedIn !== false && twoThreeTierLoggedIn !== "test")) {
+  if (schedTierTwoThreeTaskQueue.length > 0 && isTwoTierProcessing === false && (twoThreeTierLoggedIn === true || twoThreeTierLoggedIn === "MAINTENANCE" || twoThreeTierLoggedIn === null)) {
     console.log("Two/three tier task found..");
     isTwoTierProcessing = true;
     processTask(schedTierTwoThreeTaskQueue, twoThreeTierLoggedIn, "TIER 2");
@@ -158,7 +158,6 @@ async function processVerification(verOTP, queueType) {
 
 async function addToQueue(task, callback, ...args) {
   return new Promise(async (resolve) => {
-
     if (args.length > 0) {
       let taskType = args[0]; 
 
