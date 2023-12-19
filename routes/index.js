@@ -45,7 +45,7 @@ router.get('/events', async(req, res, next) => {
 });
 
 router.get('/duplicateListingLinks', (req, res) => {
-  const links = JSON.parse(req.query.links);
+  const links = req.query.links.split(",");
   res.render('duplicateListingLinks', { links });
 });
 

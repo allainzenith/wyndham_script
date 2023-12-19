@@ -21,6 +21,21 @@ function showRecords(eventSource, tableType){
     const data = JSON.parse(event.data);
     tableBody.innerHTML = '';
     data.forEach(item => {
+
+        let href;
+        let listingID = tableType === "resorts" ? item.listingID : item.resort.listingID;
+        let listingIDarray = listingID.split(",");
+
+        listingIDarray.forEach((item, index, array) => {
+            array[index] = "https://app.guesty.com/properties/" + item;
+        });
+    
+        if (listingIDarray.length === 1){
+            href = listingIDarray[0]; 
+        } else {
+            href = `/duplicateListingLinks?links=${listingIDarray}`;
+        }
+
         const row = document.createElement("tr");
         if (tableType === "resorts") {
             row.innerHTML = `
@@ -31,9 +46,9 @@ function showRecords(eventSource, tableType){
                     </button>
                 </td>
                 <td>
-                    <button onclick="openLinks(this.id)" id="${item.listingID}" class="linkButton navigate">
+                    <a href="${href}" id="${item.listingID}" class="linkButton navigate" target="_blank">
                         ${item.listingName}
-                    </button>
+                    </a>
                 </td>
                 <td>${item.resortName}</td>
                 <td>${item.unitType}</td>
@@ -48,9 +63,9 @@ function showRecords(eventSource, tableType){
                     </button>
                 </td>
                 <td>
-                    <button onclick="openLinks(this.id)" id="${item.resort.listingID}" class="linkButton navigate">
-                        ${item.resort.listingName}
-                    </button>
+                    <a href="${href}" id="${item.resort.listingID}" class="linkButton navigate" target="_blank">
+                    ${item.resort.listingName}
+                    </a>
                 </td>
                 <td>${item.resort.unitType}</td>
                 <td>${item.execStatus}</td>
@@ -68,6 +83,7 @@ function showRecords(eventSource, tableType){
     });
     };
 }
+
 
 function copyText(itemID) {
     const copyLink = document.getElementById(itemID);
@@ -87,21 +103,22 @@ function copyText(itemID) {
 
 }
 
-function openLinks(listingID){
-    let listingIDarray = listingID.split(",");
-    listingIDarray.forEach((item, index, array) => {
-        array[index] = "https://app.guesty.com/properties/" + item;
-    });
+// function openLinks(listingID){
+//     let listingIDarray = listingID.split(",");
+//     listingIDarray.forEach((item, index, array) => {
+//         array[index] = "https://app.guesty.com/properties/" + item;
+//     });
 
-    if (listingIDarray.length === 1){
-        const url = listingIDarray[0]; 
-        window.open(url, '_blank');
-    } else {
-        console.log("multiple links present")
-        window.open(`/duplicateListingLinks?links=${JSON.stringify(listingIDarray)}`, '_blank');
-    }
+//     if (listingIDarray.length === 1){
+//         const url = listingIDarray[0]; 
+//         window.open(url, '_blank');
+//     } else {
+//         console.log("multiple links present")
+//         // window.open(`/duplicateListingLinks?links=${JSON.stringify(listingIDarray)}`, '_blank');
+//         return `/duplicateListingLinks?links=${JSON.stringify(listingIDarray)}`;
+//     }
 
-}
+// }
 
 function retry(fields){
     let resortFields = fields.split(",");

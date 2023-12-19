@@ -69,8 +69,8 @@ async function initializeBrowser(customProfileRelPath) {
         "--no-sandbox",
         "--no-zygote",
       ],
-      headless: false, 
-      // headless: 'new',
+      // headless: false, 
+      headless: 'new',
       userDataDir: customProfileDir
     });
 

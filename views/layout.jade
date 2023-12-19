@@ -7,7 +7,7 @@ html(lang='en')
     link(rel='stylesheet', type='text/css', href='/stylesheets/style.css')
     title Wyndham Script 
   body
-
+  
     #mySidebar.w3-sidebar.w3-light-grey.w3-card
       button.w3-bar-item.w3-button.w3-large(onclick='w3_close()') &#9776;
       .w3-bar-item
@@ -16,11 +16,9 @@ html(lang='en')
       a.w3-bar-item.w3-button.w3-block.w3-left-align(id='', onclick='navigate(this.id)') Update Calendar
       #updateItems.w3-bar-block.w3-hide.w3-white.w3-card-4
         a.w3-bar-item.w3-button(id='oneListing', onclick='navigate(this.id)') One Listing
-        a.w3-bar-item.w3-button(id='allListings', onclick='navigate(this.id)') All Listings
         a.w3-bar-item.w3-button(id='scheduledUpdates', onclick='navigate(this.id)') Scheduled Updates
       a.w3-bar-item.w3-button.w3-block.w3-left-align(id='resorts', onclick='navigate(this.id)') Resorts
       a.w3-bar-item.w3-button.w3-block.w3-left-align(id='events', onclick='navigate(this.id)') Events
-      //- a.w3-bar-item.w3-button.w3-block.w3-left-align(id='verify', onclick='navigate(this.id)') Verify Device
 
     #main
       div
