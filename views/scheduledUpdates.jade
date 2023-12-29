@@ -3,7 +3,7 @@ include layout
 
 block content
   form(action='/sendOTP', method='post', id='otp')
-    .w3-modal#myModal
+    .w3-modal#myModal(style='display:none');
       .w3-modal-content(style="width: 30%") 
         header.w3-container.w3-sand
           span.w3-button.w3-display-topright#closeModal &times;
@@ -30,8 +30,8 @@ block content
           input.w3-input.w3-padding-small(type="text", id='OTP', name='OTP', placeholder="Enter OTP", value="")         
         footer.w3-container.w3-padding-large
             input(type='hidden', id='submitButtonUsed', name='submitButtonUsed', value='')
-            input(id='retry', type='submit', value='Retry', class='w3-btn w3-round w3-dark-gray w3-left', disabled)
-            input(id='send', type='submit', value='Send', class='w3-btn w3-round w3-green w3-right')
+            input(id='retry', type='submit', value='Retry', class='w3-button w3-round w3-dark-gray w3-left', disabled)
+            input(id='send', type='submit', value='Send', class='w3-button w3-round w3-green w3-right')
 
   .w3-row-padding.w3-padding-32
     input.w3-input(type='text', placeholder='Search', id='searchString', name='searchString', style='display: none;')
@@ -56,12 +56,10 @@ block content
         let limit = 10, offset = 0, search='';
         let records = !{JSON.stringify(records)};
         let endpoint = `/sse/scheduledUpdates`;
-        let eventSource = new EventSource(`/sse/scheduledUpdates?limit=${limit}&offset=${offset}&search=${search}`);
+
 
         let execID, enableInitial = true;
-
-        showRecords(eventSource, "events");
-        updatePagination(eventSource, limit, offset, "events", 1, records, endpoint, search);
+        updatePagination(limit, offset, "events", 1, records, endpoint, search, windowID);
 
         //for modal buttons
         document.addEventListener('DOMContentLoaded', function() {
@@ -74,9 +72,10 @@ block content
               const eventData = JSON.parse(event.data);
               execID = eventData.execID;
 
-              console.log(eventData.displayModal);
+              console.log(eventData);
 
               if (eventData.displayModal) {
+                  console.log('Modal should be displayed.');
                   modal.style.display = 'block';
               } else {
                   console.log('Modal should not be displayed.');
@@ -244,3 +243,6 @@ block content
               });
             }
         });
+
+
+

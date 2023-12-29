@@ -3,7 +3,7 @@ const { sequelize } = require("../config/config");
 const { Op } = require("sequelize");
 const router = express.Router();
 const { format } = require('date-fns-tz');
-const { joinTwoTables, countRecords, findLikeRecords, findByPk, updateRecord, setupCreateHook, setupUpdateHook, setupBulkCreateHook, removeHooks } = require('../sequelizer/controller/controller');
+const { joinTwoTables, countRecords, findLikeRecords, findByPk, updateRecord, setupCreateHook, setupUpdateHook, setupBulkCreateHook, removeHooks, displayNumberHooks } = require('../sequelizer/controller/controller');
 const { addToQueue, resourceIntensiveTask, processVerification } = require('../scripts/queueProcessor');
 const { findOrCreateAResort, createAnEvent, updateEventStatus } = require('../scripts/scrapeAndUpdate');
 const { resendSmsCode } = require('../services/scraper')
@@ -312,89 +312,86 @@ const mapExecutionData = async(data) => {
   }
 }
 
-const clients = [];
-const namespace = '1b671a64-40d5-491e-99b0-da01ff1f3341';
-const updateExecutionRecords = async (req, res, firstModel, secondModel, eventCond, order) => {
-  let limit = parseInt(req.query.limit);
-  let offset = parseInt(req.query.offset);
+// const clients = [];
+// const scheduledClients = [];
+// const namespace = '1b671a64-40d5-491e-99b0-da01ff1f3341';
+// const updateExecutionRecords = async (req, res, firstModel, secondModel, eventCond, order) => {
+//   let limit = parseInt(req.query.limit);
+//   let offset = parseInt(req.query.offset);
+//   const hookID = req.originalUrl;
 
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
+//   console.log("current req: ", hookID);
 
-  // Use UUIDv5 generated from the string representation of the response object
-  const clientUuid = uuidv5(res.toString(), namespace);
+//   res.setHeader('Content-Type', 'text/event-stream');
+//   res.setHeader('Cache-Control', 'no-cache');
+//   res.setHeader('Connection', 'keep-alive');
 
-  // Store the response object and associated UUID for later use
-  clients.push({ res, clientUuid });
+//   let update = async () => {
+//     try {
+//       let data = await joinTwoTables(firstModel, secondModel, eventCond, order, limit, offset);
+//       let formattedRecords = await mapExecutionData(data);
 
-  // Handle client disconnection
-  req.on('close', async () => {
-    console.log("One res disconnected in execution");
-    await removeHooks("execution", ['afterCreate', 'afterUpdate', 'afterBulkCreate'], clientUuid);
-    // Remove the response object from the array when the client disconnects
-    const index = clients.findIndex(client => client.res === res);
-    if (index !== -1) {
-      clients.splice(index, 1);
-    }
-  });
+//       res.write(`data: ${JSON.stringify(formattedRecords)}\n\n`);
 
-  let update = async () => {
-    try {
-      let data = await joinTwoTables(firstModel, secondModel, eventCond, order, limit, offset);
-      let formattedRecords = await mapExecutionData(data);
+//     } catch (error) {
+//       console.error("An error happened while joining records: ", error);
+//     }
+//   };
 
-      res.write(`data: ${JSON.stringify(formattedRecords)}\n\n`);
+//   await setupUpdateHook("execution", update, hookID);
+//   await setupCreateHook("execution", update, hookID);
+//   await setupBulkCreateHook("execution", update, hookID);
 
-    } catch (error) {
-      console.error("An error happened while joining records: ", error);
-    }
-  };
+//   update();
 
-  await setupUpdateHook("execution", update, clientUuid);
-  await setupCreateHook("execution", update, clientUuid);
-  await setupBulkCreateHook("execution", update, clientUuid);
+// };
 
-  update();
-};
+// router.post('/remove-hooks', async (req, res) => {
+//   const hookID = req.body.hookID;
 
-router.get('/sse/oneListing', async (req, res) => {
-  const eventCond = {
-    execType: "ONE_RESORT"
-  }
+//   console.log("This is the hook ID: ", hookID);
+//   // await removeHooks("execution", ['afterCreate', 'afterUpdate', 'afterBulkCreate'], hookID);
 
-  const order = [
-    [sequelize.col("createdAt"), 'DESC'],
-  ];
+// });
 
-  try {
-    await updateExecutionRecords(req, res, "execution", "resorts", eventCond, order)
-  } catch (error) {
-    console.error('Error sending SSE data:', error);
-  }
+// router.get('/sse/oneListing', async (req, res) => {
+//   const eventCond = {
+//     execType: "ONE_RESORT"
+//   }
 
-});
+//   const order = [
+//     [sequelize.col("createdAt"), 'DESC'],
+//   ];
 
-router.get('/sse/scheduledUpdates', async(req, res) => {
+//   try {
+//     await updateExecutionRecords(req, res, "execution", "resorts", eventCond, order)
+//   } catch (error) {
+//     console.error('Error sending SSE data:', error);
+//   }
 
-  const eventCond = {
-    execType: "SCHEDULED"
-  }
+// });
 
-  const order = [
-    [sequelize.col("createdAt"), 'DESC'],  
-    [sequelize.col("resort.notes"), 'DESC'],  
-    [sequelize.col("resortID"), 'ASC'],  
-    [sequelize.col("resort.unitType"), 'ASC'],  
-  ];
+// router.get('/sse/scheduledUpdates', async(req, res) => {
 
-  try {
-    await updateExecutionRecords(req, res, "execution", "resorts", eventCond, order)
-  } catch (error) {
-    console.error('Error sending SSE data:', error);
-  }
+//   const eventCond = {
+//     execType: "SCHEDULED"
+//   }
 
-});
+//   const order = [
+//     [sequelize.col("createdAt"), 'DESC'],  
+//     [sequelize.col("resort.notes"), 'DESC'],  
+//     [sequelize.col("resortID"), 'ASC'],  
+//     [sequelize.col("resort.unitType"), 'ASC'],  
+//   ];
+
+//   try {
+//     await updateExecutionRecords(req, res, "execution", "resorts", eventCond, order)
+//   } catch (error) {
+//     console.error('Error sending SSE data:', error);
+//   }
+
+// });
+
 
 // SSE Endpoint for displaying modal
 
@@ -436,7 +433,7 @@ router.get('/sse/events', async(req, res) => {
   ];
 
   try {
-    await updateExecutionRecords(req, res, "execution", "resorts", eventCond, order)
+    await updateScheduledRecords(req, res, "execution", "resorts", eventCond, order)
   } catch (error) {
     console.error('Error sending SSE data:', error);
   }

@@ -4,19 +4,31 @@
 
 //// USE THE SUBSCRIBE FUNCTION TOMORROW
 const { execution, resorts } = require("../models/model");
-const { sequelize } = require("../../config/config");
 const { Op } = require("sequelize");
+// externalModule.js
 
-let updateHook = null, createHook = null, bulkHook = null;
+const { getWss } = require('./websocket');
+
+// Access the wss instance
+const wss = getWss();
+
 
 let numberOfHooks = 0;
 async function setupUpdateHook(objectType, functionName, offset) {
   const typeofObject = objectType == "execution" ? execution : resorts;
+  
+  const firstModel = objectType == "execution" ? "execution" : "resorts";
+  const secondModel = objectType == "execution" ? "resorts" : "execution";
 
   try {
     updateHook = typeofObject.addHook('afterUpdate', offset, async () => {
       console.log('After update hook is triggered..');
-      await functionName();
+      // await functionName();
+      await joinTwoTables(firstModel, secondModel, eventCond, order, limit, offset);
+      const updatedData = await typeofObject.findByPk(client.id);
+      wss.clients.forEach((ws) => {
+        ws.send(JSON.stringify({ action: 'update', data: updatedData }));
+      });
     });
 
     numberOfHooks++;
@@ -73,6 +85,7 @@ async function removeHooks(objectType, hookArr, hookName) {
       console.log("Hook removed.")
     }
 
+    await displayNumberHooks();
     return true;
   } catch (error) {
     console.error("Error removing hooks: ", error);
@@ -265,5 +278,6 @@ module.exports = {
   setupCreateHook,
   bulkSaveRecord,
   setupBulkCreateHook,
-  removeHooks
+  removeHooks,
+  displayNumberHooks
 };

@@ -10,8 +10,6 @@ const eventEmitter = new EventEmitter();
 
 async function scheduledUpdates(tierType) {
 
-    eventEmitter.emit('modalStateChanged', { displayModal:false, execID:"123" });
-
     const order = [
         [sequelize.col("resortID"), 'DESC'], 
         [sequelize.col("unitType"), 'DESC'], 
@@ -65,6 +63,8 @@ async function scheduledUpdates(tierType) {
     
         console.log("outputing final items now...")
 
+        let displayModal = false;
+
         for(const {res, eventCreated} of joinedArray){
             addToQueue(resourceIntensiveTask, () => {
                 console.log('Task completed');
@@ -81,10 +81,12 @@ async function scheduledUpdates(tierType) {
                     updateEventStatus(eventCreated, "LOGIN_ERROR");
                 }
 
-                let displayModal =  !loggedIn ;
+                displayModal = loggedIn === false ? true : false ;
                 let execID = eventCreated.execID;
-            
-                eventEmitter.emit('modalStateChanged', { displayModal, execID });
+
+                if (displayModal) {
+                    eventEmitter.emit('modalStateChanged', { displayModal, execID });
+                }
     
                 })
             .catch(error => {
