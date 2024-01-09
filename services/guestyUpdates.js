@@ -239,6 +239,7 @@ async function retrieveListings(substringAddress){
 async function retrieveAListing(listingID){
 
     let token = await returnAValidToken(clientID, clientSecret);
+    console.log(token)
     let fields = "_id bedrooms title type address calendarRules.bookingWindow";
     const url = `https://open-api.guesty.com/v1/listings/${listingID}?fields=${fields}`;
 
@@ -261,6 +262,7 @@ async function retrieveAListing(listingID){
     } catch (error) {
         // Handle errors that may occur during the request
         console.error('Error:', error.message);
+        console.error(error)
         console.error('Reason:', error.response.data);
         return null;
     }

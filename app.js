@@ -5,13 +5,15 @@ var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 var router = require("./routes/index");
-
-var { clientID, clientSecret, returnAValidToken } = require("./config/config");
+const WebSocket = require('ws');
 
 const schedule = require("node-schedule");
 const { scheduledUpdates } = require("./scripts/scheduledUpdates");
 
 var app = express();
+
+const server = require('http').createServer(app);
+const wss = new WebSocket.Server({ server });
 
 let updateOnce = true;
 
@@ -28,6 +30,8 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // Middleware to check token expiration and refresh if necessary
 app.use(async (req, res, next) => {
+
+  req.wss = wss;
 
   if (updateOnce) {
     updateOnce = false;
@@ -59,34 +63,20 @@ app.use(function (err, req, res, next) {
 });
 
 // Schedule the update every 8 hours, 24 hours, and 1 week, respectively
-// schedule.scheduleJob('0 */8 * * *', async () => {
-//   console.log("Tier 1 schedule function is called");
-//   await scheduledUpdates("TIER 1");
-// });
+schedule.scheduleJob('0 */8 * * *', async () => {
+  console.log("Tier 1 schedule function is called");
+  await scheduledUpdates("TIER 1");
+});
 
 
-// schedule.scheduleJob("0 0 */1 * *", async () => {
-//   console.log("Tier 2 schedule function is called");
-//   await scheduledUpdates("TIER 2");
-// });
+schedule.scheduleJob("0 0 */1 * *", async () => {
+  console.log("Tier 2 schedule function is called");
+  await scheduledUpdates("TIER 2");
+});
 
-// schedule.scheduleJob("0 0 * * 1", async () => {
-//   console.log("Tier 3 schedule function is called");
-//   await scheduledUpdates("TIER 3");
-// });
-
-function setupWebSocketServer(server) {
-  const wss = new WebSocket.Server({ server });
-
-  wss.on('connection', (ws) => {
-    console.log('WebSocket client connected');
-
-    ws.on('close', () => {
-      console.log('WebSocket client disconnected');
-    });
-  });
-
-  return wss;
-}
+schedule.scheduleJob("0 0 * * 1", async () => {
+  console.log("Tier 3 schedule function is called");
+  await scheduledUpdates("TIER 3");
+});
 
 module.exports = app;

@@ -76,18 +76,18 @@ block content
         //for showing records
         let limit = 10, offset = 0, search = '';
         let records = !{JSON.stringify(records)};
-        let endpoint = `/sse/oneListing`;
-
-        let windowID = generateUniqueString();
+        let endpoint = `oneListing`;
 
         let resortRefNum, eventCreated, execID, resort_id, suite_type, months, enableInitial = true;
-
-        //- showRecords(eventSource, "events");
-        updatePagination(limit, offset, "events", 1, records, endpoint, search, windowID)
+        let tabID = generateUniqueString();
 
         //for modal buttons
         let modal = document.getElementById('myModal');
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
+
+          const ws = await connectToServer('');
+          updatePagination(limit, offset, "events", 1, records, endpoint, search, ws, tabID);
+
           let closeModalButton = document.getElementById('closeModal');
 
           closeModalButton.onclick = function() {

@@ -2,110 +2,107 @@
 // FOR SHOWING RECORDS DEPENDING ON THE PAGINATION
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-let updatedEventSource = null;
 let searchInput = null;
 let searchTimeout = null;
 let paginationTimeout = null;
 let refreshTimeout = null;
 
 let retryExecID;
+let modalExecID;
 
-
-function createEventSource(eventSource, limit, offset, endpoint, searchInput, windowID, url) {
-
-    const newEventSource = new EventSource(`${endpoint}?limit=${limit}&offset=${offset}&search=${searchInput}&windowID=${windowID}`);
-
-    return newEventSource;
-}
-
-function showRecords(eventSource, tableType){
+function showRecords(ws, tableType){
     const tableBody = document.getElementById("table-body");
-    eventSource.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-    tableBody.innerHTML = '';
-    data.forEach(item => {
+    ws.onmessage = (message) => {
+    const data = JSON.parse(message.data).data;
+    if(data.hasOwnProperty('displayModal')) {
 
-        let href;
-        let listingID = tableType === "resorts" ? item.listingID : item.resort.listingID;
-        let listingIDarray = listingID.split(",");
+        let modal = document.getElementById('myModal');
 
-        listingIDarray.forEach((item, index, array) => {
-            array[index] = "https://app.guesty.com/properties/" + item;
-        });
-    
-        if (listingIDarray.length === 1){
-            href = listingIDarray[0]; 
+        const displayModal = data.displayModal;
+        modalExecID = data.execID;
+
+        if(displayModal) {
+          console.log('Modal should be displayed.');
+          modal.style.display = 'block';
         } else {
-            href = `/duplicateListingLinks?links=${listingIDarray}`;
+          console.log('Modal should not be displayed.');
+          modal.style.display = 'none';
         }
+    } else {
+        tableBody.innerHTML = '';
+        data.forEach(item => {
 
-        const row = document.createElement("tr");
-        if (tableType === "resorts") {
-            row.innerHTML = `
-                <td>
-                <input type="checkbox" id="${item.resortRefNum}" name="checkbox[]" value="${item.resortRefNum}">
-                <button onclick="copyText(this.id)" class="linkButton copy" id="${item.resortID}" value="${item.resortID}" title="Click to copy">
-                        ${item.resortID}
-                    </button>
-                </td>
-                <td>
-                    <a href="${href}" id="${item.listingID}" class="linkButton navigate" target="_blank">
-                        ${item.listingName}
-                    </a>
-                </td>
-                <td>${item.resortName}</td>
-                <td>${item.unitType}</td>
-                <td>${item.notes}</td>
-            `;
-        }
-        else { 
-            row.innerHTML = `
-                <td>
-                    <button onclick="copyText(this.id)" class="linkButton copy" id="${item.resort.resortID}" value="${item.resort.resortID}" title="Click to copy">
-                        ${item.resort.resortID}
-                    </button>
-                </td>
-                <td>
-                    <a href="${href}" id="${item.resort.listingID}" class="linkButton navigate" target="_blank">
-                    ${item.resort.listingName}
-                    </a>
-                </td>
-                <td>${item.resort.unitType}</td>
-                <td>${item.execStatus}</td>
-                <td>${item.monthstoScrape}</td>
-                <td>${item.createdAt}</td>
-                <td>${item.updatedAt}</td>
-                <td>
-                    <button onclick="retry(this.id)" id="${item.execStatus},${item.resort.resortID},${item.resort.unitType},${item.monthstoScrape},${item.execID}" class="linkButton">
-                        Retry
-                    </button>
-                </td>
-            `;
-        }
-        tableBody.appendChild(row);
-    });
+            let href;
+            let listingID = tableType === "resorts" ? item.listingID : item.resort.listingID;
+            let listingIDarray = listingID.split(",");
+
+            listingIDarray.forEach((item, index, array) => {
+                array[index] = "https://app.guesty.com/properties/" + item;
+            });
+        
+            if (listingIDarray.length === 1){
+                href = listingIDarray[0]; 
+            } else {
+                href = `/duplicateListingLinks?links=${listingIDarray}`;
+            }
+
+            const row = document.createElement("tr");
+            if (tableType === "resorts") {
+                row.innerHTML = `
+                    <td>
+                    <input type="checkbox" id="${item.resortRefNum}" name="checkbox[]" value="${item.resortRefNum}">
+                    <button onclick="copyText(this.id)" class="linkButton copy" id="${item.resortID}" value="${item.resortID}" title="Click to copy">
+                            ${item.resortID}
+                        </button>
+                    </td>
+                    <td>
+                        <a href="${href}" id="${item.listingID}" class="linkButton navigate" target="_blank">
+                            ${item.listingName}
+                        </a>
+                    </td>
+                    <td>${item.resortName}</td>
+                    <td>${item.unitType}</td>
+                    <td>${item.notes}</td>
+                `;
+            }
+            else { 
+                row.innerHTML = `
+                    <td>
+                        <button onclick="copyText(this.id)" class="linkButton copy" id="${item.resort.resortID}" value="${item.resort.resortID}" title="Click to copy">
+                            ${item.resort.resortID}
+                        </button>
+                    </td>
+                    <td>
+                        <a href="${href}" id="${item.resort.listingID}" class="linkButton navigate" target="_blank">
+                        ${item.resort.listingName}
+                        </a>
+                    </td>
+                    <td>${item.resort.unitType}</td>
+                    <td>${item.execStatus}</td>
+                    <td>${item.monthstoScrape}</td>
+                    <td>${item.createdAt}</td>
+                    <td>${item.updatedAt}</td>
+                    <td>
+                        <button onclick="retry(this.id)" id="${item.execStatus},${item.resort.resortID},${item.resort.unitType},${item.monthstoScrape},${item.execID}" class="linkButton">
+                            Retry
+                        </button>
+                    </td>
+                `;
+            }
+            tableBody.appendChild(row);
+        });
+    }
     };
 }
 
-function updateEventSource(eventSource, limit, newOffset, tableType, endpoint, searchInput, windowID) {
-    if (updatedEventSource !== null) {
-        console.log("source closed") 
-        updatedEventSource.close(); 
-    }
-    const url = "url"
-    updatedEventSource = createEventSource(eventSource, limit, newOffset, endpoint, searchInput, windowID, url);
-    showRecords(updatedEventSource, tableType);
-}
 
-
-function updatePagination(limit, offset, tableType, currentPage, records, endpoint, search, windowID) {
+function updatePagination(limit, offset, tableType, currentPage, records, endpoint, search, ws, tabID) {
     // Updates the offset
     offset = limit * (currentPage - 1)
-    console.log(updatedEventSource)
-    // let currentEventSource = updatedEventSource === null ? eventSource : updatedEventSource;
-    // updatedEventSource = updatedEventSource === null ? eventSource : updatedEventSource;
     searchInput = searchInput === null ? search : searchInput;
-    updateEventSource(updatedEventSource, limit, offset, tableType, endpoint, searchInput, windowID);
+    ws.send(JSON.stringify({ endpoint: endpoint, limit: limit, offset: offset, search : search, tabID : tabID }));
+
+    showRecords(ws, tableType);
 
     var totalPages = Math.ceil(parseInt(records, 10) / 10); 
     var paginationElement = document.getElementById('pagination');
@@ -114,34 +111,16 @@ function updatePagination(limit, offset, tableType, currentPage, records, endpoi
     var startPage = Math.max(1, currentPage - Math.floor(4 / 2));
     var endPage = Math.min(totalPages, startPage + 4 - 1);
     
+    //for search input
     document.getElementById('searchString').addEventListener('input', () => {
         clearTimeout(searchTimeout);
 
         searchTimeout = setTimeout(() => {
             searchInput = document.getElementById('searchString').value;
-            updatePagination(limit, offset, tableType, 1, records, endpoint, searchInput, windowID);
+            updatePagination(limit, offset, tableType, 1, records, endpoint, searchInput, ws, tabID);
         }, 1000); 
     });
-
-    // document.addEventListener('DOMContentLoaded', function () {
-    //     const eventSource = new EventSource('/sse/scheduledUpdates');
       
-    //     eventSource.onmessage = function (event) {
-    //       const eventData = JSON.parse(event.data);
-    //       // Process and update your UI with the received data
-    //     };
-      
-    //     eventSource.addEventListener('update', function (event) {
-    //       // Handle update event, e.g., fetch new data or update UI
-    //       fetchDataAndUpdateUI();
-    //     });
-      
-    //     // Optionally, trigger data fetch and UI update on page load
-    //     fetchDataAndUpdateUI();
-    //   });
-      
-      
-
     const buttons = document.getElementsByName('tierButton');
 
     for (const button of buttons) {
@@ -149,7 +128,7 @@ function updatePagination(limit, offset, tableType, currentPage, records, endpoi
             clearTimeout(refreshTimeout);
 
             refreshTimeout = setTimeout(() => {
-                updatePagination(limit, offset, tableType, currentPage, records, endpoint, searchInput, windowID);
+                updatePagination(limit, offset, tableType, currentPage, records, endpoint, searchInput, ws, tabID);
             }, 1000); 
         });
     }
@@ -167,7 +146,7 @@ function updatePagination(limit, offset, tableType, currentPage, records, endpoi
             clearTimeout(paginationTimeout);
 
             paginationTimeout = setTimeout(() => {
-                updatePagination(limit, offset, tableType, currentPage - 1, records, endpoint, searchInput, windowID);
+                updatePagination(limit, offset, tableType, currentPage - 1, records, endpoint, searchInput, ws, tabID);
             }, 300); 
         });
 
@@ -185,7 +164,7 @@ function updatePagination(limit, offset, tableType, currentPage, records, endpoi
 
             paginationTimeout = setTimeout(() => {
                 var clickedId = this.id;
-                updatePagination(limit, offset, tableType, parseInt(clickedId, 10), records, endpoint, searchInput, windowID);
+                updatePagination(limit, offset, tableType, parseInt(clickedId, 10), records, endpoint, searchInput, ws, tabID);
             }, 300); 
         });
 
@@ -201,7 +180,7 @@ function updatePagination(limit, offset, tableType, currentPage, records, endpoi
             clearTimeout(paginationTimeout);
 
             paginationTimeout = setTimeout(() => {
-                updatePagination(limit, offset, tableType, currentPage + 1, records, endpoint, searchInput, windowID);
+                updatePagination(limit, offset, tableType, currentPage + 1, records, endpoint, searchInput, ws, tabID);
             }, 300); 
         });
 
@@ -210,19 +189,6 @@ function updatePagination(limit, offset, tableType, currentPage, records, endpoi
 
     document.getElementById(currentPage).classList.add('w3-green');
 
-}
-
-// Function to fetch data and update UI
-function fetchDataAndUpdateUI() {
-    // Fetch data from the server or perform any necessary updates
-    fetch('/getDataFromServer')
-    .then(response => response.json())
-    .then(data => {
-        // Process and update your UI with the new data
-    })
-    .catch(error => {
-        console.error('Error fetching data:', error);
-    });
 }
 
 function copyText(itemID) {
@@ -242,23 +208,6 @@ function copyText(itemID) {
     document.body.removeChild(textArea);
 
 }
-
-// function openLinks(listingID){
-//     let listingIDarray = listingID.split(",");
-//     listingIDarray.forEach((item, index, array) => {
-//         array[index] = "https://app.guesty.com/properties/" + item;
-//     });
-
-//     if (listingIDarray.length === 1){
-//         const url = listingIDarray[0]; 
-//         window.open(url, '_blank');
-//     } else {
-//         console.log("multiple links present")
-//         // window.open(`/duplicateListingLinks?links=${JSON.stringify(listingIDarray)}`, '_blank');
-//         return `/duplicateListingLinks?links=${JSON.stringify(listingIDarray)}`;
-//     }
-
-// }
 
 function retry(fields){
     let resortFields = fields.split(",");
@@ -301,6 +250,18 @@ function retry(fields){
           });
 
     }
+}
+
+async function connectToServer(endpoint) {
+    const ws = new WebSocket(`ws://localhost:3001/${endpoint}`);
+    return new Promise((resolve, reject) => {
+        const timer = setInterval(() => {
+            if(ws.readyState === 1) {
+                clearInterval(timer)
+                resolve(ws);
+            }
+        }, 10);
+    });
 }
 
 function generateUniqueString() {

@@ -5,30 +5,16 @@
 //// USE THE SUBSCRIBE FUNCTION TOMORROW
 const { execution, resorts } = require("../models/model");
 const { Op } = require("sequelize");
-// externalModule.js
-
-const { getWss } = require('./websocket');
-
-// Access the wss instance
-const wss = getWss();
 
 
 let numberOfHooks = 0;
 async function setupUpdateHook(objectType, functionName, offset) {
   const typeofObject = objectType == "execution" ? execution : resorts;
-  
-  const firstModel = objectType == "execution" ? "execution" : "resorts";
-  const secondModel = objectType == "execution" ? "resorts" : "execution";
 
   try {
     updateHook = typeofObject.addHook('afterUpdate', offset, async () => {
       console.log('After update hook is triggered..');
-      // await functionName();
-      await joinTwoTables(firstModel, secondModel, eventCond, order, limit, offset);
-      const updatedData = await typeofObject.findByPk(client.id);
-      wss.clients.forEach((ws) => {
-        ws.send(JSON.stringify({ action: 'update', data: updatedData }));
-      });
+      await functionName();
     });
 
     numberOfHooks++;
@@ -222,7 +208,7 @@ async function joinTwoTables(fModel, sModel, condJson, order, limit, offset) {
       include: [
         {
           model: secondModel,
-          required: true,
+          required: false,
         },
       ],
       order: order,

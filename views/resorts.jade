@@ -33,11 +33,15 @@ block content
             script.
                 let limit = 10, offset = 0, search = '';
                 let records = !{JSON.stringify(records)};
-                let endpoint = `/sse/resorts`;
-                let eventSource = new EventSource(`/sse/resorts?limit=${limit}&offset=${offset}&search=${search}`); 
+                let endpoint = `resorts`;
 
-                showRecords(eventSource, "resorts");
-                updatePagination(eventSource, limit, offset, "resorts", 1, records, endpoint, search);
+                let tabID = generateUniqueString();
+
+                document.addEventListener('DOMContentLoaded', async function() {
+                    const ws = await connectToServer('resorts');
+                    updatePagination(limit, offset, "resorts", 1, records, endpoint, search, ws, tabID);
+                });
+
 
                 const form = document.getElementById('checkboxForm');
                 form.addEventListener('submit', function (e) {
