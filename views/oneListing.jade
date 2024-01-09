@@ -30,8 +30,8 @@ block content
           input.w3-input.w3-padding-small(type="text", id='OTP', name='OTP', placeholder="Enter OTP", value="")         
         footer.w3-container.w3-padding-large
             input(type='hidden', id='submitButtonUsed', name='submitButtonUsed', value='')
-            input(id='retry', type='submit', value='Retry', class='w3-btn w3-round w3-dark-gray w3-left', disabled)
-            input(id='send', type='submit', value='Send', class='w3-btn w3-round w3-green w3-right')
+            input(id='retry', type='submit', value='Retry', class='w3-button w3-round w3-dark-gray w3-left', disabled)
+            input(id='send', type='submit', value='Send', class='w3-button w3-round w3-green w3-right')
 
   .w3-row-padding.w3-padding-32
     input.w3-input(type='text', placeholder='Search', id='searchString', name='searchString', style='display: none;')
@@ -51,7 +51,7 @@ block content
       .w3-col.s2.w3-padding-small
         input.w3-input(type='number', placeholder='Months', id='months', name='months', required)
       .w3-col.s2.w3-padding-small
-        input(type='submit', value='Run', class='w3-btn w3-round w3-green w3-block')
+        input(type='submit', value='Run', class='w3-button w3-round w3-green w3-block')
       .w3-padding-32
     .w3-padding-16
       table.w3-table.w3-card.w3-centered
@@ -76,17 +76,18 @@ block content
         //for showing records
         let limit = 10, offset = 0, search = '';
         let records = !{JSON.stringify(records)};
-        let endpoint = `/sse/oneListing`;
-        let eventSource = new EventSource(`/sse/oneListing?limit=${limit}&offset=${offset}&search=${search}`);
+        let endpoint = `oneListing`;
 
         let resortRefNum, eventCreated, execID, resort_id, suite_type, months, enableInitial = true;
-
-        showRecords(eventSource, "events");
-        updatePagination(eventSource, limit, offset, "events", 1, records, endpoint, search)
+        let tabID = generateUniqueString();
 
         //for modal buttons
         let modal = document.getElementById('myModal');
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
+
+          const ws = await connectToServer('');
+          updatePagination(limit, offset, "events", 1, records, endpoint, search, ws, tabID);
+
           let closeModalButton = document.getElementById('closeModal');
 
           closeModalButton.onclick = function() {

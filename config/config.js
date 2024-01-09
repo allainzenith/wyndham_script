@@ -39,16 +39,14 @@ clientSecret = "UHOTWqyCoO9TkDrEAjlhF3IjMoZ2Ib6meTAGPFJvoxkq4NYgM9OdF2kIcz6aIIE-
 MAP_API_KEY = "pk.bf6f09004152aac4733ac98034c6c838";
 
 async function returnAValidToken(clientID, clientSecret){
-    let token;
     // Get the current date and time
     let currentDate = new Date();
 
+    let token;
+
     try {
 
-        const tokenJsonPath = path.join(__dirname, './jsons/token.json');
-
-        const rawData = fs.readFileSync(tokenJsonPath, 'utf8');
-        const jsonData = JSON.parse(rawData);
+        const { tokenJsonPath, jsonData } = readJSONFile();
 
         const expirationDate = new Date(jsonData.expires_in);
 
@@ -74,7 +72,7 @@ async function returnAValidToken(clientID, clientSecret){
                 .then((response) => {
                     console.log(response.data)
                     const responseData = response.data;
-                    token = responseData.access_token
+                    token = responseData.access_token;
                     let futureDateTime = new Date(currentDate.getTime() + (23 * 60 * 60 * 1000));
                     
                     //write json object in an existing json file
@@ -88,24 +86,31 @@ async function returnAValidToken(clientID, clientSecret){
                     let jsonString = JSON.stringify(tokenSpecs, null, 2);
                     fs.writeFileSync(tokenJsonPath, jsonString);
 
-                    return token;
+                    const { jsonData } = readJSONFile();
+
+                    console.log("RESPONSE DATAAA")
+                    console.log(responseData.access_token)
+
+                    return responseData.access_token;
                 })
                 .catch((error) => {
-                    console.error('Error:', error);
-                    return jsonData.access_token;
+                    console.error('Error creating access token:', error);
+                    token = jsonData.access_token;
                 });
 
 
             } catch (error) {
                 console.error('Error:', error.message);
                 console.error('Reason:', error.response.data);
-                return jsonData.access_token;;        
+                token = jsonData.access_token;;        
             } 
         }
         else {
             console.log('The token expiration date is in the future.');
-            return jsonData.access_token;
+            token = jsonData.access_token;
         }
+
+        return token;
     } catch (error) {
         // Handle any errors that occur while reading the file
         console.error('Error:', error.message);
@@ -114,6 +119,15 @@ async function returnAValidToken(clientID, clientSecret){
 
     
 
+}
+
+function readJSONFile() {
+    const tokenJsonPath = path.join(__dirname, './jsons/token.json');
+
+    const rawData = fs.readFileSync(tokenJsonPath, 'utf8');
+    const jsonData = JSON.parse(rawData);
+
+    return { tokenJsonPath, jsonData };
 }
 
 module.exports = {

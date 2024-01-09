@@ -4,10 +4,8 @@
 
 //// USE THE SUBSCRIBE FUNCTION TOMORROW
 const { execution, resorts } = require("../models/model");
-const { sequelize } = require("../../config/config");
 const { Op } = require("sequelize");
 
-let updateHook = null, createHook = null, bulkHook = null;
 
 let numberOfHooks = 0;
 async function setupUpdateHook(objectType, functionName, offset) {
@@ -73,6 +71,7 @@ async function removeHooks(objectType, hookArr, hookName) {
       console.log("Hook removed.")
     }
 
+    await displayNumberHooks();
     return true;
   } catch (error) {
     console.error("Error removing hooks: ", error);
@@ -209,7 +208,7 @@ async function joinTwoTables(fModel, sModel, condJson, order, limit, offset) {
       include: [
         {
           model: secondModel,
-          required: true,
+          required: false,
         },
       ],
       order: order,
@@ -265,5 +264,6 @@ module.exports = {
   setupCreateHook,
   bulkSaveRecord,
   setupBulkCreateHook,
-  removeHooks
+  removeHooks,
+  displayNumberHooks
 };

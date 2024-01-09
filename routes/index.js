@@ -2,20 +2,20 @@ const express = require('express');
 const { sequelize } = require("../config/config");
 const { Op } = require("sequelize");
 const router = express.Router();
+const { v5: uuidv5 } = require('uuid');
+const { eventEmitter } = require('../scripts/scheduledUpdates');
 const { format } = require('date-fns-tz');
 const { joinTwoTables, countRecords, findLikeRecords, findByPk, updateRecord, setupCreateHook, setupUpdateHook, setupBulkCreateHook, removeHooks } = require('../sequelizer/controller/controller');
 const { addToQueue, resourceIntensiveTask, processVerification } = require('../scripts/queueProcessor');
 const { findOrCreateAResort, createAnEvent, updateEventStatus } = require('../scripts/scrapeAndUpdate');
 const { resendSmsCode } = require('../services/scraper')
-const { v5: uuidv5 } = require('uuid');
-const { eventEmitter } = require('../scripts/scheduledUpdates');
 
 
 let isVerified = false;
 
 router.get('/', async(req, res, next) => {
   const amount = await countRecords("execution", {execType:"ONE_RESORT"});
-  res.render('oneListing', {records:amount});
+  res.render('oneListing', { records : amount } );
 });
 
 router.get('/oneListing', async(req, res, next) => {
@@ -29,18 +29,18 @@ router.get('/allListings', function(req, res, next) {
 
 router.get('/scheduledUpdates', async(req, res, next) => {
   const amount = await countRecords("execution", {execType:"SCHEDULED"});
-  res.render('scheduledUpdates', { records:amount });
+  res.render('scheduledUpdates', { records : amount } );
 });
 
 router.get('/resorts', async(req, res, next) => {
   const amount = await countRecords("resorts", {});
-  res.render('resorts', {records:amount});
+  res.render('resorts', { records : amount } );
 
 });
 
 router.get('/events', async(req, res, next) => {
   const amount = await countRecords("resorts", {});
-  res.render('events', {records:amount});
+  res.render('events', { records : amount } );
 
 });
 
@@ -282,187 +282,14 @@ router.get('/retry', async(req, res, next) => {
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// SSE ENDPOINTS                
+// WEBSOCKET                
 ///////////////////////////////////////////////////////////////////////////////
 
-const mapExecutionData = async(data) => {
+const mapExecutionData = async(data, endpoint) => {
   try {
     let formattedRecords = [];
     if (Array.isArray(data)) {
-      formattedRecords = data.map(item => ({
-          ...item.toJSON(), 
-          resort: {
-            listingName: item.resort.listingName === null? "To be updated": item.resort.listingName, 
-            listingID: item.resort.listingID === null? "To be updated": item.resort.listingID, 
-            resortName: item.resort.resortName === null? "To be updated": item.resort.resortName, 
-            unitType: item.resort.unitType === null? "To be updated": item.resort.unitType, 
-            resortID: item.resort.resortID === null? "To be updated": item.resort.resortID, 
-          }, 
-          execID: item.execID === null? "To be updated": item.execID,  
-          createdAt: format(item.createdAt, 'MM-dd-yyyy HH:mm:ss', { timeZone: 'America/New_York' }),
-          updatedAt: format(item.updatedAt, 'MM-dd-yyyy HH:mm:ss', { timeZone: 'America/New_York' }),
-        }));
-
-    }
-
-    return formattedRecords;
-  } catch (error) {
-    console.error("Error mapping the records: ", error);
-    return [];
-  }
-}
-
-const clients = [];
-const namespace = '1b671a64-40d5-491e-99b0-da01ff1f3341';
-const updateExecutionRecords = async (req, res, firstModel, secondModel, eventCond, order) => {
-  let limit = parseInt(req.query.limit);
-  let offset = parseInt(req.query.offset);
-
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-
-  // Use UUIDv5 generated from the string representation of the response object
-  const clientUuid = uuidv5(res.toString(), namespace);
-
-  // Store the response object and associated UUID for later use
-  clients.push({ res, clientUuid });
-
-  // Handle client disconnection
-  req.on('close', async () => {
-    console.log("One res disconnected in execution");
-    await removeHooks("execution", ['afterCreate', 'afterUpdate', 'afterBulkCreate'], clientUuid);
-    // Remove the response object from the array when the client disconnects
-    const index = clients.findIndex(client => client.res === res);
-    if (index !== -1) {
-      clients.splice(index, 1);
-    }
-  });
-
-  let update = async () => {
-    try {
-      let data = await joinTwoTables(firstModel, secondModel, eventCond, order, limit, offset);
-      let formattedRecords = await mapExecutionData(data);
-
-      res.write(`data: ${JSON.stringify(formattedRecords)}\n\n`);
-
-    } catch (error) {
-      console.error("An error happened while joining records: ", error);
-    }
-  };
-
-  await setupUpdateHook("execution", update, clientUuid);
-  await setupCreateHook("execution", update, clientUuid);
-  await setupBulkCreateHook("execution", update, clientUuid);
-
-  update();
-};
-
-router.get('/sse/oneListing', async (req, res) => {
-  const eventCond = {
-    execType: "ONE_RESORT"
-  }
-
-  const order = [
-    [sequelize.col("createdAt"), 'DESC'],
-  ];
-
-  try {
-    await updateExecutionRecords(req, res, "execution", "resorts", eventCond, order)
-  } catch (error) {
-    console.error('Error sending SSE data:', error);
-  }
-
-});
-
-router.get('/sse/scheduledUpdates', async(req, res) => {
-
-  const eventCond = {
-    execType: "SCHEDULED"
-  }
-
-  const order = [
-    [sequelize.col("createdAt"), 'DESC'],  
-    [sequelize.col("resort.notes"), 'DESC'],  
-    [sequelize.col("resortID"), 'ASC'],  
-    [sequelize.col("resort.unitType"), 'ASC'],  
-  ];
-
-  try {
-    await updateExecutionRecords(req, res, "execution", "resorts", eventCond, order)
-  } catch (error) {
-    console.error('Error sending SSE data:', error);
-  }
-
-});
-
-// SSE Endpoint for displaying modal
-
-router.get('/sse/scheduledUpdatesModal', (req, res) => {
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-
-  const onModalStateChanged = (data) => {
-      res.write(`data: ${JSON.stringify(data)}\n\n`);
-  };
-
-  eventEmitter.on('modalStateChanged', onModalStateChanged);
-
-  req.on('close', () => {
-      eventEmitter.removeListener('modalStateChanged', onModalStateChanged);
-  });
-});
-
-router.get('/sse/events', async(req, res) => {
-
-  let search = req.query.search;
-
-  const eventCond = {
-    [Op.or]: [
-      // { "resort.resortID": { [Op.substring]: search } },
-      // { "resort.resortName": { [Op.substring]: search } },
-      // { "resort.listingName": { [Op.substring]: search } },
-      // { "resort.unitType": { [Op.substring]: search } },
-      { "execStatus": { [Op.substring]: search } },
-      { "monthstoScrape": { [Op.substring]: search } },
-      { "createdAt": { [Op.substring]: search } },
-      { "updatedAt": { [Op.substring]: search } },
-    ],
-  }
-
-  const order = [
-    [sequelize.col("createdAt"), 'DESC'],  
-  ];
-
-  try {
-    await updateExecutionRecords(req, res, "execution", "resorts", eventCond, order)
-  } catch (error) {
-    console.error('Error sending SSE data:', error);
-  }
-
-});
-
-router.get('/sse/resorts', async(req, res) => {
-  let limit = parseInt(req.query.limit);
-  let offset = parseInt(req.query.offset);
-
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-
-  let search = req.query.search;
-
-  const order = [
-    [sequelize.col("resortID"), 'DESC'], 
-  ];
-
-
-  let update = async() => {
-    try {
-      let data = await findLikeRecords(search, "resorts", order, limit, offset);
-      let formattedRecords = [];
-      if (Array.isArray(data)) {
+      if (endpoint.includes('resorts')) {
         formattedRecords = data.map(item => ({
           ...item.toJSON(),  
           resortRefNum: item.resortRefNum === null? "To be updated": item.resortRefNum,
@@ -474,22 +301,172 @@ router.get('/sse/resorts', async(req, res) => {
           notes: item.notes === null? "": item.notes,
     
         }));
+      } else {
+        formattedRecords = data.map(item => ({
+            ...item.toJSON(), 
+            resort: {
+              listingName: item.resort.listingName === null? "To be updated": item.resort.listingName, 
+              listingID: item.resort.listingID === null? "To be updated": item.resort.listingID, 
+              resortName: item.resort.resortName === null? "To be updated": item.resort.resortName, 
+              unitType: item.resort.unitType === null? "To be updated": item.resort.unitType, 
+              resortID: item.resort.resortID === null? "To be updated": item.resort.resortID, 
+            }, 
+            execID: item.execID === null? "To be updated": item.execID,  
+            createdAt: format(item.createdAt, 'MM-dd-yyyy HH:mm:ss', { timeZone: 'America/New_York' }),
+            updatedAt: format(item.updatedAt, 'MM-dd-yyyy HH:mm:ss', { timeZone: 'America/New_York' }),
+        }));
       }
-
-      res.write(`data: ${JSON.stringify(formattedRecords)}\n\n`);
-
-    } catch (error) {
-      console.error("An error happened while joining records: ", error);
     }
+
+    return formattedRecords;
+  } catch (error) {
+    console.error("Error mapping the records: ", error);
+    return [];
+  }
+}
+
+const WebSocket = require('ws');
+const wss = new WebSocket.Server({ port : 3001 });
+const c = new Map();
+const crypto = require('crypto');
+wss.on('connection', async(ws) => {
+  //for hook ids
+  const id = crypto.randomUUID();
+  let tabID;
+
+  ws.on('open', function open() {
+    ws.send('something');
+  });
+  
+  ws.on('message', async function message(data) {
+    console.log('received: %s', data);
+
+    let values = JSON.parse(data);
+    let endpoint = values.endpoint;
+
+    let limit = values.limit;
+    let offset = values.offset;
+    let search = values.search;
+
+    tabID = values.tabID;
+
+
+    c.forEach(async(value) => {
+      if(value.tabID === tabID) {
+        await removeHooks("execution", ['afterCreate', 'afterUpdate', 'afterBulkCreate'], value.id);
+      }
+    });
+
+    let update = async () => {
+      try {
+        const { eventCond, order } = getEventCondAndOrder(endpoint, search);
+
+        let records = await returnData(endpoint, eventCond, order, limit, offset, search);
+
+        // let records = await joinTwoTables("execution", "resorts", eventCond, order, limit, offset)
+        let formattedRecords = await mapExecutionData(records, endpoint);
+    
+        ws.send(JSON.stringify({ data : formattedRecords }));
+  
+      } catch (error) {
+        console.error("An error happened while joining records: ", error);
+      }
+    };
+
+    await setupUpdateHook("execution", update, id);
+    await setupCreateHook("execution", update, id);
+    await setupBulkCreateHook("execution", update, id);
+
+    c.set(ws, { id, tabID });
+  
+    update();
+  
+  });
+
+  const onModalStateChanged = (data) => {
+    ws.send(JSON.stringify({ data : data }));
   };
 
+  eventEmitter.on('modalStateChanged', onModalStateChanged);
 
-  update();
+  ws.on('close', async() => {
+    //remove hook using ws
+    //delete from map
+    const hookID = c.get(ws).id;
+    await removeHooks("execution", ['afterCreate', 'afterUpdate', 'afterBulkCreate'], hookID);
+    eventEmitter.removeListener('modalStateChanged', onModalStateChanged);
+    c.delete(ws);
+    console.log("connection removed")
+  })
 
-});
+})
+
+async function returnData(endpoint, eventCond, order, limit, offset, search) {
+  let records;
+
+  if(endpoint.includes('resorts')) {
+    records = await findLikeRecords(search, "resorts", order, limit, offset);
+  } else {
+    records = await joinTwoTables("execution", "resorts", eventCond, order, limit, offset);
+  }
+
+  return records;
+}
+
+function getEventCondAndOrder(endpoint, search) {
+  let eventCond, order;
+
+  if(endpoint.includes('scheduledUpdates')) {
+      eventCond = {
+        execType: "SCHEDULED"
+      }
+
+      order = [
+        [sequelize.col("createdAt"), 'DESC'],  
+        [sequelize.col("resort.notes"), 'DESC'],  
+        [sequelize.col("resortID"), 'ASC'],  
+        [sequelize.col("resort.unitType"), 'ASC'],  
+      ]
+  } else if(endpoint.includes('oneListing')){
+    eventCond = {
+      execType: "ONE_RESORT"
+    }
+
+    order = [
+      [sequelize.col("createdAt"), 'DESC'],  
+    ]
+
+  } else if(endpoint.includes('events')){
+    eventCond = {
+      [Op.or]: [
+          {'$execution.execStatus$' : { [Op.substring]: search }},
+          {'$execution.monthstoScrape$' : { [Op.substring]: search }},
+          {'$execution.createdAt$' : { [Op.substring]: search }},
+          {'$execution.updatedAt$' : { [Op.substring]: search }},
+          {'$resort.resortID$' : { [Op.substring]: search }},
+          {'$resort.resortName$' : { [Op.substring]: search }},
+          {'$resort.listingName$' : { [Op.substring]: search }},
+          {'$resort.unitType$' : { [Op.substring]: search }},
+      ]
+    }
+
+    order = [
+      [sequelize.col("createdAt"), 'DESC'],  
+    ]
+
+  } else if(endpoint.includes('resorts')){
+    order = [
+      [sequelize.col("resortID"), 'DESC'], 
+    ]
+  
+  }
 
 
-  module.exports = router ;
+  return { eventCond, order };
+}
+
+
+module.exports = router ;
 
 
 

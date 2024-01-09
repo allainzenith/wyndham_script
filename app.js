@@ -5,13 +5,15 @@ var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 var router = require("./routes/index");
-
-var { clientID, clientSecret, returnAValidToken } = require("./config/config");
+const WebSocket = require('ws');
 
 const schedule = require("node-schedule");
 const { scheduledUpdates } = require("./scripts/scheduledUpdates");
 
 var app = express();
+
+const server = require('http').createServer(app);
+const wss = new WebSocket.Server({ server });
 
 let updateOnce = true;
 
@@ -29,13 +31,15 @@ app.use(express.static(path.join(__dirname, "public")));
 // Middleware to check token expiration and refresh if necessary
 app.use(async (req, res, next) => {
 
+  req.wss = wss;
+
   if (updateOnce) {
     updateOnce = false;
-    //await scheduledUpdates("TIER 1");
-    //await new Promise(resolve => setTimeout(resolve, 60000));
-    //await scheduledUpdates("TIER 2");
-    //await new Promise(resolve => setTimeout(resolve, 60000));
-    //await scheduledUpdates("TIER 3");
+    // await scheduledUpdates("TIER 1");
+    // await new Promise(resolve => setTimeout(resolve, 60000));
+    // await scheduledUpdates("TIER 2");
+    // await new Promise(resolve => setTimeout(resolve, 60000));
+    // await scheduledUpdates("TIER 3");
   }
   next();
 });
@@ -74,6 +78,5 @@ schedule.scheduleJob("0 0 * * 1", async () => {
   console.log("Tier 3 schedule function is called");
   await scheduledUpdates("TIER 3");
 });
-
 
 module.exports = app;

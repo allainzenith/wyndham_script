@@ -24,7 +24,11 @@ block content
       script.
         let limit = 10, offset = 0, search='';
         let records = !{JSON.stringify(records)};
-        let endpoint = `/sse/events`;
-        let eventSource = new EventSource(`/sse/events?limit=${limit}&offset=${offset}&search=${search}`);
-        showRecords(eventSource, "events");
-        updatePagination(eventSource, limit, offset, "events", 1, records, endpoint, search)
+        let endpoint = `events`;
+
+        let tabID = generateUniqueString();
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            const ws = await connectToServer('events');
+            updatePagination(limit, offset, "events", 1, records, endpoint, search, ws, tabID);
+        });

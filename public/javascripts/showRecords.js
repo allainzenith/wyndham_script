@@ -2,88 +2,194 @@
 // FOR SHOWING RECORDS DEPENDING ON THE PAGINATION
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-let updatedEventSource = null;
 let searchInput = null;
 let searchTimeout = null;
 let paginationTimeout = null;
 let refreshTimeout = null;
 
 let retryExecID;
+let modalExecID;
 
-
-function createEventSource(limit, offset, endpoint, searchInput) {
-    return new EventSource(`${endpoint}?limit=${limit}&offset=${offset}&search=${searchInput}`);
-}
-
-function showRecords(eventSource, tableType){
+function showRecords(ws, tableType){
     const tableBody = document.getElementById("table-body");
-    eventSource.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-    tableBody.innerHTML = '';
-    data.forEach(item => {
+    ws.onmessage = (message) => {
+    const data = JSON.parse(message.data).data;
+    if(data.hasOwnProperty('displayModal')) {
 
-        let href;
-        let listingID = tableType === "resorts" ? item.listingID : item.resort.listingID;
-        let listingIDarray = listingID.split(",");
+        let modal = document.getElementById('myModal');
 
-        listingIDarray.forEach((item, index, array) => {
-            array[index] = "https://app.guesty.com/properties/" + item;
-        });
-    
-        if (listingIDarray.length === 1){
-            href = listingIDarray[0]; 
+        const displayModal = data.displayModal;
+        modalExecID = data.execID;
+
+        if(displayModal) {
+          console.log('Modal should be displayed.');
+          modal.style.display = 'block';
         } else {
-            href = `/duplicateListingLinks?links=${listingIDarray}`;
+          console.log('Modal should not be displayed.');
+          modal.style.display = 'none';
         }
+    } else {
+        tableBody.innerHTML = '';
+        data.forEach(item => {
 
-        const row = document.createElement("tr");
-        if (tableType === "resorts") {
-            row.innerHTML = `
-                <td>
-                <input type="checkbox" id="${item.resortRefNum}" name="checkbox[]" value="${item.resortRefNum}">
-                <button onclick="copyText(this.id)" class="linkButton copy" id="${item.resortID}" value="${item.resortID}" title="Click to copy">
-                        ${item.resortID}
-                    </button>
-                </td>
-                <td>
-                    <a href="${href}" id="${item.listingID}" class="linkButton navigate" target="_blank">
-                        ${item.listingName}
-                    </a>
-                </td>
-                <td>${item.resortName}</td>
-                <td>${item.unitType}</td>
-                <td>${item.notes}</td>
-            `;
-        }
-        else { 
-            row.innerHTML = `
-                <td>
-                    <button onclick="copyText(this.id)" class="linkButton copy" id="${item.resort.resortID}" value="${item.resort.resortID}" title="Click to copy">
-                        ${item.resort.resortID}
-                    </button>
-                </td>
-                <td>
-                    <a href="${href}" id="${item.resort.listingID}" class="linkButton navigate" target="_blank">
-                    ${item.resort.listingName}
-                    </a>
-                </td>
-                <td>${item.resort.unitType}</td>
-                <td>${item.execStatus}</td>
-                <td>${item.monthstoScrape}</td>
-                <td>${item.createdAt}</td>
-                <td>${item.updatedAt}</td>
-                <td>
-                    <button onclick="retry(this.id)" id="${item.execStatus},${item.resort.resortID},${item.resort.unitType},${item.monthstoScrape},${item.execID}" class="linkButton">
-                        Retry
-                    </button>
-                </td>
-            `;
-        }
-        tableBody.appendChild(row);
-    });
+            let href;
+            let listingID = tableType === "resorts" ? item.listingID : item.resort.listingID;
+            let listingIDarray = listingID.split(",");
+
+            listingIDarray.forEach((item, index, array) => {
+                array[index] = "https://app.guesty.com/properties/" + item;
+            });
+        
+            if (listingIDarray.length === 1){
+                href = listingIDarray[0]; 
+            } else {
+                href = `/duplicateListingLinks?links=${listingIDarray}`;
+            }
+
+            const row = document.createElement("tr");
+            if (tableType === "resorts") {
+                row.innerHTML = `
+                    <td>
+                    <input type="checkbox" id="${item.resortRefNum}" name="checkbox[]" value="${item.resortRefNum}">
+                    <button onclick="copyText(this.id)" class="linkButton copy" id="${item.resortID}" value="${item.resortID}" title="Click to copy">
+                            ${item.resortID}
+                        </button>
+                    </td>
+                    <td>
+                        <a href="${href}" id="${item.listingID}" class="linkButton navigate" target="_blank">
+                            ${item.listingName}
+                        </a>
+                    </td>
+                    <td>${item.resortName}</td>
+                    <td>${item.unitType}</td>
+                    <td>${item.notes}</td>
+                `;
+            }
+            else { 
+                row.innerHTML = `
+                    <td>
+                        <button onclick="copyText(this.id)" class="linkButton copy" id="${item.resort.resortID}" value="${item.resort.resortID}" title="Click to copy">
+                            ${item.resort.resortID}
+                        </button>
+                    </td>
+                    <td>
+                        <a href="${href}" id="${item.resort.listingID}" class="linkButton navigate" target="_blank">
+                        ${item.resort.listingName}
+                        </a>
+                    </td>
+                    <td>${item.resort.unitType}</td>
+                    <td>${item.execStatus}</td>
+                    <td>${item.monthstoScrape}</td>
+                    <td>${item.createdAt}</td>
+                    <td>${item.updatedAt}</td>
+                    <td>
+                        <button onclick="retry(this.id)" id="${item.execStatus},${item.resort.resortID},${item.resort.unitType},${item.monthstoScrape},${item.execID}" class="linkButton">
+                            Retry
+                        </button>
+                    </td>
+                `;
+            }
+            tableBody.appendChild(row);
+        });
+    }
     };
 }
 
+
+function updatePagination(limit, offset, tableType, currentPage, records, endpoint, search, ws, tabID) {
+    // Updates the offset
+    offset = limit * (currentPage - 1)
+    searchInput = searchInput === null ? search : searchInput;
+    ws.send(JSON.stringify({ endpoint: endpoint, limit: limit, offset: offset, search : search, tabID : tabID }));
+
+    showRecords(ws, tableType);
+
+    var totalPages = Math.ceil(parseInt(records, 10) / 10); 
+    var paginationElement = document.getElementById('pagination');
+
+    // Calculate the range of pages to display
+    var startPage = Math.max(1, currentPage - Math.floor(4 / 2));
+    var endPage = Math.min(totalPages, startPage + 4 - 1);
+    
+    //for search input
+    document.getElementById('searchString').addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+
+        searchTimeout = setTimeout(() => {
+            searchInput = document.getElementById('searchString').value;
+            updatePagination(limit, offset, tableType, 1, records, endpoint, searchInput, ws, tabID);
+        }, 1000); 
+    });
+      
+    const buttons = document.getElementsByName('tierButton');
+
+    for (const button of buttons) {
+        button.addEventListener('click', () => {
+            clearTimeout(refreshTimeout);
+
+            refreshTimeout = setTimeout(() => {
+                updatePagination(limit, offset, tableType, currentPage, records, endpoint, searchInput, ws, tabID);
+            }, 1000); 
+        });
+    }
+
+    
+    // Clear the existing content of paginationElement
+    paginationElement.innerHTML = '';
+
+    // Add the "Previous" button
+    if (currentPage > 1) {
+        var prevButton = document.createElement('button');
+        prevButton.className = 'w3-button';
+        prevButton.innerHTML = '&laquo;';
+        prevButton.addEventListener('click', function () {
+            clearTimeout(paginationTimeout);
+
+            paginationTimeout = setTimeout(() => {
+                updatePagination(limit, offset, tableType, currentPage - 1, records, endpoint, searchInput, ws, tabID);
+            }, 300); 
+        });
+
+        paginationElement.appendChild(prevButton);
+    }
+
+    // Add the page links
+    for (var i = startPage; i <= endPage; i++) {
+        var pageButton = document.createElement('button');
+        pageButton.className = 'w3-button';
+        pageButton.id = i;
+        pageButton.textContent = i;
+        pageButton.addEventListener('click', function () {
+            clearTimeout(paginationTimeout);
+
+            paginationTimeout = setTimeout(() => {
+                var clickedId = this.id;
+                updatePagination(limit, offset, tableType, parseInt(clickedId, 10), records, endpoint, searchInput, ws, tabID);
+            }, 300); 
+        });
+
+        paginationElement.appendChild(pageButton);
+    }
+
+    // Add the "Next" button
+    if (currentPage < totalPages) {
+        var nextButton = document.createElement('button');
+        nextButton.className = 'w3-button';
+        nextButton.innerHTML = '&raquo;';
+        nextButton.addEventListener('click', function () {
+            clearTimeout(paginationTimeout);
+
+            paginationTimeout = setTimeout(() => {
+                updatePagination(limit, offset, tableType, currentPage + 1, records, endpoint, searchInput, ws, tabID);
+            }, 300); 
+        });
+
+        paginationElement.appendChild(nextButton);
+    }
+
+    document.getElementById(currentPage).classList.add('w3-green');
+
+}
 
 function copyText(itemID) {
     const copyLink = document.getElementById(itemID);
@@ -102,23 +208,6 @@ function copyText(itemID) {
     document.body.removeChild(textArea);
 
 }
-
-// function openLinks(listingID){
-//     let listingIDarray = listingID.split(",");
-//     listingIDarray.forEach((item, index, array) => {
-//         array[index] = "https://app.guesty.com/properties/" + item;
-//     });
-
-//     if (listingIDarray.length === 1){
-//         const url = listingIDarray[0]; 
-//         window.open(url, '_blank');
-//     } else {
-//         console.log("multiple links present")
-//         // window.open(`/duplicateListingLinks?links=${JSON.stringify(listingIDarray)}`, '_blank');
-//         return `/duplicateListingLinks?links=${JSON.stringify(listingIDarray)}`;
-//     }
-
-// }
 
 function retry(fields){
     let resortFields = fields.split(",");
@@ -163,106 +252,24 @@ function retry(fields){
     }
 }
 
-function updateEventSource(eventSource, limit, newOffset, tableType, endpoint, searchInput) {
-    if (eventSource) { eventSource.close(); }
-    updatedEventSource = createEventSource(limit, newOffset, endpoint, searchInput);
-    showRecords(updatedEventSource, tableType);
-}
-
-
-function updatePagination(eventSource, limit, offset, tableType, currentPage, records, endpoint, search) {
-    // Updates the offset
-    offset = limit * (currentPage - 1)
-    // let currentEventSource = updatedEventSource === null ? eventSource : updatedEventSource;
-    updatedEventSource = updatedEventSource === null ? eventSource : updatedEventSource;
-    searchInput = searchInput === null ? search : searchInput;
-    updateEventSource(updatedEventSource, limit, offset, tableType, endpoint, searchInput);
-
-    var totalPages = Math.ceil(parseInt(records, 10) / 10); 
-    var paginationElement = document.getElementById('pagination');
-
-    // Calculate the range of pages to display
-    var startPage = Math.max(1, currentPage - Math.floor(4 / 2));
-    var endPage = Math.min(totalPages, startPage + 4 - 1);
-    
-    document.getElementById('searchString').addEventListener('input', () => {
-        clearTimeout(searchTimeout);
-
-        searchTimeout = setTimeout(() => {
-            searchInput = document.getElementById('searchString').value;
-            updatePagination(updatedEventSource, limit, offset, tableType, 1, records, endpoint, searchInput);
-        }, 1000); 
+async function connectToServer(endpoint) {
+    const ws = new WebSocket(`ws://localhost:3001/${endpoint}`);
+    return new Promise((resolve, reject) => {
+        const timer = setInterval(() => {
+            if(ws.readyState === 1) {
+                clearInterval(timer)
+                resolve(ws);
+            }
+        }, 10);
     });
-
-    const buttons = document.getElementsByName('tierButton');
-
-    for (const button of buttons) {
-        button.addEventListener('click', () => {
-            clearTimeout(refreshTimeout);
-
-            refreshTimeout = setTimeout(() => {
-                updatePagination(updatedEventSource, limit, offset, tableType, currentPage, records, endpoint, searchInput);
-            }, 1000); 
-        });
-    }
-
-    
-    // Clear the existing content of paginationElement
-    paginationElement.innerHTML = '';
-
-    // Add the "Previous" button
-    if (currentPage > 1) {
-        var prevButton = document.createElement('button');
-        prevButton.className = 'w3-button';
-        prevButton.innerHTML = '&laquo;';
-        prevButton.addEventListener('click', function () {
-            clearTimeout(paginationTimeout);
-
-            paginationTimeout = setTimeout(() => {
-                updatePagination(updatedEventSource, limit, offset, tableType, currentPage - 1, records, endpoint, searchInput);
-            }, 300); 
-        });
-
-        paginationElement.appendChild(prevButton);
-    }
-
-    // Add the page links
-    for (var i = startPage; i <= endPage; i++) {
-        var pageButton = document.createElement('button');
-        pageButton.className = 'w3-button';
-        pageButton.id = i;
-        pageButton.textContent = i;
-        pageButton.addEventListener('click', function () {
-            clearTimeout(paginationTimeout);
-
-            paginationTimeout = setTimeout(() => {
-                var clickedId = this.id;
-                updatePagination(updatedEventSource, limit, offset, tableType, parseInt(clickedId, 10), records, endpoint, searchInput);
-            }, 300); 
-        });
-
-        paginationElement.appendChild(pageButton);
-    }
-
-    // Add the "Next" button
-    if (currentPage < totalPages) {
-        var nextButton = document.createElement('button');
-        nextButton.className = 'w3-button';
-        nextButton.innerHTML = '&raquo;';
-        nextButton.addEventListener('click', function () {
-            clearTimeout(paginationTimeout);
-
-            paginationTimeout = setTimeout(() => {
-                updatePagination(updatedEventSource, limit, offset, tableType, currentPage + 1, records, endpoint, searchInput);
-            }, 300); 
-        });
-
-        paginationElement.appendChild(nextButton);
-    }
-
-    document.getElementById(currentPage).classList.add('w3-green');
-
 }
+
+function generateUniqueString() {
+    const timestamp = new Date().getTime().toString(36); 
+    const randomString = Math.random().toString(36).substr(2, 8); 
+
+    return timestamp + randomString;
+  }
 
 // test function
 function test(){
