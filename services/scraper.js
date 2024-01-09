@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////
 
 const path = require("path");
-const { addMonths, addDays } = require("date-fns");
+const { addMonths, addDays, endOfMonth } = require("date-fns");
 const { userName, passWord } = require("../config/config");
 const { oneTimeTaskPuppeteer, tierOnePuppeteer, tierTwoThreePuppeteer, sharedData } = require("../config/puppeteerOptions");
 
@@ -733,6 +733,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
   
   let currentMonth;
   let currentYear;
+  let lastDay;
   
   let numResponses = 0;
   let resolveResponsesPromise;
@@ -750,7 +751,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
       const responseText = await interceptedResponse.text();
   
       firstFound = responseText.includes(`${currentYear}-${currentMonth}-${initialDate}`);
-      secondFound = responseText.includes(`${currentYear}-${currentMonth}-28`);
+      secondFound = responseText.includes(`${currentYear}-${currentMonth}-${lastDay}`);
   
       if(firstFound || secondFound) {
         responses.push(responseText);
@@ -781,7 +782,10 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
       });   
       initialDate = monthNow === 0 ? currentDate.toLocaleDateString(undefined, { day: "2-digit" }) : '01';
       currentYear = currentDate.getFullYear();
-  
+
+      // Getting the day of the month
+      lastDay = endOfMonth(currentDate).toLocaleDateString(undefined, { day: "2-digit" });
+
       // Function to create a promise that resolves when all responses are received
       const waitForResponses = () => new Promise(resolve => (resolveResponsesPromise = resolve));
   
