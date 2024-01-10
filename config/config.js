@@ -86,12 +86,7 @@ async function returnAValidToken(clientID, clientSecret){
                     let jsonString = JSON.stringify(tokenSpecs, null, 2);
                     fs.writeFileSync(tokenJsonPath, jsonString);
 
-                    const { jsonData } = readJSONFile();
-
-                    console.log("RESPONSE DATAAA")
-                    console.log(responseData.access_token)
-
-                    return responseData.access_token;
+                    token = responseData.access_token;
                 })
                 .catch((error) => {
                     console.error('Error creating access token:', error);
@@ -111,6 +106,7 @@ async function returnAValidToken(clientID, clientSecret){
         }
 
         return token;
+
     } catch (error) {
         // Handle any errors that occur while reading the file
         console.error('Error:', error.message);
