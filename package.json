@@ -28,7 +28,7 @@
     "puppeteer": "^21.4.1",
     "sequelize": "^6.33.0",
     "uuid": "^9.0.1",
-    "ws": "^8.15.1"
+    "ws": "^8.16.0"
   },
   "devDependencies": {
     "@npmcli/run-script": "^7.0.1"
