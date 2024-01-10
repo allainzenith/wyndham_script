@@ -30,6 +30,7 @@ block content
 
 
             script(src='/javascripts/showRecords.js')
+            script(src='/javascripts/environment.js')
             script.
                 let limit = 10, offset = 0, search = '';
                 let records = !{JSON.stringify(records)};
@@ -38,7 +39,7 @@ block content
                 let tabID = generateUniqueString();
 
                 document.addEventListener('DOMContentLoaded', async function() {
-                    const ws = await connectToServer('resorts');
+                    const ws = await connectToServer(window.env, 'resorts');
                     updatePagination(limit, offset, "resorts", 1, records, endpoint, search, ws, tabID);
                 });
 

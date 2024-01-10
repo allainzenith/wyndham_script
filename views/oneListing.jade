@@ -71,6 +71,7 @@ block content
       div.w3-bar(id="pagination")
 
       script(src='/javascripts/showRecords.js')
+      script(src='/javascripts/environment.js')
       script.
 
         //for showing records
@@ -85,7 +86,7 @@ block content
         let modal = document.getElementById('myModal');
         document.addEventListener('DOMContentLoaded', async function() {
 
-          const ws = await connectToServer('');
+          const ws = await connectToServer(window.env, '');
           updatePagination(limit, offset, "events", 1, records, endpoint, search, ws, tabID);
 
           let closeModalButton = document.getElementById('closeModal');

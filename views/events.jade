@@ -21,6 +21,7 @@ block content
       div.w3-bar(id="pagination")
 
       script(src='/javascripts/showRecords.js')
+      script(src='/javascripts/environment.js')
       script.
         let limit = 10, offset = 0, search='';
         let records = !{JSON.stringify(records)};
@@ -29,6 +30,6 @@ block content
         let tabID = generateUniqueString();
 
         document.addEventListener('DOMContentLoaded', async function() {
-            const ws = await connectToServer('events');
+            const ws = await connectToServer(window.env, 'events');
             updatePagination(limit, offset, "events", 1, records, endpoint, search, ws, tabID);
         });

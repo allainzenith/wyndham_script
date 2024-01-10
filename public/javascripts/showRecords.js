@@ -252,9 +252,17 @@ function retry(fields){
     }
 }
 
-async function connectToServer(endpoint) {
-    const ws = new WebSocket(`ws://18.220.144.108:3001/${endpoint}`);
-    // const ws = new WebSocket(`ws://localhost:3001/${endpoint}`);
+async function connectToServer(environment, endpoint) {
+
+    let ws;
+    if (environment === 'production') {
+        // Production environment
+        ws = new WebSocket(`ws://18.220.144.108:3001/${endpoint}`);
+    } else {
+        // Development environment
+        ws = new WebSocket(`ws://localhost:3001/${endpoint}`);
+    }
+
     return new Promise((resolve, reject) => {
         const timer = setInterval(() => {
             if(ws.readyState === 1) {
