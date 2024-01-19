@@ -7,7 +7,6 @@ const { MAP_API_KEY } = require('../config/config')
 const { getCurrentAndEndDate } = require("./scraper");
 const { addMonths, addDays } = require("date-fns");
 const sdk = require('api')('@open-api-docs/v1.0#pc5in1tloyhmv10');
-const http = require("https");
 let { clientID, clientSecret, returnAValidToken } = require("../config/config");
 
 // async function executeUpdates(resortFoundorCreated, token, address, updatedAvail, suiteType){
@@ -551,9 +550,8 @@ async function getLatLongAddress(address){
         return null;
     } 
 
-
-
 }
+
 module.exports = {
     executeUpdates
 }

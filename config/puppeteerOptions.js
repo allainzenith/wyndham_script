@@ -4,7 +4,6 @@ const path = require('path');
 require("dotenv").config();
 
 const scriptDir = __dirname;
-// const customProfileRelPath = 'chrome_profile'; 
 
 
 let sharedData = {
@@ -65,12 +64,11 @@ async function initializeBrowser(customProfileRelPath) {
     newBrowser = await puppeteer.launch({
       args: [
         "--disable-setuid-sandbox",
-        // "--disable-web-security",
         "--no-sandbox",
         "--no-zygote",
       ],
-      headless: 'new', 
-      // headless: 'new',
+      // headless: 'new', 
+      headless: false,
       userDataDir: customProfileDir
     });
 
@@ -88,6 +86,7 @@ async function initializePage(page, browser) {
     // Open a new page
     page = await browser.newPage();
     page.setDefaultNavigationTimeout(120000);
+    page.setViewport({ width: 1920, height:1080, deviceScaleFactor: 1 });
 
     return page;
 

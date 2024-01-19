@@ -737,7 +737,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
   
   let numResponses = 0;
   let resolveResponsesPromise;
-  
+
   let initialDate;
   
   const responseListener = async interceptedResponse => {
@@ -746,29 +746,21 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
       await interceptedResponse.request().method().toUpperCase() !== "OPTIONS" &&
       await interceptedResponse.status() === 200 &&
       await interceptedResponse.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability') &&
-      await interceptedResponse.request().postData().includes(resortID) && interceptedResponse.request().postData().includes(suiteType)
+      await interceptedResponse.request().postData().includes(resortID) && await interceptedResponse.request().postData().includes(suiteType) &&
+      (await interceptedResponse.request().postData().includes(`${currentYear}-${currentMonth}-${initialDate}`) || 
+      await interceptedResponse.request().postData().includes(`${currentYear}-${currentMonth}-${lastDay}`))
     ) {
       const responseText = await interceptedResponse.text();
-  
-      firstFound = responseText.includes(`${currentYear}-${currentMonth}-${initialDate}`);
-      secondFound = responseText.includes(`${currentYear}-${currentMonth}-${lastDay}`);
-  
-      if(firstFound || secondFound) {
-        responses.push(responseText);
-  
-        let date = JSON.parse(responseText).calendarDays[0].date;
-        console.log(`Response with the date string ${date} pushed.`);  
-  
-        if (firstFound) numResponses++;
-        if (secondFound) numResponses++;
-  
-        // Check if all expected responses are received
-        if (numResponses >= 2) {
-          resolveResponsesPromise(); 
-        } 
-  
-      }
-    }
+      responses.push(responseText);
+
+      let date = JSON.parse(responseText).calendarDays[0].date;
+      console.log(`Response with the date string ${date} pushed.`);  
+      numResponses++;
+
+      if (numResponses >= 2) {
+        resolveResponsesPromise(); 
+      } 
+    } 
   };
   
   try {
@@ -776,7 +768,6 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
     await page.on('request', requestListener);
   
     while (monthNow <= months) {   
-  
       currentMonth = currentDate.toLocaleDateString(undefined, {
         month: "2-digit",
       });   
@@ -800,40 +791,35 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
       await Promise.race([timeoutPromise, waitForResponses()]);
   
       console.log("Done fetching responses..");
-  
+        
       try {
         numResponses = 0;
         await page.waitForTimeout(2000);
-        let nextClass = `.react-datepicker__navigation--next[aria-label="Next Month"]`;
-        let nextButton = await page.waitForSelector(nextClass, {
-          timeout: 10000,
-        });
-  
-        // Click the next button
-        await nextButton.scrollIntoView();
-        await nextButton.click();
-        console.log("Clicked next button.");
-        
+
+        if(monthNow < months) {
+          let nextClass = `.react-datepicker__navigation--next[aria-label="Next Month"]`;
+          let nextButton = await page.waitForSelector(nextClass, {
+            timeout: 40000,
+          });
+    
+          // Click the next button
+          await nextButton.scrollIntoView();
+          await nextButton.click();
+        }
+
         await checkOverlay(page);
+
+        console.log("Clicked next button.");
   
         currentDate = addMonths(currentDate, 1);
-        firstResponseNotResolved = true;
         monthNow++;
   
-        findNextButtonAttempts = 5;
-  
-        // await page.removeListener('response', responseListener);
         await page.removeAllListeners('response');
         
       } catch (error) {
         //error-message (id)
-        
-        findNextButtonAttempts++;
-        
+
         console.log("Can't find or click next button. Reloading again.", error.message);
-  
-        // await page.removeListener('response', responseListener);
-        // await page.removeListener('request', requestListener);
   
         await page.removeAllListeners('response');
         await page.removeAllListeners('request');
@@ -855,7 +841,6 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
         );
         return doneScraping;
       }
-       
   
     }
     await page.waitForTimeout(2000);

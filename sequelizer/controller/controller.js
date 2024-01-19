@@ -2,7 +2,6 @@
 // CONTAINS THE CRUD OPERATIONS WITH THE AID OF METHODS PROVIDED BY SEQUELIZER
 ////////////////////////////////////////////////////////////////////////////////
 
-//// USE THE SUBSCRIBE FUNCTION TOMORROW
 const { execution, resorts } = require("../models/model");
 const { Op } = require("sequelize");
 

@@ -330,74 +330,78 @@ const wss = new WebSocket.Server({ port : 3001 });
 const c = new Map();
 const crypto = require('crypto');
 wss.on('connection', async(ws) => {
-  //for hook ids
-  const id = crypto.randomUUID();
-  let tabID;
+  try {
+    //for hook ids
+    const id = crypto.randomUUID();
+    let tabID;
 
-  ws.on('open', function open() {
-    ws.send('something');
-  });
-  
-  ws.on('message', async function message(data) {
-    console.log('received: %s', data);
+    ws.on('open', function open() {
+      ws.send('something');
+    });
+    
+    ws.on('message', async function message(data) {
+      console.log('received: %s', data);
 
-    let values = JSON.parse(data);
-    let endpoint = values.endpoint;
+      let values = JSON.parse(data);
+      let endpoint = values.endpoint;
 
-    let limit = values.limit;
-    let offset = values.offset;
-    let search = values.search;
+      let limit = values.limit;
+      let offset = values.offset;
+      let search = values.search;
 
-    tabID = values.tabID;
+      tabID = values.tabID;
 
 
-    c.forEach(async(value) => {
-      if(value.tabID === tabID) {
-        await removeHooks("execution", ['afterCreate', 'afterUpdate', 'afterBulkCreate'], value.id);
-      }
+      c.forEach(async(value) => {
+        if(value.tabID === tabID) {
+          await removeHooks("execution", ['afterCreate', 'afterUpdate', 'afterBulkCreate'], value.id);
+        }
+      });
+
+      let update = async () => {
+        try {
+          const { eventCond, order } = getEventCondAndOrder(endpoint, search);
+
+          let records = await returnData(endpoint, eventCond, order, limit, offset, search);
+
+          // let records = await joinTwoTables("execution", "resorts", eventCond, order, limit, offset)
+          let formattedRecords = await mapExecutionData(records, endpoint);
+      
+          ws.send(JSON.stringify({ data : formattedRecords }));
+    
+        } catch (error) {
+          console.error("An error happened while joining records: ", error);
+        }
+      };
+
+      await setupUpdateHook("execution", update, id);
+      await setupCreateHook("execution", update, id);
+      await setupBulkCreateHook("execution", update, id);
+
+      c.set(ws, { id, tabID });
+    
+      update();
+    
     });
 
-    let update = async () => {
-      try {
-        const { eventCond, order } = getEventCondAndOrder(endpoint, search);
-
-        let records = await returnData(endpoint, eventCond, order, limit, offset, search);
-
-        // let records = await joinTwoTables("execution", "resorts", eventCond, order, limit, offset)
-        let formattedRecords = await mapExecutionData(records, endpoint);
-    
-        ws.send(JSON.stringify({ data : formattedRecords }));
-  
-      } catch (error) {
-        console.error("An error happened while joining records: ", error);
-      }
+    const onModalStateChanged = (data) => {
+      ws.send(JSON.stringify({ data : data }));
     };
 
-    await setupUpdateHook("execution", update, id);
-    await setupCreateHook("execution", update, id);
-    await setupBulkCreateHook("execution", update, id);
+    eventEmitter.on('modalStateChanged', onModalStateChanged);
 
-    c.set(ws, { id, tabID });
-  
-    update();
-  
-  });
-
-  const onModalStateChanged = (data) => {
-    ws.send(JSON.stringify({ data : data }));
-  };
-
-  eventEmitter.on('modalStateChanged', onModalStateChanged);
-
-  ws.on('close', async() => {
-    //remove hook using ws
-    //delete from map
-    const hookID = c.get(ws).id;
-    await removeHooks("execution", ['afterCreate', 'afterUpdate', 'afterBulkCreate'], hookID);
-    eventEmitter.removeListener('modalStateChanged', onModalStateChanged);
-    c.delete(ws);
-    console.log("connection removed")
-  })
+    ws.on('close', async() => {
+      //remove hook using ws
+      //delete from map
+      const hookID = c.get(ws).id;
+      await removeHooks("execution", ['afterCreate', 'afterUpdate', 'afterBulkCreate'], hookID);
+      eventEmitter.removeListener('modalStateChanged', onModalStateChanged);
+      c.delete(ws);
+      console.log("connection removed")
+    })
+  } catch (error) {
+    console.error("An error happened: ", error);
+  }
 
 })
 
