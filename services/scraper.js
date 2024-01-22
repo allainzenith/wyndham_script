@@ -6,6 +6,7 @@ const path = require("path");
 const { addMonths, addDays, endOfMonth } = require("date-fns");
 const { userName, passWord } = require("../config/config");
 const { oneTimeTaskPuppeteer, tierOnePuppeteer, tierTwoThreePuppeteer, sharedData } = require("../config/puppeteerOptions");
+const { start } = require("repl");
 
 let needtoLogin;
 
@@ -657,7 +658,8 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
 
         const suiteSelector = "#suiteType";
 
-        let selectedSuiteType = await page.select(suiteSelector, "All Suites");
+        // let selectedSuiteType = await page.select(suiteSelector, "All Suites");
+        let selectedSuiteType;
 
         while (selectedSuiteType !== suiteType) {
           await page.select(suiteSelector, suiteType);
@@ -675,8 +677,7 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
         // END OF SELECTING SUITE TYPE
         //====================================================================
 
-      
-  
+
         return selectedOptionText;
       } else {
         console.log(
@@ -705,21 +706,18 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
 
 async function checkAvailability(queueType, months, resortID, suiteType, page, pageForAddress) {
 
+
   await page.setRequestInterception(true);
 
   // Define the request listener function
   const requestListener = async interceptedRequest => {
     // Check if the request URL meets a certain condition
     if (interceptedRequest.method() === 'POST' &&
-        interceptedRequest.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability')) {
-      // Access the request post data (payload)
-      const postData = interceptedRequest.postData();
+        interceptedRequest.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability')
+    ) {
+
+      interceptedRequest.continue();
   
-      if (postData && postData.includes(resortID) && postData.includes(suiteType)) {
-        interceptedRequest.continue();
-      } else {
-        interceptedRequest.abort();
-      }
     } else {
       interceptedRequest.continue();
     }
@@ -744,18 +742,32 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
     // Check if the response URL meets a certain condition
     if (
       await interceptedResponse.request().method().toUpperCase() !== "OPTIONS" &&
-      await interceptedResponse.status() === 200 &&
-      await interceptedResponse.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability') &&
-      await interceptedResponse.request().postData().includes(resortID) && await interceptedResponse.request().postData().includes(suiteType) &&
-      (await interceptedResponse.request().postData().includes(`${currentYear}-${currentMonth}-${initialDate}`) || 
-      await interceptedResponse.request().postData().includes(`${currentYear}-${currentMonth}-${lastDay}`))
+      await interceptedResponse.url().includes('calendar/availability')
     ) {
       const responseText = await interceptedResponse.text();
-      responses.push(responseText);
+      const responseData = await interceptedResponse.request().postData();
 
-      let date = JSON.parse(responseText).calendarDays[0].date;
-      console.log(`Response with the date string ${date} pushed.`);  
-      numResponses++;
+      const finalResponse = JSON.parse(responseData);
+
+      const startDate = finalResponse.startDate;
+      const endDate = finalResponse.endDate;
+
+      const resID = finalResponse.productId;
+      const unitType = finalResponse.unitTypes;
+
+      //noticed that if mag una ang last date kay ara mag timeout
+      if ( resID === resortID && unitType.includes(suiteType) ) {
+
+        let date = JSON.parse(responseText).calendarDays[0].date;
+
+        if(startDate.includes(`${currentYear}-${currentMonth}`) || endDate.includes(`${currentYear}-${currentMonth}`)) {
+          responses.push(responseText);
+          console.log(`Response with the date string ${date} pushed.`);  
+  
+          numResponses++;         
+        }
+
+      }
 
       if (numResponses >= 2) {
         resolveResponsesPromise(); 
@@ -764,10 +776,15 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
   };
   
   try {
+
+    // await page.$('.new-calendar');
   
     await page.on('request', requestListener);
   
     while (monthNow <= months) {   
+
+      // await page.$('.new-calendar');
+
       currentMonth = currentDate.toLocaleDateString(undefined, {
         month: "2-digit",
       });   
@@ -781,7 +798,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
       const waitForResponses = () => new Promise(resolve => (resolveResponsesPromise = resolve));
   
       const timeoutPromise = new Promise((_, reject) => {
-        timeoutId = setTimeout(() => reject(new Error('Timeout waiting for responses')), 30000); // 30 seconds timeout
+        timeoutId = setTimeout(() => reject(new Error('Timeout waiting for responses')), 40000); // 30 seconds timeout
       });
   
   
@@ -797,7 +814,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
         await page.waitForTimeout(2000);
 
         if(monthNow < months) {
-          let nextClass = `.react-datepicker__navigation--next[aria-label="Next Month"]`;
+          let nextClass = `button.react-datepicker__navigation--next[aria-label="Next Month"]`;
           let nextButton = await page.waitForSelector(nextClass, {
             timeout: 40000,
           });
