@@ -712,11 +712,27 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
   // Define the request listener function
   const requestListener = async interceptedRequest => {
     // Check if the request URL meets a certain condition
-    if (interceptedRequest.method() === 'POST' &&
-        interceptedRequest.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability')
+    if (interceptedRequest.method() !== 'OPTIONS' &&
+        interceptedRequest.url().includes('calendar/availability')
     ) {
 
-      interceptedRequest.continue();
+      const postData = interceptedRequest.postData();
+
+      const finalResponse = JSON.parse(postData);
+
+      const startDate = finalResponse.startDate;
+      const endDate = finalResponse.endDate;
+
+      const resID = finalResponse.productId;
+      const unitType = finalResponse.unitTypes;
+
+      //noticed that if mag una ang last date kay ara mag timeout
+      if ( resID === resortID && unitType.includes(suiteType) && (startDate.includes(`${currentYear}-${currentMonth}`) || endDate.includes(`${currentYear}-${currentMonth}`)) ) {
+        // console.log("= START : " + startDate + " ======== " + "= END : " + endDate);
+        interceptedRequest.continue();
+      } else {
+        interceptedRequest.abort();
+      }
   
     } else {
       interceptedRequest.continue();
@@ -741,33 +757,32 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
   const responseListener = async interceptedResponse => {
     // Check if the response URL meets a certain condition
     if (
-      await interceptedResponse.request().method().toUpperCase() !== "OPTIONS" &&
+      await interceptedResponse.request().method().toUpperCase() === "POST" &&
+      await interceptedResponse.status() === 200 &&
       await interceptedResponse.url().includes('calendar/availability')
     ) {
       const responseText = await interceptedResponse.text();
-      const responseData = await interceptedResponse.request().postData();
 
-      const finalResponse = JSON.parse(responseData);
+      // const responseData = await interceptedResponse.request().postData();
 
-      const startDate = finalResponse.startDate;
-      const endDate = finalResponse.endDate;
+      // const finalResponse = JSON.parse(responseData);
 
-      const resID = finalResponse.productId;
-      const unitType = finalResponse.unitTypes;
+      // const startDate = finalResponse.startDate;
+      // const endDate = finalResponse.endDate;
 
-      //noticed that if mag una ang last date kay ara mag timeout
-      if ( resID === resortID && unitType.includes(suiteType) ) {
+      // const resID = finalResponse.productId;
+      // const unitType = finalResponse.unitTypes;
 
-        let date = JSON.parse(responseText).calendarDays[0].date;
+      // console.log("= FINAL START : " + startDate + " ======== " + "= FINAL END : " + endDate);
+      // console.log("= FINAL RES ID : " + resID + " ======== " + "= FINAL UNIT TYPE : " + unitType);
 
-        if(startDate.includes(`${currentYear}-${currentMonth}`) || endDate.includes(`${currentYear}-${currentMonth}`)) {
-          responses.push(responseText);
-          console.log(`Response with the date string ${date} pushed.`);  
-  
-          numResponses++;         
-        }
 
-      }
+      let date = JSON.parse(responseText).calendarDays[0].date;
+      responses.push(responseText);
+      console.log(`Response with the date string ${date} pushed.`);  
+
+      numResponses++;
+
 
       if (numResponses >= 2) {
         resolveResponsesPromise(); 
@@ -798,7 +813,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
       const waitForResponses = () => new Promise(resolve => (resolveResponsesPromise = resolve));
   
       const timeoutPromise = new Promise((_, reject) => {
-        timeoutId = setTimeout(() => reject(new Error('Timeout waiting for responses')), 40000); // 30 seconds timeout
+        timeoutId = setTimeout(() => reject(new Error('Timeout waiting for responses')), 20000); 
       });
   
   
@@ -816,7 +831,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
         if(monthNow < months) {
           let nextClass = `button.react-datepicker__navigation--next[aria-label="Next Month"]`;
           let nextButton = await page.waitForSelector(nextClass, {
-            timeout: 40000,
+            timeout: 30000,
           });
     
           // Click the next button
