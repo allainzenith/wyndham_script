@@ -1,9 +1,7 @@
-const puppeteer = require('puppeteer-extra');
+const puppeteer = require('puppeteer');
 const fs = require('fs');
 const path = require('path');
-const stealthPlugin = require('puppeteer-extra-plugin-stealth');
 require("dotenv").config();
-puppeteer.use(stealthPlugin());
 const scriptDir = __dirname;
 
 
@@ -68,8 +66,8 @@ async function initializeBrowser(customProfileRelPath) {
         "--no-sandbox",
         "--no-zygote",
       ],
-      headless: 'new', 
-      // headless: false,
+      // headless: 'new', 
+      headless: false,
       userDataDir: customProfileDir
     });
 

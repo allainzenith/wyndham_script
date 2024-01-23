@@ -6,7 +6,6 @@ const path = require("path");
 const { addMonths, addDays, endOfMonth } = require("date-fns");
 const { userName, passWord } = require("../config/config");
 const { oneTimeTaskPuppeteer, tierOnePuppeteer, tierTwoThreePuppeteer, sharedData } = require("../config/puppeteerOptions");
-const { start } = require("repl");
 
 let needtoLogin;
 
@@ -618,7 +617,6 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
             const select = document.querySelector(`${suiteSelector}`);
             if (select) {
               const options = Array.from(select.options);
-              console.log("options: " + options);
               return options.some((option) => option.value === suiteType);
             }
             return false;
@@ -658,8 +656,8 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
 
         const suiteSelector = "#suiteType";
 
-        // let selectedSuiteType = await page.select(suiteSelector, "All Suites");
-        let selectedSuiteType;
+        // IMPORTANT
+        let selectedSuiteType = await page.select(suiteSelector, "All Suites");
 
         while (selectedSuiteType !== suiteType) {
           await page.select(suiteSelector, suiteType);
@@ -677,8 +675,9 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
         // END OF SELECTING SUITE TYPE
         //====================================================================
 
-
         return selectedOptionText;
+
+
       } else {
         console.log(
           `The option with value "${suiteType}" does not exist in the select element.`
