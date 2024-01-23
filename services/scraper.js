@@ -720,20 +720,25 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
 
       const finalResponse = JSON.parse(postData);
 
-      const startDate = finalResponse.startDate;
-      const endDate = finalResponse.endDate;
-
-      const resID = finalResponse.productId;
-      const unitType = finalResponse.unitTypes;
-
-      //noticed that if mag una ang last date kay ara mag timeout
-      if ( resID === resortID && unitType.includes(suiteType) && (startDate.includes(`${currentYear}-${currentMonth}`) || endDate.includes(`${currentYear}-${currentMonth}`)) ) {
-        // console.log("= START : " + startDate + " ======== " + "= END : " + endDate);
-        interceptedRequest.continue();
+      if (finalResponse.hasOwnProperty('productId') && finalResponse.hasOwnProperty('unitTypes') && finalResponse.hasOwnProperty('startDate') && finalResponse.hasOwnProperty('endDate')) {
+        const startDate = finalResponse.startDate;
+        const endDate = finalResponse.endDate;
+  
+        const resID = finalResponse.productId;
+        const unitType = finalResponse.unitTypes;
+  
+        //noticed that if mag una ang last date kay ara mag timeout
+        if ( resID === resortID && unitType.includes(suiteType) && (startDate.includes(`${currentYear}-${currentMonth}`) || endDate.includes(`${currentYear}-${currentMonth}`)) ) {
+          // console.log("= START : " + startDate + " ======== " + "= END : " + endDate);
+          interceptedRequest.continue();
+        } else {
+          interceptedRequest.abort();
+        }
+    
       } else {
         interceptedRequest.abort();
       }
-  
+
     } else {
       interceptedRequest.continue();
     }
