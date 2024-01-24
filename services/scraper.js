@@ -558,6 +558,7 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
       const resort  = await page.waitForSelector(resortSelector, {
         timeout: 3000,
       });
+
       await resort.scrollIntoView();
 
       let selectedResort = await page.evaluate((selector) => {
@@ -656,6 +657,8 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
 
         const suiteSelector = "#suiteType";
 
+        await page.waitForTimeout(2000);
+
         // IMPORTANT
         let selectedSuiteType = await page.select(suiteSelector, "All Suites");
 
@@ -708,6 +711,8 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
 
   await page.setRequestInterception(true);
 
+  let numResponses = 0;
+
   // Define the request listener function
   const requestListener = async interceptedRequest => {
     // Check if the request URL meets a certain condition
@@ -729,6 +734,9 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
         //noticed that if mag una ang last date kay ara mag timeout
         if ( resID === resortID && unitType.includes(suiteType) && (startDate.includes(`${currentYear}-${currentMonth}`) || endDate.includes(`${currentYear}-${currentMonth}`)) ) {
           // console.log("= START : " + startDate + " ======== " + "= END : " + endDate);
+          if ( startDate.includes(`${currentYear}-${currentMonth}-${initialDate}`) ) numResponses++;
+          if ( endDate.includes(`${currentYear}-${currentMonth}-${lastDay}`) ) numResponses++;
+
           interceptedRequest.continue();
         } else {
           interceptedRequest.abort();
@@ -753,7 +761,6 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
   let currentYear;
   let lastDay;
   
-  let numResponses = 0;
   let resolveResponsesPromise;
 
   let initialDate;
@@ -784,9 +791,6 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
       let date = JSON.parse(responseText).calendarDays[0].date;
       responses.push(responseText);
       console.log(`Response with the date string ${date} pushed.`);  
-
-      numResponses++;
-
 
       if (numResponses >= 2) {
         resolveResponsesPromise(); 
