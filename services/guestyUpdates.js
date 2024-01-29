@@ -199,6 +199,7 @@ async function findListing(address, suiteType){
 }
 
 async function retrieveListings(substringAddress){
+    
     let token = await returnAValidToken(clientID, clientSecret);
     initial_endpoint = "https://open-api.guesty.com/v1/listings?"
 
