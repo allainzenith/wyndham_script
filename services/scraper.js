@@ -769,7 +769,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
         
       try {
         numResponses = 0;
-        await page.waitForTimeout(10000);
+        await page.waitForTimeout(2000);
 
         if(monthNow < months) {
           let nextClass = `button.react-datepicker__navigation--next[aria-label="Next Month"]`;
