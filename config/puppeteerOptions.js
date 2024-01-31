@@ -68,6 +68,7 @@ async function initializeBrowser(customProfileRelPath) {
       ],
       headless: 'new', 
       // headless: false,
+      // headless: false,
       userDataDir: customProfileDir
     });
 
