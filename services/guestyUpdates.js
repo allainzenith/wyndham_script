@@ -6,7 +6,6 @@ const axios = require('axios')
 const { MAP_API_KEY } = require('../config/config')
 const { getCurrentAndEndDate } = require("./scraper");
 const { addMonths, addDays } = require("date-fns");
-const sdk = require('api')('@open-api-docs/v1.0#pc5in1tloyhmv10');
 let { clientID, clientSecret, returnAValidToken } = require("../config/config");
 
 // async function executeUpdates(resortFoundorCreated, token, address, updatedAvail, suiteType){
@@ -244,7 +243,7 @@ async function retrieveAListing(listingID){
 
     const headers = {
         "Authorization": `Bearer ${token}`,
-        "Content-Type": "application json",
+        "Content-Type": "application/json",
         "Accept": "application/json"
     };
 
@@ -271,22 +270,31 @@ async function updateAvailabilitySettings(listingID){
 
     let token = await returnAValidToken(clientID, clientSecret);
 
+    const url = `https://open-api.guesty.com/v1/listings/${listingID}/availability-settings`;
+  
+    const payload = { "calendarRules": {
+        "bookingWindow": { "defaultSettings": { "days": 0 } },
+        "defaultAvailability": "AVAILABLE"
+    } }
+    
+    const headers = {
+        'Accept': 'application/json',
+        'Content-type': 'application/json',
+        'Authorization': `Bearer ${token}`
+    }
     try {
-        sdk.auth(`Bearer ${token}`);
-        sdk.putListingsIdAvailabilitySettings({
-            calendarRules: {
-                bookingWindow: {defaultSettings: {days: 0}}
-            }, 
-            defaultAvailability: 'AVAILABLE'
-        }, {id: `${listingID}`})
-        .then(({ data }) => {
+  
+        const availSettingsUpdated = await axios.put(url, payload, { headers })
+        .then(response => {
             console.log("Availability settings PUT request successful.");
             return true;
         })
-        .catch(err => { 
-            console.error(err.message);
+        .catch(error => {
+            console.error(error.message);
             return false;
-        });
+        }) 
+        
+        return availSettingsUpdated;
 
     } catch (error) {
         // Handle errors that may occur during the request
@@ -305,6 +313,11 @@ async function updateAvailability(listing, updatedAvail, months){
 
         const url = 'https://open-api.guesty.com/v1/availability-pricing/api/calendar/listings';
 
+        const headers = {
+            'Accept': 'application/json',
+            'Content-type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        }
 
         for (const item of updatedAvail) {
             for(const list of listing) {
@@ -336,9 +349,14 @@ async function updateAvailability(listing, updatedAvail, months){
     
         const updatePromises = subArrayOfAvailability.map(async (sub) => {
             try {
-                await sdk.auth(`Bearer ${token}`);
-                const { data } = await sdk.putAvailabilityPricingApiCalendarListings(sub);
-                console.log("Request successful");
+                await axios.put(url, sub, { headers })
+                .then(response => {
+                    console.log("Request successful");
+                })
+                .catch(error => {
+                    console.error(error.message);
+                    console.log("Request failed")
+                }) 
         
                 requestsSent++;
         
@@ -374,10 +392,12 @@ async function updateAvailability(listing, updatedAvail, months){
             }
         }
 
-        if (success == 0) {
-            for (const list of listing) {
-                success = await finalizeAccuracy(months, list._id, indiUpdatedAvail);
-            }   
+        for (const list of listing) {
+            success = await finalizeAccuracy(months, list._id, indiUpdatedAvail);
+        } 
+
+        if (success === 0) {
+            console.log("Calendar updated successfully!");  
         } else {
             console.log("Previous requests failed. Execution status set to UPDATE_FAILED.");
         }
@@ -445,9 +465,7 @@ async function finalizeAccuracy(months, listingID, indiUpdatedAvail) {
                             status: item.statusUpdatedAvail
                         };
 
-                        const listingId = { id: item.listingId };
-
-                        let updateCalendarSuccess = await updateCalendarIndividually(blockObject, listingId);
+                        let updateCalendarSuccess = await updateCalendarIndividually(blockObject, item.listingId);
 
                         if (updateCalendarSuccess === false) { 
                             console.log("One of the individual updates did not execute successfully.")
@@ -485,17 +503,30 @@ async function getCalendarAvailability(startDate, endDate, listingID) {
         return new Promise(async(resolve, reject) => {
             let token = await returnAValidToken(clientID, clientSecret);
 
-            await sdk.auth(`Bearer ${token}`);
-            await sdk.getAvailabilityPricingApiCalendarListingsId({startDate: startDate, endDate: endDate, includeAllotment: 'true', id: listingID})
-            .then(({ data }) => { 
+            const url = `https://open-api.guesty.com/v1/availability-pricing/api/calendar/listings/${listingID}?startDate=${startDate}&endDate=${endDate}&includeAllotment=${true}`
+
+            const headers = {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            };
+        
+        
+            try {
+                const response = await axios.get(url, { headers });
+                const responseData = response.data;
+        
                 console.log('Request to retrieve calendar successful')
-                let availCalendar = data;
+                let availCalendar = responseData;
                 resolve(availCalendar);
-            })
-            .catch((err) => {
-                console.error(err);
+        
+            } catch (error) {
+                // Handle errors that may occur during the request
+                console.error('Error:', error.message);
+                console.error('Reason:', error.response.data);
                 reject(null);
-            });
+            }
+
         });
     } catch (error) {
         console.log("Error getting calendar availability: ", error.message);
@@ -509,16 +540,24 @@ async function updateCalendarIndividually(blockObject, listingId) {
         return new Promise(async(resolve, reject) => {
             let token = await returnAValidToken(clientID, clientSecret);
 
-            await sdk.auth(`Bearer ${token}`);
-            await sdk.putAvailabilityPricingApiCalendarListingsId(blockObject, listingId)
-            .then(({ data }) => { 
+            const url = `https://open-api.guesty.com/v1/availability-pricing/api/calendar/listings/${listingId}`
+
+
+            const headers = {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            };
+
+            await axios.put(url, blockObject, { headers })
+            .then(response => {
                 console.log("Final Request Successful");
                 resolve(true);
             })
-            .catch((err) => {
-                console.error(err);
+            .catch(error => {
+                console.error(error);
                 reject(false);
-            });
+            }) 
 
         });
 
