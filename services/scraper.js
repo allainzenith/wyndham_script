@@ -515,7 +515,6 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
     try {
 
       await page.bringToFront();
-      await page.waitForTimeout(5000);
       let calendarUrl = `https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`;
 
       try {
@@ -647,8 +646,6 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
           console.log("Purchase type can't be selected.")
         }
 
-        await page.waitForTimeout(5000);
-
         setupSelect = 5;
 
         //====================================================================
@@ -769,7 +766,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
         
       try {
         numResponses = 0;
-        await page.waitForTimeout(2000);
+        await page.waitForTimeout(1000);
 
         if(monthNow < months) {
           let nextClass = `button.react-datepicker__navigation--next[aria-label="Next Month"]`;
