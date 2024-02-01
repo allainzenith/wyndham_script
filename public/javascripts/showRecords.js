@@ -257,7 +257,7 @@ async function connectToServer(environment, endpoint) {
     let ws;
     if (environment === 'production') {
         // Production environment
-        ws = new WebSocket(`ws://18.220.144.108:3002/${endpoint}`);
+        ws = new WebSocket(`ws://3.17.177.53:3002/${endpoint}`);
     } else {
         // Development environment
         ws = new WebSocket(`ws://localhost:3002/${endpoint}`);
