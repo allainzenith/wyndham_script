@@ -654,11 +654,11 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
 
         const suiteSelector = "#suiteType";
 
-        let selectedOption = await page.evaluate((selector) => {
+        let selectedOption = resortID === "PI|R000000000031" ? await page.evaluate((selector) => {
           const select = document.querySelector(selector);
           const selectedOption = select.options[select.length-1];
           return selectedOption.text;
-        }, suiteSelector);
+        }, suiteSelector) : "All Suites";
 
         console.log("Selected option: ", selectedOption);
 
