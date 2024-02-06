@@ -803,6 +803,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
         nextButton.click(),
       ]);
       
+      await checkOverlay(page);
       await page.waitForTimeout(1000);
 
       console.log("Done fetching responses..");
