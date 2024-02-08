@@ -774,8 +774,10 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
         timeout: 30000,
       });
 
+      // await nextButton.scrollIntoView();
+      await nextButton.scrollIntoView();
+
       await Promise.all([
-        nextButton.scrollIntoView(),
         page.waitForResponse( async response => {
           if (response.request().method() === "POST" && await response.status() === 200 &&
           response.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability') ) {
@@ -800,9 +802,11 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
   
         }, { timeout:70000 } ),
         nextButton.click(),
-        checkOverlay(page),
-        page.waitForTimeout(1000)
+        checkOverlay(page)
       ]);
+      
+      // await checkOverlay(page);
+      await page.waitForTimeout(1000);
 
       console.log("Done fetching responses..");
   
@@ -874,6 +878,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
         index++;
       }
     }
+
   
     return updatedAvail;
   } catch (error) {
