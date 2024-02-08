@@ -774,7 +774,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
         timeout: 30000,
       });
 
-      await nextButton.scrollIntoView();
+      // await nextButton.scrollIntoView();
 
       await Promise.all([
         page.waitForResponse( async response => {
@@ -799,11 +799,16 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
             }
           }
   
+        }, { timeout:70000 } ),
+        page.waitForSelector(nextClass, {
+          timeout: 90000,
         }),
+        nextButton.scrollIntoView(),
         nextButton.click(),
+        checkOverlay(page)
       ]);
       
-      await checkOverlay(page);
+      // await checkOverlay(page);
       await page.waitForTimeout(1000);
 
       console.log("Done fetching responses..");
