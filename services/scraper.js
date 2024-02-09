@@ -773,34 +773,64 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
       // await nextButton.scrollIntoView();
       // await nextButton.scrollIntoView();
 
+      // await Promise.all([
+      //   nextButton.scrollIntoView(),
+      //   page.waitForResponse( async response => {
+      //     if (await response.request().method() === "POST" && await response.status() === 200 &&
+      //     await response.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability') ) {
+      //       const postData = await response.request().postData();
+      //       const responseText = await response.text();
+    
+      //       if ( postData && postData.includes(resortID) && postData.includes(suiteType) &&
+      //         responseText.includes(`${currentYear}-${currentMonth}`)
+      //       ) {
+      //         if ( responseText.includes(`${currentYear}-${currentMonth}-${initialDate}`) ) numResponses++;
+      //         if ( responseText.includes(`${currentYear}-${currentMonth}-${lastDay}`) ) numResponses++;
+      //         const responseData = JSON.parse(responseText);
+      //         let date = responseData.calendarDays[0].date;
+      //         console.log(`Response with date ${date} pushed.`);
+      //         responses.push(responseText);
+  
+      //         if (numResponses >= 2) {
+      //           return true;
+      //         }
+      //       }
+      //     }
+  
+      //   }, { timeout:70000 } ),
+      
+      //   nextButton.click(),
+      //   checkOverlay(page)
+      // ]);
+
       await Promise.all([
         nextButton.scrollIntoView(),
-        page.waitForResponse( async response => {
-          if (await response.request().method() === "POST" && await response.status() === 200 &&
-          await response.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability') ) {
-            const postData = await response.request().postData();
-            const responseText = await response.text();
-    
-            if ( postData && postData.includes(resortID) && postData.includes(suiteType) &&
-              responseText.includes(`${currentYear}-${currentMonth}`)
-            ) {
-              if ( responseText.includes(`${currentYear}-${currentMonth}-${initialDate}`) ) numResponses++;
-              if ( responseText.includes(`${currentYear}-${currentMonth}-${lastDay}`) ) numResponses++;
-              const responseData = JSON.parse(responseText);
-              let date = responseData.calendarDays[0].date;
-              console.log(`Response with date ${date} pushed.`);
-              responses.push(responseText);
-  
-              if (numResponses >= 2) {
-                return true;
-              }
-            }
-          }
-  
-        }, { timeout:70000 } ),
         nextButton.click(),
-        checkOverlay(page)
-      ]);
+        checkOverlay(page),
+        page.waitForResponse(async response => {
+            if (await response.request().method() === "POST" &&
+                await response.status() === 200 &&
+                await response.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability')) {
+                const postData = await response.request().postData();
+                const responseText = await response.text();
+    
+                if (postData && postData.includes(resortID) && postData.includes(suiteType) &&
+                    responseText.includes(`${currentYear}-${currentMonth}`)) {
+                    if (responseText.includes(`${currentYear}-${currentMonth}-${initialDate}`)) numResponses++;
+                    if (responseText.includes(`${currentYear}-${currentMonth}-${lastDay}`)) numResponses++;
+                    const responseData = JSON.parse(responseText);
+                    let date = responseData.calendarDays[0].date;
+                    console.log(`Response with date ${date} pushed.`);
+                    responses.push(responseText);
+    
+                    if (numResponses >= 2) {
+                        return true;
+                    }
+                }
+            }
+        }, { timeout: 70000 })
+    ]);
+    
       
       // await checkOverlay(page);
       await page.waitForTimeout(1000);
