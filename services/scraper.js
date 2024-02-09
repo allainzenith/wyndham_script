@@ -766,7 +766,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
       lastDay = endOfMonth(currentDate).toLocaleDateString(undefined, { day: "2-digit" });
 
       let nextClass = `button.react-datepicker__navigation--next[aria-label="Next Month"]`;
-      let nextButton = await page.waitForSelector(nextClass, {
+      await page.waitForSelector(nextClass, {
         timeout: 30000,
       });
 
@@ -804,9 +804,8 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
       // ]);
 
       await Promise.all([
-        nextButton.scrollIntoView(),
-        nextButton.click(),
-        checkOverlay(page),
+        page.focus(nextClass),
+        page.click(nextClass),
         page.waitForResponse(async response => {
             if (await response.request().method() === "POST" &&
                 await response.status() === 200 &&
@@ -828,7 +827,8 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
                     }
                 }
             }
-        }, { timeout: 70000 })
+        }, { timeout: 70000 }),
+        checkOverlay(page)
     ]);
     
       
