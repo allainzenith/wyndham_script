@@ -803,6 +803,8 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
       //   checkOverlay(page)
       // ]);
 
+      await checkOverlay(page);
+
       await Promise.all([
         page.focus(nextClass),
         page.click(nextClass),
@@ -832,7 +834,6 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
     ]);
     
       
-      // await checkOverlay(page);
       await page.waitForTimeout(1000);
 
       console.log("Done fetching responses..");
