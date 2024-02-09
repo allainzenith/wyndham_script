@@ -776,9 +776,9 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
       await Promise.all([
         nextButton.scrollIntoView(),
         page.waitForResponse( async response => {
-          if (response.request().method() === "POST" &&
-          response.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability') ) {
-            const postData = response.request().postData();
+          if (await response.request().method() === "POST" && await response.status() === 200 &&
+          await response.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability') ) {
+            const postData = await response.request().postData();
             const responseText = await response.text();
     
             if ( postData && postData.includes(resortID) && postData.includes(suiteType) &&
