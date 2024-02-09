@@ -884,6 +884,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
     return updatedAvail;
   } catch (error) {
     console.error("Error getting availability:", error.message);
+    console.error("Error getting availability:", error.response.data);
     //try the process one more time
   
     let doneSelect = await selectElements(queueType, resortID, suiteType, page, pageForAddress);
