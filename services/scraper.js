@@ -516,6 +516,7 @@ async function clickOneElement(page, elementSelector) {
     const buttonClicked = await page.evaluate((selector) => {
       const buttonSelector = document.querySelector(selector);
       if (buttonSelector) {
+        buttonSelector.scrollIntoView({ behavior: 'smooth', block: 'center' });
         buttonSelector.click(); 
         return true;
       }

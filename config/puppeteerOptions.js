@@ -68,7 +68,7 @@ async function initializeBrowser(customProfileRelPath) {
       ],
       headless: 'new', 
       executablePath: 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
-      headless: false,
+      // headless: false,
       // headless: false,
       userDataDir: customProfileDir
     });
