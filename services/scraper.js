@@ -220,6 +220,7 @@ async function login(queueType, page, pageForAddress) {
       let loginSelector = await page.$(`.button-primary[value*="Login"]`);
       await loginSelector.scrollIntoView();
 
+      await acceptCookies(page);
       await checkOverlay(page);
 
       await page.type("#okta-signin-username", userName);
@@ -487,24 +488,44 @@ async function enableSessionCalendar(page){
 }
 
 async function checkOverlay(page) {
-  const overlaySelector = 'button[aria-label*="Close"]'
+  const overlayClosed = await clickOneElement(page, 'button[aria-label*="Close"]')
   
-  const overlayExists = await page.evaluate((selector) => {
-    const overlayElement = document.querySelector(selector);
-    return overlayElement !== null;
-  }, overlaySelector);
+  console.log("Overlay closed: ", overlayClosed);
 
+}
+
+async function acceptCookies(page) {
+  const cookiesAccepted = await clickOneElement(page, "#onetrust-accept-btn-handler");
+  console.log("Cookies accepted: ", cookiesAccepted);
+}
+
+async function clickOneElement(page, elementSelector) {
+  const timeoutMillis = 2000; 
+  const overlayExistsPromise = page.evaluate((selector) => {
+      const overlayElement = document.querySelector(selector);
+      return overlayElement !== null;
+  }, elementSelector);
+
+  const timeoutPromise = new Promise((resolve) => {
+      setTimeout(resolve, timeoutMillis, false); 
+  });
+  
+  const overlayExists = await Promise.race([overlayExistsPromise, timeoutPromise]);
+  
   if (overlayExists) {
-    await page.evaluate((selector) => {
-      const closeButton = document.querySelector(selector);
-      if (closeButton) {
-        closeButton.click(); 
+    const buttonClicked = await page.evaluate((selector) => {
+      const buttonSelector = document.querySelector(selector);
+      if (buttonSelector) {
+        buttonSelector.click(); 
         return true;
       }
       return false;
-    }, overlaySelector);
-  }
+    }, elementSelector);
 
+    return buttonClicked;
+  }  
+  console.log("Button is not there.")
+  return false;
 }
 
 async function selectElements(queueType, resortID, suiteType, page, pageForAddress) {
@@ -527,14 +548,14 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
         //IMPORTANT: DO NOT DELETE
         await Promise.all([
           page.waitForNavigation(), 
-          page.reload({ waitUntil: "domcontentloaded" })
+          page.reload({ waitUntil: "load" })
         ]);
       } catch (error) {
         console.error("Not on the calendar URL yet: ", error.message);
         console.log("Navigating now..");
         await Promise.all([
           page.waitForNavigation(), 
-          page.goto(calendarUrl, { waitUntil: "domcontentloaded" }),
+          page.goto(calendarUrl, { waitUntil: "load" }),
         ]);
       }
 
@@ -554,9 +575,7 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
           ))
       );
 
-      const resort  = await page.waitForSelector(resortSelector, {
-        timeout: 3000,
-      });
+      const resort  = await page.$(resortSelector);
 
       await resort.scrollIntoView();
 
@@ -766,75 +785,37 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
       lastDay = endOfMonth(currentDate).toLocaleDateString(undefined, { day: "2-digit" });
 
       let nextClass = `button.react-datepicker__navigation--next[aria-label="Next Month"]`;
-      await page.waitForSelector(nextClass, {
-        timeout: 30000,
-      });
-
-      // await nextButton.scrollIntoView();
-      // await nextButton.scrollIntoView();
-
-      // await Promise.all([
-      //   nextButton.scrollIntoView(),
-      //   page.waitForResponse( async response => {
-      //     if (await response.request().method() === "POST" && await response.status() === 200 &&
-      //     await response.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability') ) {
-      //       const postData = await response.request().postData();
-      //       const responseText = await response.text();
-    
-      //       if ( postData && postData.includes(resortID) && postData.includes(suiteType) &&
-      //         responseText.includes(`${currentYear}-${currentMonth}`)
-      //       ) {
-      //         if ( responseText.includes(`${currentYear}-${currentMonth}-${initialDate}`) ) numResponses++;
-      //         if ( responseText.includes(`${currentYear}-${currentMonth}-${lastDay}`) ) numResponses++;
-      //         const responseData = JSON.parse(responseText);
-      //         let date = responseData.calendarDays[0].date;
-      //         console.log(`Response with date ${date} pushed.`);
-      //         responses.push(responseText);
-  
-      //         if (numResponses >= 2) {
-      //           return true;
-      //         }
-      //       }
-      //     }
-  
-      //   }, { timeout:70000 } ),
-      
-      //   nextButton.click(),
-      //   checkOverlay(page)
-      // ]);
+      // let nextButton = await page.$(nextClass);
 
       await checkOverlay(page);
 
       await Promise.all([
-        page.focus(nextClass),
-        page.click(nextClass),
         page.waitForResponse(async response => {
-            if (await response.request().method() === "POST" &&
-                await response.status() === 200 &&
-                await response.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability')) {
-                const postData = await response.request().postData();
-                const responseText = await response.text();
-    
-                if (postData && postData.includes(resortID) && postData.includes(suiteType) &&
-                    responseText.includes(`${currentYear}-${currentMonth}`)) {
-                    if (responseText.includes(`${currentYear}-${currentMonth}-${initialDate}`)) numResponses++;
-                    if (responseText.includes(`${currentYear}-${currentMonth}-${lastDay}`)) numResponses++;
-                    const responseData = JSON.parse(responseText);
-                    let date = responseData.calendarDays[0].date;
-                    console.log(`Response with date ${date} pushed.`);
-                    responses.push(responseText);
-    
-                    if (numResponses >= 2) {
-                        return true;
-                    }
-                }
-            }
+          if (await response.request().method() === "POST" &&
+              await response.status() === 200 &&
+              await response.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability')) {
+              const postData = await response.request().postData();
+              const responseText = await response.text();
+  
+              if (postData && postData.includes(resortID) && postData.includes(suiteType) &&
+                  responseText.includes(`${currentYear}-${currentMonth}`)) {
+                  if (responseText.includes(`${currentYear}-${currentMonth}-${initialDate}`)) numResponses++;
+                  if (responseText.includes(`${currentYear}-${currentMonth}-${lastDay}`)) numResponses++;
+                  const responseData = JSON.parse(responseText);
+                  let date = responseData.calendarDays[0].date;
+                  console.log(`Response with date ${date} pushed.`);
+                  responses.push(responseText);
+  
+                  if (numResponses >= 2) {
+                      return true;
+                  }
+              }
+          }
         }, { timeout: 70000 }),
-        checkOverlay(page)
-    ]);
-    
-      
-      await page.waitForTimeout(1000);
+        await clickOneElement(page, nextClass)
+        // nextButton.scrollIntoView(),
+        // nextButton.click(),
+      ]);
 
       console.log("Done fetching responses..");
   
@@ -911,7 +892,6 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
     return updatedAvail;
   } catch (error) {
     console.error("Error getting availability:", error.message);
-    console.error("Error getting availability:", error);
     //try the process one more time
   
     let doneSelect = await selectElements(queueType, resortID, suiteType, page, pageForAddress);
