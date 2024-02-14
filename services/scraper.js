@@ -736,7 +736,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
             const postData = await response.request().postData();
             const responseText = await response.text();
     
-            if ( postData && postData.includes(resortID) && postData.includes(suiteType) &&
+            if ( postData && postData.includes(suiteType) && postData.includes(resortID) &&
               responseText.includes(`${currentYear}-${currentMonth}`)
             ) {
               if ( responseText.includes(`${currentYear}-${currentMonth}-${initialDate}`) ) numResponses++;
@@ -785,7 +785,9 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
       lastDay = endOfMonth(currentDate).toLocaleDateString(undefined, { day: "2-digit" });
 
       let nextClass = `button.react-datepicker__navigation--next[aria-label="Next Month"]`;
-      // let nextButton = await page.$(nextClass);
+      let nextButton = await page.$(nextClass);
+
+      nextButton.scrollIntoView();
 
 
       await Promise.all([
