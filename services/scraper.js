@@ -765,6 +765,8 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
       numResponses = 0;
     }
 
+    await page.waitForTimeout(2000);
+
     //====================================================================
     // END OF SELECTING SUITE TYPE
     //====================================================================
@@ -785,9 +787,6 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
       lastDay = endOfMonth(currentDate).toLocaleDateString(undefined, { day: "2-digit" });
 
       let nextClass = `button.react-datepicker__navigation--next[aria-label="Next Month"]`;
-      // let nextButton = await page.$(nextClass);
-
-      // nextButton.scrollIntoView();
 
 
       await Promise.all([
