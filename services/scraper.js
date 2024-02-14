@@ -814,9 +814,9 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
           }
         }, { timeout: 70000 }),
         await clickOneElement(page, nextClass)
-        // nextButton.scrollIntoView(),
-        // nextButton.click(),
       ]);
+
+      await page.waitForTimeout(2000);
 
       console.log("Done fetching responses..");
   
