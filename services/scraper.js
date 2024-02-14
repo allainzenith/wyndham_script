@@ -729,6 +729,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
 
     // IMPORTANT
     while (selectedSuiteType !== suiteType) {
+      responses = [];
       await Promise.all([
         page.waitForResponse( async response => {
           if (response.request().method() === "POST" && await response.status() === 200 &&
@@ -739,8 +740,8 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
             if ( postData && postData.includes(suiteType) && postData.includes(resortID) &&
               responseText.includes(`${currentYear}-${currentMonth}`)
             ) {
-              if ( responseText.includes(`${currentYear}-${currentMonth}-${initialDate}`) ) numResponses++;
-              if ( responseText.includes(`${currentYear}-${currentMonth}-${lastDay}`) ) numResponses++;
+              if ( responseText.includes(`${currentYear}-${currentMonth}-${initialDate}`) && postData.includes(suiteType) && postData.includes(resortID) ) numResponses++;
+              if ( responseText.includes(`${currentYear}-${currentMonth}-${lastDay}`) && postData.includes(suiteType) && postData.includes(resortID) ) numResponses++;
               const responseData = JSON.parse(responseText);
               let date = responseData.calendarDays[0].date;
               console.log(`Response with date ${date} pushed.`);
