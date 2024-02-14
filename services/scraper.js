@@ -500,7 +500,7 @@ async function acceptCookies(page) {
 }
 
 async function clickOneElement(page, elementSelector, timeout) {
-  const overlayExistsPromise = page.evaluate((selector) => {
+  const overlayExistsPromise = await page.evaluate((selector) => {
       const overlayElement = document.querySelector(selector);
       return overlayElement !== null;
   }, elementSelector);
@@ -785,9 +785,9 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
       lastDay = endOfMonth(currentDate).toLocaleDateString(undefined, { day: "2-digit" });
 
       let nextClass = `button.react-datepicker__navigation--next[aria-label="Next Month"]`;
-      let nextButton = await page.$(nextClass);
+      // let nextButton = await page.$(nextClass);
 
-      nextButton.scrollIntoView();
+      // nextButton.scrollIntoView();
 
 
       await Promise.all([
