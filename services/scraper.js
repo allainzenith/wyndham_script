@@ -488,7 +488,7 @@ async function enableSessionCalendar(page){
 }
 
 async function checkOverlay(page) {
-  const overlayClosed = await clickOneElement(page, 'button[aria-label*="Close"]')
+  const overlayClosed = await clickOneElement(page, 'button[aria-label*="Close"]', 5000)
   
   console.log("Overlay closed: ", overlayClosed);
 
@@ -496,18 +496,17 @@ async function checkOverlay(page) {
 
 async function acceptCookies(page) {
   const cookiesAccepted = await clickOneElement(page, "#onetrust-accept-btn-handler");
-  console.log("Cookies accepted: ", cookiesAccepted);
+  console.log("Cookies accepted: ", cookiesAccepted, 5000);
 }
 
-async function clickOneElement(page, elementSelector) {
-  const timeoutMillis = 2000; 
+async function clickOneElement(page, elementSelector, timeout) {
   const overlayExistsPromise = page.evaluate((selector) => {
       const overlayElement = document.querySelector(selector);
       return overlayElement !== null;
   }, elementSelector);
 
   const timeoutPromise = new Promise((resolve) => {
-      setTimeout(resolve, timeoutMillis, false); 
+      setTimeout(resolve, timeout, false); 
   });
   
   const overlayExists = await Promise.race([overlayExistsPromise, timeoutPromise]);
@@ -788,9 +787,9 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
       let nextClass = `button.react-datepicker__navigation--next[aria-label="Next Month"]`;
       // let nextButton = await page.$(nextClass);
 
-      await checkOverlay(page);
 
       await Promise.all([
+        // page.waitForNetworkIdle({ idleTime: 80000 }),
         page.waitForResponse(async response => {
           if (await response.request().method() === "POST" &&
               await response.status() === 200 &&
@@ -813,7 +812,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
               }
           }
         }, { timeout: 70000 }),
-        await clickOneElement(page, nextClass)
+        clickOneElement(page, nextClass, 30000),
       ]);
 
       await page.waitForTimeout(2000);
@@ -846,9 +845,9 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
     let nextItem;
     let updatedAvail = [];
     let start = null;
-    while (index <= dates.length - 2) {
+    while (index <= dates.length - 1) {
       currentItem = dates[index];
-      nextItem = dates[index + 1];
+      nextItem = index < dates.length - 1 ? dates[index + 1] : dates[index];
   
       if (start === null) {
         start = currentItem.date;
@@ -878,7 +877,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
         index++;
       } else {
         //if current item is the second last item
-        if (index === dates.length - 2) {
+        if (index === dates.length - 2 || index === dates.length - 2) {
           updatedAvail.push({
             start: start,
             end: nextItem.date,
