@@ -1,4 +1,4 @@
-const puppeteer = require('puppeteer-core');
+const puppeteer = require('puppeteer');
 const fs = require('fs');
 const path = require('path');
 require("dotenv").config();
@@ -61,23 +61,23 @@ async function initializeBrowser(customProfileRelPath) {
   try {
     // Launch Puppeteer with the custom profile directory
     newBrowser = await puppeteer.launch({
-      // args: [
-      //   "--disable-gpu",
-      //   "--disable-setuid-sandbox",
-      //   "--no-sandbox",
-      //   "--no-zygote",
-      // ],
       args: [
-        '--disable-gpu',
-        '--disable-dev-shm-usage',
-        '--disable-setuid-sandbox',
-        '--no-first-run',
-        '--no-sandbox',
-        '--no-zygote',
-        '--single-process',
+        "--disable-gpu",
+        "--disable-setuid-sandbox",
+        "--no-sandbox",
+        "--no-zygote",
       ],
+      // args: [
+      //   '--disable-gpu',
+      //   '--disable-dev-shm-usage',
+      //   '--disable-setuid-sandbox',
+      //   '--no-first-run',
+      //   '--no-sandbox',
+      //   '--no-zygote',
+      //   '--single-process',
+      // ],
       // headless: 'new', 
-      executablePath: 'C:\\Users\\Administrator\\chrome\\win64-122.0.6261.57\\chrome-win64\\chrome.exe',
+      // executablePath: 'C:\\Users\\Administrator\\chrome\\win64-122.0.6261.57\\chrome-win64\\chrome.exe',
       headless: false,
       // headless: false,
       userDataDir: customProfileDir
