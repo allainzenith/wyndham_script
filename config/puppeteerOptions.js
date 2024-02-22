@@ -81,7 +81,7 @@ async function initializeBrowser(customProfileRelPath) {
       // executablePath: 'C:\\Program Files\\Chromium\\Application\\chrome.exe',
       headless: true,
       // headless: false,
-      userDataDir: customProfileDir
+      // userDataDir: customProfileDir
     });
 
     return newBrowser;
