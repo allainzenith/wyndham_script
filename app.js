@@ -37,7 +37,7 @@ app.use(async (req, res, next) => {
     updateOnce = false;
 
     // await new Promise(resolve => setTimeout(resolve, 60000));
-    // await scheduledUpdates("TIER 1");
+    await scheduledUpdates("TIER 1");
     // await new Promise(resolve => setTimeout(resolve, 60000));
     // await scheduledUpdates("TIER 2");
     // await new Promise(resolve => setTimeout(resolve, 60000));
