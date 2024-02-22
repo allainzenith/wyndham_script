@@ -68,7 +68,7 @@ async function initializeBrowser(customProfileRelPath) {
         "--no-zygote",
       ],
       // headless: 'new', 
-      executablePath: '/usr/bin/chromium-browser',
+      executablePath: 'C:\\Users\\Administrator\\chrome\\win64-122.0.6261.57\\chrome-win64\\chrome.exe',
       headless: false,
       // headless: false,
       userDataDir: customProfileDir
