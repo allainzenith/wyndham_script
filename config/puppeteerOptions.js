@@ -61,25 +61,13 @@ async function initializeBrowser(customProfileRelPath) {
   try {
     // Launch Puppeteer with the custom profile directory
     newBrowser = await puppeteer.launch({
-      // ignoreDefaultArgs: ['--disable-extensions'],
       args: [
         "--disable-gpu",
         "--disable-setuid-sandbox",
         "--no-sandbox",
         "--no-zygote",
       ],
-      // args: [
-      //   '--disable-gpu',
-      //   '--disable-dev-shm-usage',
-      //   '--disable-setuid-sandbox',
-      //   '--no-first-run',
-      //   '--no-sandbox',
-      //   '--no-zygote',
-      //   '--single-process',
-      // ],
-      // headless: 'new', 
-      // executablePath: 'C:\\Program Files\\Chromium\\Application\\chrome.exe',
-      headless: false,
+      headless: 'new',
       // headless: false,
       userDataDir: customProfileDir
     });
