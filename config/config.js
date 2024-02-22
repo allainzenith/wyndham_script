@@ -10,8 +10,8 @@ const { mysql2 } = require('mysql2')
 // userName = "SJO111"
 // passWord = "zgw5qbc@xpw2JEQ@ypy"
 
-userName = "PaulDavis1"
-passWord = "Rental$2023"
+userName = "littletb3"
+passWord = "tired0fB$"
 
 // For database connection
 database = "wyndham_script";
