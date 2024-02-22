@@ -61,6 +61,7 @@ async function initializeBrowser(customProfileRelPath) {
   try {
     // Launch Puppeteer with the custom profile directory
     newBrowser = await puppeteer.launch({
+      ignoreDefaultArgs: ['--disable-extensions'],
       // args: [
       //   "--disable-gpu",
       //   "--disable-setuid-sandbox",
