@@ -77,7 +77,7 @@ async function initializeBrowser(customProfileRelPath) {
       //   '--single-process',
       // ],
       // headless: 'new', 
-      executablePath: '/usr/bin/chromium-browser',
+      executablePath: 'C:\\Program Files\\Chromium\\Application\\chrome.exe',
       headless: false,
       // headless: false,
       userDataDir: customProfileDir
