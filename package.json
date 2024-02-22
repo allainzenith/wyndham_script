@@ -20,6 +20,7 @@
     "mysql2": "^3.6.1",
     "node-schedule": "^2.1.1",
     "puppeteer": "^20.3.0",
+    "puppeteer-core": "^22.1.0",
     "sequelize": "^6.33.0",
     "uuid": "^9.0.1",
     "ws": "^8.16.0"
