@@ -310,7 +310,7 @@ async function isLoggedIn(page) {
   try {
     await page.waitForFunction(
       (url) => window.location.href.includes(url),
-      { timeout: 20000 },
+      { timeout: 60000 },
       accountURL
     );
     console.log('Navigation to', accountURL, 'completed within the timeout');
