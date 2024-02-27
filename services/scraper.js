@@ -646,24 +646,24 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
       }
 
       if (optionExists) {
-        try {
-          let purchaseType = null;
-          const purchaseSelector = "#purchaseType";
-          await page.waitForSelector(purchaseSelector, {timeout: 10000});
-          while (purchaseType !== "Developer") {
-            await page.select(purchaseSelector, "Developer");
+        // try {
+        //   let purchaseType = null;
+        //   const purchaseSelector = "#purchaseType";
+        //   await page.waitForSelector(purchaseSelector, {timeout: 10000});
+        //   while (purchaseType !== "Developer") {
+        //     await page.select(purchaseSelector, "Developer");
 
-            purchaseType = await page.evaluate((selector) => {
-              const select = document.querySelector(selector);
-              const selectedOption = select.options[select.selectedIndex];
-              return selectedOption.text;
-            }, purchaseSelector);
+        //     purchaseType = await page.evaluate((selector) => {
+        //       const select = document.querySelector(selector);
+        //       const selectedOption = select.options[select.selectedIndex];
+        //       return selectedOption.text;
+        //     }, purchaseSelector);
 
-            console.log("This is the selected purchase type:",purchaseType);
-          } 
-        } catch (error) {
-          console.log("Purchase type can't be selected.")
-        }
+        //     console.log("This is the selected purchase type:",purchaseType);
+        //   } 
+        // } catch (error) {
+        //   console.log("Purchase type can't be selected.")
+        // }
 
         setupSelect = 5;
 
