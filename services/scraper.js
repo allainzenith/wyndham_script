@@ -563,18 +563,8 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
 
       const resortSelector = "#ResortSelect";
 
-      await page.waitForSelector(resortSelector).then(
-        async () =>
-          (await page.waitForFunction(
-            (selector) => {
-              const element = document.querySelector(selector);
-              return !!element;
-            },
-            { timeout: 60000 },
-            resortSelector
-          ))
-      );
-
+      await page.waitForSelector(resortSelector, { timeout:7000 });
+      
       const resort  = await page.$(resortSelector);
 
       await resort.scrollIntoView();
