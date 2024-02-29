@@ -796,9 +796,9 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
                   const responseData = JSON.parse(responseText);
                   let date = responseData.calendarDays[0].date;
                   console.log(`Response with date ${date} pushed.`);
-                  console.log('=======================================================')
-                  console.log(postData)
-                  console.log('=======================================================')
+                  // console.log('=======================================================')
+                  // console.log(postData)
+                  // console.log('=======================================================')
                   responses.push(responseText);
   
                   if (numResponses >= 2) {
