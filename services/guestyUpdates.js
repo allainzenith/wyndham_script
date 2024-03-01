@@ -9,8 +9,9 @@ const { addMonths, addDays } = require("date-fns");
 let { clientID, clientSecret, returnAValidToken } = require("../config/config");
 
 // async function executeUpdates(resortFoundorCreated, token, address, updatedAvail, suiteType){
-async function executeUpdates(resortFoundorCreated, address, updatedAvail, suiteType, months){
+async function executeUpdates(resortFoundorCreated, address, updatedAvail, suiteType, months, page){
 
+    console.log(page)
     let listingIDs = [], listingNames = [];
     let listingID, listingName, updateSuccess; 
 
@@ -33,7 +34,7 @@ async function executeUpdates(resortFoundorCreated, address, updatedAvail, suite
                     console.log(avail);
                 }
 
-                updateSuccess = await updateAvailability(listings, updatedAvail, months); 
+                updateSuccess = await updateAvailability(listings, updatedAvail, months, page); 
 
                 for (const listing of listings) {
 
@@ -102,7 +103,7 @@ async function executeUpdates(resortFoundorCreated, address, updatedAvail, suite
 
         }
 
-        updateSuccess = await updateAvailability(listingJsonArray, updatedAvail, months);
+        updateSuccess = await updateAvailability(listingJsonArray, updatedAvail, months, page);
 
         return updateSuccess ? "resort already updated" : null;
         
@@ -111,6 +112,8 @@ async function executeUpdates(resortFoundorCreated, address, updatedAvail, suite
 }
 
 async function findListing(address, suiteType){
+
+
     let finalListings = [];
     const words = address.split(" "); 
 
@@ -304,7 +307,8 @@ async function updateAvailabilitySettings(listingID){
     }
 }
 
-async function updateAvailability(listing, updatedAvail, months){
+async function updateAvailability(listing, updatedAvail, months, page){
+
     try {
         let token = await returnAValidToken(clientID, clientSecret);
 
@@ -346,33 +350,48 @@ async function updateAvailability(listing, updatedAvail, months){
         console.log("Subarray size: ", subArrayOfAvailability.length);
 
         let requestsSent = 0;
-    
+
         const updatePromises = subArrayOfAvailability.map(async (sub) => {
             try {
                 await axios.put(url, sub, { headers })
-                .then(response => {
-                    console.log("Request successful");
-                })
-                .catch(error => {
-                    console.error(error.message);
-                    console.log("Request failed")
-                }) 
+                    .then(async (response) => {
+                        console.log("Request successful");
+                    })
+                    .catch(error => {
+                        console.error(error.message);
+                        console.log("Request failed");
+                    });
         
                 requestsSent++;
         
                 if (requestsSent >= 10) {
-                    console.log("Ten or more requests sent. Waiting for a minute.");
+                    console.log("Ten or more requests sent. Waiting for a second.");
                     await new Promise(resolve => setTimeout(resolve, 1000));
                 }
         
-                return true; 
+                return true;
             } catch (err) {
                 console.error(err.message);
-                return false; 
+                return false;
             }
         });
         
+        const interval = setInterval(async () => {
+            try {
+                console.log("Reloading page..");
+                await Promise.all([
+                    page.waitForNavigation({ waitUntil: 'networkidle0' }),
+                    page.reload()
+                ]);
+            } catch (error) {
+                console.error("Error while reloading page:", error);
+            }
+        }, 60 * 1000);
+        
         await Promise.all(updatePromises);
+        
+        clearInterval(interval);
+        
 
         console.log("individual checking now..");
 
@@ -393,7 +412,7 @@ async function updateAvailability(listing, updatedAvail, months){
         }
 
         for (const list of listing) {
-            success = await finalizeAccuracy(months, list._id, indiUpdatedAvail);
+            success = await finalizeAccuracy(months, list._id, indiUpdatedAvail, page);
         } 
 
         if (success === 0) {
@@ -412,7 +431,8 @@ async function updateAvailability(listing, updatedAvail, months){
 
 }
 
-async function finalizeAccuracy(months, listingID, indiUpdatedAvail) {
+async function finalizeAccuracy(months, listingID, indiUpdatedAvail, page) {
+
     try {
         let success = 0;
         const { currentDate, EndDate } = getCurrentAndEndDate(months);
@@ -480,6 +500,13 @@ async function finalizeAccuracy(months, listingID, indiUpdatedAvail) {
                     requestsSent++;
 
                     if (requestsSent >=10) {
+                        //page reload
+                        requestsSent = 0;
+                        await Promise.all([
+                            page.waitForNavigation({ waitUntil: 'networkidle0' }),
+                            page.reload()
+                        ])
+
                         await new Promise(resolve => setTimeout(resolve, 1000));
                     }
 
@@ -499,6 +526,7 @@ async function finalizeAccuracy(months, listingID, indiUpdatedAvail) {
 }
 
 async function getCalendarAvailability(startDate, endDate, listingID) {
+
     try {
         return new Promise(async(resolve, reject) => {
             let token = await returnAValidToken(clientID, clientSecret);
@@ -536,6 +564,7 @@ async function getCalendarAvailability(startDate, endDate, listingID) {
 }
 
 async function updateCalendarIndividually(blockObject, listingId) {
+
     try {
         return new Promise(async(resolve, reject) => {
             let token = await returnAValidToken(clientID, clientSecret);

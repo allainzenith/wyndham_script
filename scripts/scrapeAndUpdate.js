@@ -16,12 +16,13 @@ async function executeScript(queueType, resortID, suiteType, months, resortFound
         queueType, resortID, suiteType, months, resortHasNoRecord, browser, page, pageForAddress) : null;
 
     let success;
+
     if ( scraped !== null) {
         if (scraped === "MAINTENANCE") {
             success = false;
             await updateEventStatus(eventCreated, "MAINTENANCE");
         } else {
-            success = await updateGuestyandRecord(resortFoundorCreated, eventCreated, scraped, suiteType, months);
+            success = await updateGuestyandRecord(resortFoundorCreated, eventCreated, scraped, suiteType, months, page);
         }
     }  else {
         success = false;
@@ -90,7 +91,7 @@ async function createAnEvent(resortRefNum, months){
 
 
 // async function updateGuestyandRecord(resortFoundorCreated, eventCreated, scraped, token, suiteType){
-async function updateGuestyandRecord(resortFoundorCreated, eventCreated, scraped, suiteType, months){
+async function updateGuestyandRecord(resortFoundorCreated, eventCreated, scraped, suiteType, months, page){
 
     await updateEventStatus(eventCreated, "UPDATING");
     
@@ -109,7 +110,7 @@ async function updateGuestyandRecord(resortFoundorCreated, eventCreated, scraped
     const title = scraped.sElement;
 
     // let result = await executeUpdates(resortFoundorCreated, token, address, updatedAvail, options[suiteType]);
-    let result = await executeUpdates(resortFoundorCreated, address, updatedAvail, options[suiteType], months);
+    let result = await executeUpdates(resortFoundorCreated, address, updatedAvail, options[suiteType], months, page);
 
     //call function to update resort and status 
     if (result !== null) {
