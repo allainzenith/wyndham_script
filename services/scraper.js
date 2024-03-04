@@ -168,7 +168,7 @@ async function login(queueType, page, pageForAddress) {
       await Promise.all([
         page.waitForNavigation(), 
         page.bringToFront(),
-        page.goto("https://clubwyndham.wyndhamdestinations.com/us/en/login", { waitUntil: "domcontentloaded" }),
+        page.goto("https://clubwyndham.wyndhamdestinations.com/us/en/login", { waitUntil: "load" }),
       ]);
 
     } catch (error) {
@@ -209,7 +209,7 @@ async function login(queueType, page, pageForAddress) {
           addressSelectorFound++;
           console.log("Timed out. Reloading the page.");
           await Promise.all([
-            pageForAddress.waitForNavigation({ waitUntil: 'domcontentloaded' }), 
+            pageForAddress.waitForNavigation({ waitUntil: 'load' }), 
             pageForAddress.reload()
           ]);
         }
@@ -428,7 +428,7 @@ async function resendSmsCode(queueType) {
 }
 async function enableSessionCalendar(page){
   try {
-    await page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results', { waitUntil: 'domcontentloaded' });
+    await page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results', { waitUntil: 'load' });
 
     let addressSelectorFound = 0;
 
@@ -448,7 +448,7 @@ async function enableSessionCalendar(page){
         console.log("Timed out. Reloading the page.");
         await Promise.all([
           page.waitForNavigation(), 
-          page.reload({ waitUntil: 'domcontentloaded' })
+          page.reload({ waitUntil: 'load' })
         ]);
       }
     }
@@ -549,14 +549,14 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
         //IMPORTANT: DO NOT DELETE
         await Promise.all([
           page.waitForNavigation(), 
-          page.reload({ waitUntil: 'domcontentloaded' })
+          page.reload({ waitUntil: 'load' })
         ]);
       } catch (error) {
         console.error("Not on the calendar URL yet: ", error.message);
         console.log("Navigating now..");
         await Promise.all([
           page.waitForNavigation(), 
-          page.goto(calendarUrl, { waitUntil: 'domcontentloaded' }),
+          page.goto(calendarUrl, { waitUntil: 'load' }),
         ]);
       }
 

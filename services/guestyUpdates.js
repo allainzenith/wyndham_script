@@ -380,7 +380,7 @@ async function updateAvailability(listing, updatedAvail, months, page){
             try {
                 console.log("Reloading page..");
                 await Promise.all([
-                    page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
+                    page.waitForNavigation({ waitUntil: 'load' }),
                     page.reload()
                 ]);
             } catch (error) {
@@ -503,7 +503,7 @@ async function finalizeAccuracy(months, listingID, indiUpdatedAvail, page) {
                         //page reload
                         requestsSent = 0;
                         await Promise.all([
-                            page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
+                            page.waitForNavigation({ waitUntil: 'load' }),
                             page.reload()
                         ])
 
