@@ -62,7 +62,7 @@ async function executeScraper(queueType, resortID, suiteType, months, resortHasN
       doneScraping = updatedAvail !== null && updatedAvail !== undefined && updatedAvail !== "MAINTENANCE";
       console.log("Done scraping: " + doneScraping);
     } catch (error) {
-      console.log("eRROR: " , error);
+      console.log("Error: " , error);
       console.log(
         "Getting availability failed.", error.message
       );
@@ -168,7 +168,7 @@ async function login(queueType, page, pageForAddress) {
       await Promise.all([
         page.waitForNavigation(), 
         page.bringToFront(),
-        page.goto("https://clubwyndham.wyndhamdestinations.com/us/en/login", { waitUntil: "networkidle0" }),
+        page.goto("https://clubwyndham.wyndhamdestinations.com/us/en/login", { waitUntil: "domcontentloaded" }),
       ]);
 
     } catch (error) {
@@ -209,7 +209,7 @@ async function login(queueType, page, pageForAddress) {
           addressSelectorFound++;
           console.log("Timed out. Reloading the page.");
           await Promise.all([
-            pageForAddress.waitForNavigation({ waitUntil: 'networkidle0' }), 
+            pageForAddress.waitForNavigation({ waitUntil: 'domcontentloaded' }), 
             pageForAddress.reload()
           ]);
         }
@@ -428,7 +428,7 @@ async function resendSmsCode(queueType) {
 }
 async function enableSessionCalendar(page){
   try {
-    await page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results', { waitUntil: 'networkidle0' });
+    await page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results', { waitUntil: 'domcontentloaded' });
 
     let addressSelectorFound = 0;
 
@@ -448,7 +448,7 @@ async function enableSessionCalendar(page){
         console.log("Timed out. Reloading the page.");
         await Promise.all([
           page.waitForNavigation(), 
-          page.reload({ waitUntil: 'networkidle0' })
+          page.reload({ waitUntil: 'domcontentloaded' })
         ]);
       }
     }
@@ -532,7 +532,6 @@ async function clickOneElement(page, elementSelector, timeout) {
 
 async function selectElements(queueType, resortID, suiteType, page, pageForAddress) {
 
-
   let setupSelect = 0;
   while (setupSelect < 5) {
     try {
@@ -550,14 +549,14 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
         //IMPORTANT: DO NOT DELETE
         await Promise.all([
           page.waitForNavigation(), 
-          page.reload({ waitUntil: 'networkidle0' })
+          page.reload({ waitUntil: 'domcontentloaded' })
         ]);
       } catch (error) {
         console.error("Not on the calendar URL yet: ", error.message);
         console.log("Navigating now..");
         await Promise.all([
           page.waitForNavigation(), 
-          page.goto(calendarUrl, { waitUntil: 'networkidle0' }),
+          page.goto(calendarUrl, { waitUntil: 'domcontentloaded' }),
         ]);
       }
 

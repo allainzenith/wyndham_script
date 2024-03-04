@@ -5,7 +5,7 @@ const { executeUpdates } = require('../services/guestyUpdates')
 const { saveRecord, updateRecord, findRecords } = require('../sequelizer/controller/controller')
 const { sequelize } = require("../config/config");
 
-// async function executeScript(token, resortID, suiteType, months, resortFoundorCreated, eventCreated){
+
 async function executeScript(queueType, resortID, suiteType, months, resortFoundorCreated, eventCreated, browser, page, pageForAddress){
 
     // var resortJSON = await resortFoundorCreated.toJSON()
@@ -89,8 +89,6 @@ async function createAnEvent(resortRefNum, months){
 }
 
 
-
-// async function updateGuestyandRecord(resortFoundorCreated, eventCreated, scraped, token, suiteType){
 async function updateGuestyandRecord(resortFoundorCreated, eventCreated, scraped, suiteType, months, page){
 
     await updateEventStatus(eventCreated, "UPDATING");
@@ -109,7 +107,6 @@ async function updateGuestyandRecord(resortFoundorCreated, eventCreated, scraped
     const updatedAvail = scraped.updatedAvail;
     const title = scraped.sElement;
 
-    // let result = await executeUpdates(resortFoundorCreated, token, address, updatedAvail, options[suiteType]);
     let result = await executeUpdates(resortFoundorCreated, address, updatedAvail, options[suiteType], months, page);
 
     //call function to update resort and status 
