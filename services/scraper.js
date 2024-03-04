@@ -807,7 +807,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
                   }
               }
           }
-        }, { timeout: 30000 }),
+        }, { timeout: 70000 }),
         clickOneElement(page, nextClass, 30000),
       ]);
 

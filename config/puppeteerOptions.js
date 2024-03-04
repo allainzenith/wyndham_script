@@ -62,13 +62,12 @@ async function initializeBrowser(customProfileRelPath) {
     // Launch Puppeteer with the custom profile directory
     newBrowser = await puppeteer.launch({
       args: [
-        "--disable-gpu",
         "--disable-setuid-sandbox",
         "--no-sandbox",
         "--no-zygote",
       ],
-      // headless: 'new',
-      headless: false,
+      headless: 'new',
+      // headless: false,
       userDataDir: customProfileDir
     });
 
