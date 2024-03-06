@@ -71,13 +71,13 @@ schedule.scheduleJob('0 */12 * * *', async () => {
 });
 
 
-schedule.scheduleJob("0 9 */1 * *", async () => {
+schedule.scheduleJob("0 8 */1 * *", async () => {
   console.log("Tier 2 schedule function is called");
   await scheduledUpdates("TIER 2");
 });
 
 
-schedule.scheduleJob("0 9 * * 1", async () => {
+schedule.scheduleJob("0 8 * * 1", async () => {
   console.log("Tier 3 schedule function is called");
   await scheduledUpdates("TIER 3");
 });
