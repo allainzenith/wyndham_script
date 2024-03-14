@@ -615,7 +615,7 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
           const select = document.querySelector(selector);
           return select && select.length > 1;
         },
-        { timeout: 10000 },
+        { timeout: 60000 },
         suiteSelector
       );
       
