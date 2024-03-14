@@ -558,6 +558,11 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
           page.waitForNavigation(), 
           page.goto(calendarUrl, { waitUntil: 'load' }),
         ]);
+
+        await Promise.all([
+          page.waitForNavigation(), 
+          page.reload({ waitUntil: 'load' })
+        ]);
       }
 
       await checkOverlay(page);
