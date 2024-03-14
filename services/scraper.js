@@ -193,27 +193,27 @@ async function login(queueType, page, pageForAddress) {
         return "MAINTENANCE";
       }
 
-      let addressSelectorFound = 0;
+      // let addressSelectorFound = 0;
 
-      while (addressSelectorFound < 5) {
-        try {
-          await pageForAddress.waitForSelector(`.resort-card`, {
-            timeout: 60000,
-          });
-          await pageForAddress.waitForSelector(`.resort-card__address`, {
-            timeout: 60000,
-          });       
-          console.log("resorts fully loaded.");
-          addressSelectorFound = 5;
-        } catch (error) {
-          addressSelectorFound++;
-          console.log("Timed out. Reloading the page.");
-          await Promise.all([
-            pageForAddress.waitForNavigation({ waitUntil: 'load' }), 
-            pageForAddress.reload()
-          ]);
-        }
-      }
+      // while (addressSelectorFound < 5) {
+      //   try {
+      //     await pageForAddress.waitForSelector(`.resort-card`, {
+      //       timeout: 60000,
+      //     });
+      //     await pageForAddress.waitForSelector(`.resort-card__address`, {
+      //       timeout: 60000,
+      //     });       
+      //     console.log("resorts fully loaded.");
+      //     addressSelectorFound = 5;
+      //   } catch (error) {
+      //     addressSelectorFound++;
+      //     console.log("Timed out. Reloading the page.");
+      //     await Promise.all([
+      //       pageForAddress.waitForNavigation({ waitUntil: 'load' }), 
+      //       pageForAddress.reload()
+      //     ]);
+      //   }
+      // }
 
       await page.bringToFront();
       console.log("I'M ON THE LOGIN PAGE");
@@ -701,7 +701,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
   });  
 
   let currentYear = currentDate.getFullYear();;
-  let lastDay = endOfMonth(currentDate).toLocaleDateString(undefined, { day: "2-digit" });;
+  let lastDay = endOfMonth(currentDate).toLocaleDateString(undefined, { day: "2-digit" });
   let initialDate = currentDate.toLocaleDateString(undefined, { day: "2-digit" });
   
   try {
