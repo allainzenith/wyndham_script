@@ -193,27 +193,27 @@ async function login(queueType, page, pageForAddress) {
         return "MAINTENANCE";
       }
 
-      // let addressSelectorFound = 0;
+      let addressSelectorFound = 0;
 
-      // while (addressSelectorFound < 5) {
-      //   try {
-      //     await pageForAddress.waitForSelector(`.resort-card`, {
-      //       timeout: 60000,
-      //     });
-      //     await pageForAddress.waitForSelector(`.resort-card__address`, {
-      //       timeout: 60000,
-      //     });       
-      //     console.log("resorts fully loaded.");
-      //     addressSelectorFound = 5;
-      //   } catch (error) {
-      //     addressSelectorFound++;
-      //     console.log("Timed out. Reloading the page.");
-      //     await Promise.all([
-      //       pageForAddress.waitForNavigation({ waitUntil: 'load' }), 
-      //       pageForAddress.reload()
-      //     ]);
-      //   }
-      // }
+      while (addressSelectorFound < 5) {
+        try {
+          await pageForAddress.waitForSelector(`.resort-card`, {
+            timeout: 60000,
+          });
+          await pageForAddress.waitForSelector(`.resort-card__address`, {
+            timeout: 60000,
+          });       
+          console.log("resorts fully loaded.");
+          addressSelectorFound = 5;
+        } catch (error) {
+          addressSelectorFound++;
+          console.log("Timed out. Reloading the page.");
+          await Promise.all([
+            pageForAddress.waitForNavigation({ waitUntil: 'load' }), 
+            pageForAddress.reload()
+          ]);
+        }
+      }
 
       await page.bringToFront();
       console.log("I'M ON THE LOGIN PAGE");
@@ -559,10 +559,6 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
           page.goto(calendarUrl, { waitUntil: 'load' }),
         ]);
 
-        await Promise.all([
-          page.waitForNavigation(), 
-          page.reload({ waitUntil: 'load' })
-        ]);
       }
 
       await checkOverlay(page);
@@ -612,6 +608,13 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
       }, resortSelector);
 
       console.log("This is the selected option: " + selectedOptionText);
+
+      await page.waitForTimeout(2000);
+      
+      await Promise.all([
+        page.waitForNavigation(), 
+        page.reload({ waitUntil: 'domcontentloaded' })
+      ]);
 
       const suiteSelector = "#suiteType";
 
