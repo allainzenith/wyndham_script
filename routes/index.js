@@ -8,6 +8,7 @@ const { format } = require('date-fns-tz');
 const { joinTwoTables, countRecords, findLikeRecords, findByPk, updateRecord, setupCreateHook, setupUpdateHook, setupBulkCreateHook, removeHooks } = require('../sequelizer/controller/controller');
 const { addToQueue, resourceIntensiveTask, processVerification } = require('../scripts/queueProcessor');
 const { findOrCreateAResort, createAnEvent, updateEventStatus } = require('../scripts/scrapeAndUpdate');
+const { updateSingleListing } = require('../services/guestyUpdates')
 const { resendSmsCode } = require('../services/scraper')
 
 
@@ -41,6 +42,12 @@ router.get('/resorts', async(req, res, next) => {
 router.get('/events', async(req, res, next) => {
   const amount = await countRecords("resorts", {});
   res.render('events', { records : amount } );
+
+});
+
+router.get('/calendarUpdate', async(req, res, next) => {
+  const amount = await countRecords("resorts", {});
+  res.render('calendarUpdate');
 
 });
 
@@ -199,6 +206,38 @@ router.post('/one', async(req, res, next) => {
   } else {
     console.log("Creating a resort or execution record failed.")
   }
+  
+
+});
+
+router.post('/manualUpdate', async(req, res, next) => {
+
+  let resortID = (req.body.resort_id).trim();
+  let suiteType = (req.body.suite_type).trim();
+  let startDate = (req.body.start_date).trim();
+  let endDate = (req.body.end_date).trim();
+
+  let resort = await findOrCreateAResort(resortID, suiteType); 
+  
+  let listingID = resort.listingID;
+
+  await updateSingleListing(listingID, startDate, endDate);
+
+  res.redirect('/calendarUpdate')
+
+  // let eventCreated = ( resort !== null) ? await createAnEvent(resort.resortRefNum, months) : null;
+  
+  // if (eventCreated !== null){
+  //   try {
+
+  //   } catch (error) {
+  //     console.error('Error manual update:', error);
+  //     res.status(500).json({ error: 'Internal Server Error' });
+  //   }
+
+  // } else {
+  //   console.log("Creating a resort or execution record failed.")
+  // }
   
 
 });

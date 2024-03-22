@@ -1,0 +1,37 @@
+extends layout
+include layout
+
+block content
+    .w3-row-padding.w3-padding-32
+        input.w3-input(type='text', placeholder='Search', id='searchString', name='searchString', style='display: none;')
+        form(action='/manualUpdate', method='post', id='manualUpdate')
+            .w3-col.s4.w3-padding-small
+                input.w3-input(type='text', placeholder='Resort ID', id='resort_id', name='resort_id', required)
+            .w3-col.s2.w3-padding-small
+                select.w3-select(required, id='suite_type', name='suite_type')
+                    option(value='', disabled='', selected='') Select Suite Type
+                    option(value='Studio') Studio
+                    option(value='1 Bedroom') 1 Bedroom
+                    option(value='2 Bedroom') 2 Bedroom
+                    option(value='3 Bedroom') 3 Bedroom
+                    option(value='4 Bedroom') 4 Bedroom
+                    option(value='Presidential') Presidential
+                    option(value='Hotel Room') Hotel Room
+            .w3-col.s2.w3-padding-small
+                input.w3-input(type='text', placeholder='Start date', id='', name='start_date', onfocus='handleFocus(event)', onblur='handleBlur(event)', required)
+            .w3-col.s2.w3-padding-small
+                input.w3-input(type='text', placeholder='End date', id='', name='end_date', onfocus='handleFocus(event)', onblur='handleBlur(event)', required)
+            .w3-col.s2.w3-padding-small
+                input(type='submit', value='Run', class='w3-button w3-round w3-green w3-block')
+            .w3-padding-32
+    
+    script.
+        function handleFocus(event) {
+            event.target.type = 'date';
+        }
+
+        function handleBlur(event) {
+            if (!event.target.value) {
+                event.target.type = 'text';
+            }
+        }

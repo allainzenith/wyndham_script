@@ -8,10 +8,40 @@ const { getCurrentAndEndDate } = require("./scraper");
 const { addMonths, addDays } = require("date-fns");
 let { clientID, clientSecret, returnAValidToken } = require("../config/config");
 
+
+async function updateSingleListing(listingID, startDate, endDate) {
+
+    const url = `https://open-api.guesty.com/v1/availability-pricing/api/calendar/listings/${listingID}`;
+
+    const token = await returnAValidToken(clientID, clientSecret);
+    const headers = {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+    };
+
+    const payload = {
+        startDate: startDate,
+        endDate: endDate,
+        status: "available"
+    }
+
+    try {   
+        await axios.put(url, payload, { headers });
+        console.log("Calendar single update successful.");
+        return true;
+
+    } catch (error) {
+        // Handle errors that may occur during the request
+        console.error('Error:', error.message);
+        console.error('Reason:', error.response.data);
+        return null;
+    }
+
+}
 // async function executeUpdates(resortFoundorCreated, token, address, updatedAvail, suiteType){
 async function executeUpdates(resortFoundorCreated, address, updatedAvail, suiteType, months, page){
 
-    console.log(page)
     let listingIDs = [], listingNames = [];
     let listingID, listingName, updateSuccess; 
 
@@ -622,5 +652,6 @@ async function getLatLongAddress(address){
 }
 
 module.exports = {
-    executeUpdates
+    executeUpdates,
+    updateSingleListing
 }
