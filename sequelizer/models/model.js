@@ -65,7 +65,12 @@ const execution = sequelize.define('execution', {
 
   monthstoScrape: {
     type: DataTypes.INTEGER,
-    allowNull: false
+    allowNull: true
+  },
+
+  datetoUpdate: {
+    type: DataTypes.STRING,
+    allowNull: true
   }
 
 }, {
@@ -78,10 +83,10 @@ const execution = sequelize.define('execution', {
 resorts.hasMany(execution, { foreignKey: 'resortRefNum' });
 execution.belongsTo(resorts, { foreignKey: 'resortRefNum' });
 
-// (async () => {
-//    await sequelize.sync();
-//    // Code here
-//  })();
+(async () => {
+   await sequelize.sync({ alter: true });
+   // Code here
+ })();
 
 
 module.exports = {

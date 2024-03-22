@@ -7,7 +7,8 @@ const { eventEmitter } = require('../scripts/scheduledUpdates');
 const { format } = require('date-fns-tz');
 const { joinTwoTables, countRecords, findLikeRecords, findByPk, updateRecord, setupCreateHook, setupUpdateHook, setupBulkCreateHook, removeHooks } = require('../sequelizer/controller/controller');
 const { addToQueue, resourceIntensiveTask, processVerification } = require('../scripts/queueProcessor');
-const { findOrCreateAResort, createAnEvent, updateEventStatus } = require('../scripts/scrapeAndUpdate');
+const { findOrCreateAResort } = require('../scripts/scrapeAndUpdate');
+const { createAnEvent, updateEventStatus } = require('../sequelizer/controller/event.controller');
 const { updateSingleListing } = require('../services/guestyUpdates')
 const { resendSmsCode } = require('../services/scraper')
 
@@ -219,9 +220,8 @@ router.post('/manualUpdate', async(req, res, next) => {
 
   let resort = await findOrCreateAResort(resortID, suiteType); 
   
-  let listingID = resort.listingID;
 
-  await updateSingleListing(listingID, startDate, endDate);
+  await updateSingleListing(resort, startDate, endDate);
 
   res.redirect('/calendarUpdate')
 
@@ -403,7 +403,6 @@ wss.on('connection', async(ws) => {
 
           let records = await returnData(endpoint, eventCond, order, limit, offset, search);
 
-          // let records = await joinTwoTables("execution", "resorts", eventCond, order, limit, offset)
           let formattedRecords = await mapExecutionData(records, endpoint);
       
           ws.send(JSON.stringify({ data : formattedRecords }));
@@ -503,7 +502,6 @@ function getEventCondAndOrder(endpoint, search) {
     ]
   
   }
-
 
   return { eventCond, order };
 }

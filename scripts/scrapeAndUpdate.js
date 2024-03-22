@@ -3,6 +3,7 @@
 const { executeScraper } = require('../services/scraper')
 const { executeUpdates } = require('../services/guestyUpdates')
 const { saveRecord, updateRecord, findRecords } = require('../sequelizer/controller/controller')
+const { updateEventStatus } = require('../sequelizer/controller/event.controller')
 const { sequelize } = require("../config/config");
 
 
@@ -70,25 +71,6 @@ async function findOrCreateAResort(resortID, suiteType){
 }
 
 
-async function createAnEvent(resortRefNum, months){
-    try {
-        const event = {
-            resortRefNum: resortRefNum,
-            execType: "ONE_RESORT",
-            execStatus: "SCRAPING",
-            monthstoScrape: parseInt(months)
-        }
-
-        recordObject = await saveRecord(event, "execution");
-
-        return recordObject;
-    } catch (error) {
-        console.log("Error creating event");
-        return null;
-    }
-}
-
-
 async function updateGuestyandRecord(resortFoundorCreated, eventCreated, scraped, suiteType, months, page){
 
     await updateEventStatus(eventCreated, "UPDATING");
@@ -141,28 +123,9 @@ async function updateGuestyandRecord(resortFoundorCreated, eventCreated, scraped
 
 }
 
-async function updateEventStatus(recordObject, status){
-
-    try {
-        const updateEventJson = {
-            execStatus: status
-        } 
-
-        await updateRecord(updateEventJson, recordObject);
-
-        return true;
-
-    } catch (error) {
-        console.log("An error occured while updating the status.", error);
-        return false;      
-    }
-
-}
 
 
 module.exports = {
     executeScript,
-    findOrCreateAResort,
-    createAnEvent,
-    updateEventStatus
+    findOrCreateAResort
 }

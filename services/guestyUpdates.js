@@ -5,11 +5,27 @@
 const axios = require('axios')
 const { MAP_API_KEY } = require('../config/config')
 const { getCurrentAndEndDate } = require("./scraper");
-const { addMonths, addDays } = require("date-fns");
+const { addMonths, addDays, format } = require("date-fns");
 let { clientID, clientSecret, returnAValidToken } = require("../config/config");
+const { createAnEvent, updateEventStatus } = require('../sequelizer/controller/event.controller');
+const { findRecords } = require('../sequelizer/controller/controller');
 
 
-async function updateSingleListing(listingID, startDate, endDate) {
+async function updateSingleListing(resort, startDate, endDate) {
+
+    const listingID = resort.listingID;
+    const resortRefNum = resort.resortRefNum;
+
+    let start = new Date(startDate);
+    let recordArr = [];
+    const end = new Date(endDate);
+
+    //add to database
+    while(start <= end) {
+        const record = await createAnEvent(resortRefNum, format(start, 'yyyy-MM-dd'));
+        recordArr.push(record);
+        start = addDays(start, 1)
+    }
 
     const url = `https://open-api.guesty.com/v1/availability-pricing/api/calendar/listings/${listingID}`;
 
@@ -29,6 +45,11 @@ async function updateSingleListing(listingID, startDate, endDate) {
     try {   
         await axios.put(url, payload, { headers });
         console.log("Calendar single update successful.");
+
+        for(const record of recordArr) {
+            await updateEventStatus(record, "DONE");
+        }
+
         return true;
 
     } catch (error) {
@@ -39,6 +60,7 @@ async function updateSingleListing(listingID, startDate, endDate) {
     }
 
 }
+
 // async function executeUpdates(resortFoundorCreated, token, address, updatedAvail, suiteType){
 async function executeUpdates(resortFoundorCreated, address, updatedAvail, suiteType, months, page){
 
@@ -503,16 +525,47 @@ async function finalizeAccuracy(months, listingID, indiUpdatedAvail, page) {
             const finalAvailability = indiUpdatedAvail.map((obj, index) => ({ ...obj, ...retrievedAvailability[index] }));
 
             let requestsSent = 0;
+
+            
+            const resort = await findRecords({ listingID : listingID }, "resorts", null, null, null);
+
+            const resortRefNum = resort[0].resortRefNum;
+            const condJson = { resortRefNum: resortRefNum, execType : "MANUAL_UPDATE" };
+            const cancelledReservationDates = await findRecords(condJson, "execution", null, null, null);
+
+            let dateManuallyUpdated;
+            let status;
+
             for (const item of finalAvailability) {
-                if(item.dateUpdatedAvail === item.date && item.statusUpdatedAvail !== item.status && item.an === false) {
-                    console.log("statuses don't match");
-                    console.log(item);
+                const currentDate = item.dateUpdatedAvail;
+ 
+                dateManuallyUpdated = cancelledReservationDates.find(item => item.datetoUpdate === currentDate);
+
+                if(dateManuallyUpdated || (item.dateUpdatedAvail === item.date && item.statusUpdatedAvail !== item.status && item.an === false)) {
+                    // if date is a cancelled reservation before, do not update its status
+                    if (dateManuallyUpdated) {
+
+                        console.log("This date has had a cancelled reservation, thus, cannot be updated to unavailable.");
+                        console.log("**********************************************************************************");
+                        console.log("Date: ");
+                        console.log(item.date);
+                        console.log("**********************************************************************************");
+
+                        status = "available";
+
+                    } else {
+                        console.log("statuses don't match");
+                        console.log(item);
+                        status = item.statusUpdatedAvail;
+                        
+                    }
+
                     
                     try {
                         const blockObject = {
                             startDate: item.dateUpdatedAvail,
                             endDate: item.dateUpdatedAvail,
-                            status: item.statusUpdatedAvail
+                            status: status
                         };
 
                         let updateCalendarSuccess = await updateCalendarIndividually(blockObject, item.listingId);
@@ -539,8 +592,8 @@ async function finalizeAccuracy(months, listingID, indiUpdatedAvail, page) {
 
                         await new Promise(resolve => setTimeout(resolve, 1000));
                     }
-
-                }
+  
+                } 
             }
         } else {
             success = 1;

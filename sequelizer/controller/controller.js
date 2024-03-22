@@ -88,6 +88,7 @@ async function saveRecord(recordJson, objectType) {
   // create() function instantiates the object and saves it to the database
   try {
     const record = await typeofObject.create(recordJson);
+    console.log("created successfully!");
     return record;
   } catch (error) {
     console.error("Error saving record: " + error);

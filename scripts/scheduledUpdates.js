@@ -1,7 +1,7 @@
 const { findRecords } = require('../sequelizer/controller/controller');
 const { addToQueue, resourceIntensiveTask } = require('./queueProcessor');
 const { saveRecord, bulkSaveRecord } = require('../sequelizer/controller/controller');
-const { updateEventStatus } = require('./scrapeAndUpdate');
+const { updateEventStatus } = require('../sequelizer/controller/event.controller');
 const { sequelize } = require("../config/config");
 const { EventEmitter } = require('events');
 
