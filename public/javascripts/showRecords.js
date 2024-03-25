@@ -14,6 +14,7 @@ function showRecords(ws, tableType){
     const tableBody = document.getElementById("table-body");
     ws.onmessage = (message) => {
     const data = JSON.parse(message.data).data;
+    const type = JSON.parse(message.data).type;
     if(data.hasOwnProperty('displayModal')) {
 
         let modal = document.getElementById('myModal');
@@ -30,6 +31,7 @@ function showRecords(ws, tableType){
         }
     } else {
         tableBody.innerHTML = '';
+        
         data.forEach(item => {
 
             let href;
@@ -65,6 +67,7 @@ function showRecords(ws, tableType){
                     <td>${item.notes}</td>
                 `;
             }
+
             else { 
                 row.innerHTML = `
                     <td>
@@ -79,15 +82,24 @@ function showRecords(ws, tableType){
                     </td>
                     <td>${item.resort.unitType}</td>
                     <td>${item.execStatus}</td>
-                    <td>${item.monthstoScrape}</td>
-                    <td>${item.createdAt}</td>
-                    <td>${item.updatedAt}</td>
-                    <td>
-                        <button onclick="retry(this.id)" id="${item.execStatus},${item.resort.resortID},${item.resort.unitType},${item.monthstoScrape},${item.execID}" class="linkButton">
-                            Retry
-                        </button>
-                    </td>
-                `;
+                    <td>${ type === "calendarUpdate" ? item.datetoUpdate : item.datetoUpdate }</td>
+                    ${type !== "calendarUpdate" ?`<td>${item.createdAt}</td>` : ''}
+                    ${type !== "calendarUpdate" ? `<td>${item.updatedAt}</td>` : ''}
+                    ${type !== "calendarUpdate" ?
+                        `<td>
+                            <button onclick="retry(this.id)" id="${item.execStatus},${item.resort.resortID},${item.resort.unitType},${item.monthstoScrape},${item.execID}" class="linkButton">
+                                Retry
+                            </button>
+                        </td>`
+                        :
+                        `<td>
+                            <button onclick="remove(this.id)" id="${item.execID}" class="linkButton">
+                                Remove
+                            </button>
+                        </td>`
+                    }
+                `;           
+
             }
             tableBody.appendChild(row);
         });
@@ -252,6 +264,23 @@ function retry(fields){
     }
 }
 
+function remove(execID){
+    document.getElementById(execID).style.color = '#551A8B';
+    setTimeout(() => {
+        document.getElementById(execID).style.color = '#000';
+      }, 5000); 
+
+    // Display an alert and wait for user confirmation
+    if (window.confirm("Are you sure you want to perform this action?")) {
+        fetch(`/remove?execID=${execID}`, { 
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+        })
+    }
+}
+
 async function connectToServer(environment, endpoint) {
 
     let ws;
@@ -263,7 +292,7 @@ async function connectToServer(environment, endpoint) {
         ws = new WebSocket(`ws://localhost:3002/${endpoint}`);
     }
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         const timer = setInterval(() => {
             if(ws.readyState === 1) {
                 clearInterval(timer)

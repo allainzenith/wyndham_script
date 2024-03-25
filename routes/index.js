@@ -5,7 +5,7 @@ const router = express.Router();
 const { v5: uuidv5 } = require('uuid');
 const { eventEmitter } = require('../scripts/scheduledUpdates');
 const { format } = require('date-fns-tz');
-const { joinTwoTables, countRecords, findLikeRecords, findByPk, updateRecord, setupCreateHook, setupUpdateHook, setupBulkCreateHook, removeHooks } = require('../sequelizer/controller/controller');
+const { joinTwoTables, countRecords, findLikeRecords, findByPk, updateRecord, setupCreateHook, setupUpdateHook, setupDeleteHook, setupBulkCreateHook, removeHooks, deleteRecord } = require('../sequelizer/controller/controller');
 const { addToQueue, resourceIntensiveTask, processVerification } = require('../scripts/queueProcessor');
 const { findOrCreateAResort } = require('../scripts/scrapeAndUpdate');
 const { createAnEvent, updateEventStatus } = require('../sequelizer/controller/event.controller');
@@ -47,8 +47,8 @@ router.get('/events', async(req, res, next) => {
 });
 
 router.get('/calendarUpdate', async(req, res, next) => {
-  const amount = await countRecords("resorts", {});
-  res.render('calendarUpdate');
+  const amount = await countRecords("execution", { execType:"MANUAL_UPDATE" } );
+  res.render('calendarUpdate', { records : amount } );
 
 });
 
@@ -223,21 +223,7 @@ router.post('/manualUpdate', async(req, res, next) => {
 
   await updateSingleListing(resort, startDate, endDate);
 
-  res.redirect('/calendarUpdate')
-
-  // let eventCreated = ( resort !== null) ? await createAnEvent(resort.resortRefNum, months) : null;
-  
-  // if (eventCreated !== null){
-  //   try {
-
-  //   } catch (error) {
-  //     console.error('Error manual update:', error);
-  //     res.status(500).json({ error: 'Internal Server Error' });
-  //   }
-
-  // } else {
-  //   console.log("Creating a resort or execution record failed.")
-  // }
+  res.redirect('/calendarUpdate');
   
 
 });
@@ -283,7 +269,6 @@ router.get('/retry', async(req, res, next) => {
   let record = await joinTwoTables("execution", "resorts", eventCond, [], null, null);
   let queueType = record[0].execType === "ONE_RESORT" ? "ONE TIME" : record[0].resort.notes === "TIER 1" ? "TIER 1" : "TIER 2";
 
-
   await updateEventStatus(eventCreated, "SCRAPING");
   
   if (eventCreated !== null){
@@ -319,6 +304,21 @@ router.get('/retry', async(req, res, next) => {
 
 });
 
+// For removing manual update record (this date block is updated again with the scheduled udpates)
+router.get('/remove', async(req, res, next) => {
+
+  const execID = (req.query.execID).trim();
+  const event = await findByPk(execID, "execution");
+  
+  try {
+    await deleteRecord(event);
+  } catch (error) {
+    console.error("Error deleting manual event: ", error.message);
+  }
+
+  res.redirect('/calendarUpdate');
+
+});
 
 ///////////////////////////////////////////////////////////////////////////////
 // WEBSOCKET                
@@ -374,9 +374,9 @@ wss.on('connection', async(ws) => {
     const id = crypto.randomUUID();
     let tabID;
 
-    ws.on('open', function open() {
-      ws.send('something');
-    });
+    // ws.on('open', function open() {
+    //   ws.send('something');
+    // });
     
     ws.on('message', async function message(data) {
       console.log('received: %s', data);
@@ -390,10 +390,9 @@ wss.on('connection', async(ws) => {
 
       tabID = values.tabID;
 
-
       c.forEach(async(value) => {
         if(value.tabID === tabID) {
-          await removeHooks("execution", ['afterCreate', 'afterUpdate', 'afterBulkCreate'], value.id);
+          await removeHooks("execution", ['afterCreate', 'afterUpdate', 'afterDestroy', 'afterBulkCreate'], value.id);
         }
       });
 
@@ -405,7 +404,7 @@ wss.on('connection', async(ws) => {
 
           let formattedRecords = await mapExecutionData(records, endpoint);
       
-          ws.send(JSON.stringify({ data : formattedRecords }));
+          ws.send(JSON.stringify({ data : formattedRecords, type: endpoint }));
     
         } catch (error) {
           console.error("An error happened while joining records: ", error);
@@ -414,6 +413,7 @@ wss.on('connection', async(ws) => {
 
       await setupUpdateHook("execution", update, id);
       await setupCreateHook("execution", update, id);
+      await setupDeleteHook("execution", update, id);
       await setupBulkCreateHook("execution", update, id);
 
       c.set(ws, { id, tabID });
@@ -472,6 +472,15 @@ function getEventCondAndOrder(endpoint, search) {
   } else if(endpoint.includes('oneListing')){
     eventCond = {
       execType: "ONE_RESORT"
+    }
+
+    order = [
+      [sequelize.col("createdAt"), 'DESC'],  
+    ]
+
+  } else if(endpoint.includes('calendarUpdate')){
+    eventCond = {
+      execType: "MANUAL_UPDATE"
     }
 
     order = [

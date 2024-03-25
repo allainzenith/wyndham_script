@@ -41,6 +41,23 @@ async function setupCreateHook(objectType, functionName, offset) {
   }
 }
 
+async function setupDeleteHook(objectType, functionName, offset) {
+  const typeofObject = objectType == "execution" ? execution : resorts;
+
+  try {
+    createHook = typeofObject.addHook('afterDestroy', offset, async () => {
+      console.log('After destroy hook is triggered..');
+      await functionName();
+    });
+
+    numberOfHooks++;
+    return true;
+  } catch (error) {
+    console.error("Error setting up delete hook: ", error);
+    return false;
+  }
+}
+
 async function setupBulkCreateHook(objectType, functionName, offset) {
   const typeofObject = objectType == "execution" ? execution : resorts;
 
@@ -262,8 +279,9 @@ module.exports = {
   countRecords,
   setupUpdateHook,
   setupCreateHook,
-  bulkSaveRecord,
+  setupDeleteHook,
   setupBulkCreateHook,
+  bulkSaveRecord,
   removeHooks,
   displayNumberHooks
 };
