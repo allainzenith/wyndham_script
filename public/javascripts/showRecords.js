@@ -82,7 +82,7 @@ function showRecords(ws, tableType){
                     </td>
                     <td>${item.resort.unitType}</td>
                     <td>${item.execStatus}</td>
-                    <td>${ type === "calendarUpdate" ? item.datetoUpdate : item.datetoUpdate }</td>
+                    <td>${ type === "calendarUpdate" ? item.datetoUpdate : item.monthstoScrape }</td>
                     ${type !== "calendarUpdate" ?`<td>${item.createdAt}</td>` : ''}
                     ${type !== "calendarUpdate" ? `<td>${item.updatedAt}</td>` : ''}
                     ${type !== "calendarUpdate" ?
