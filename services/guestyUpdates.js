@@ -8,7 +8,7 @@ const { getCurrentAndEndDate } = require("./scraper");
 const { addMonths, addDays, format } = require("date-fns");
 let { clientID, clientSecret, returnAValidToken } = require("../config/config");
 const { createAnEvent, updateEventStatus } = require('../sequelizer/controller/event.controller');
-const { findRecords } = require('../sequelizer/controller/controller');
+const { findRecords, findLikeRecords } = require('../sequelizer/controller/controller');
 
 
 async function updateSingleListing(resort, startDate, endDate) {
@@ -526,8 +526,8 @@ async function finalizeAccuracy(months, listingID, indiUpdatedAvail, page) {
 
             let requestsSent = 0;
 
-            
-            const resort = await findRecords({ listingID : listingID }, "resorts", null, null, null);
+
+            const resort = await findLikeRecords(listingID, "resorts", null, null, null);
 
             const resortRefNum = resort[0].resortRefNum;
             const condJson = { resortRefNum: resortRefNum, execType : "MANUAL_UPDATE" };
@@ -542,6 +542,7 @@ async function finalizeAccuracy(months, listingID, indiUpdatedAvail, page) {
                 dateManuallyUpdated = cancelledReservationDates.find(item => item.datetoUpdate === currentDate);
 
                 if(dateManuallyUpdated || (item.dateUpdatedAvail === item.date && item.statusUpdatedAvail !== item.status && item.an === false)) {
+                    
                     // if date is a cancelled reservation before, do not update its status
                     if (dateManuallyUpdated) {
 

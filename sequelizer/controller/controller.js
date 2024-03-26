@@ -170,6 +170,7 @@ async function findLikeRecords(search, objectType, order, limit, offset) {
         [Op.or]: [
           { resortID: { [Op.substring]: search } },
           { resortName: { [Op.substring]: search } },
+          { listingID: { [Op.substring]: search } },
           { listingName: { [Op.substring]: search } },
           { unitType: { [Op.substring]: search } },
         ],
