@@ -3,7 +3,7 @@ include layout
 
 block content
     .w3-row-padding.w3-padding-32
-        input.w3-input(type='text', placeholder='Search', id='searchString', name='searchString', style='display: none;')
+        input.w3-input(type='text', placeholder='Search', id='searchString', name='searchString')
         form(action='/manualUpdate', method='post', id='manualUpdate')
             .w3-col.s4.w3-padding-small
                 input.w3-input(type='text', placeholder='Resort ID', id='resort_id', name='resort_id', required)

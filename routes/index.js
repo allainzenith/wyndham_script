@@ -479,9 +479,23 @@ function getEventCondAndOrder(endpoint, search) {
     ]
 
   } else if(endpoint.includes('calendarUpdate')){
+
+    // Define your search condition
+    const searchCondition = search !== '' ? { [Op.substring]: search } : { [Op.not]: null };
+    
+    // Construct the event condition
     eventCond = {
-      execType: "MANUAL_UPDATE"
-    }
+        execType: "MANUAL_UPDATE",
+        [Op.or]: [
+            { '$execution.execStatus$': searchCondition },
+            { '$execution.datetoUpdate$': searchCondition },
+            { '$resort.resortID$': searchCondition },
+            { '$resort.resortName$': searchCondition },
+            { '$resort.listingName$': searchCondition },
+            { '$resort.unitType$': searchCondition }
+        ]
+    };
+    
 
     order = [
       [sequelize.col("createdAt"), 'DESC'],  
