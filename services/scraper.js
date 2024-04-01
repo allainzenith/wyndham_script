@@ -542,15 +542,15 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
 
       await page.bringToFront();
 
-      await page.setRequestInterception(true);
+      // await page.setRequestInterception(true);
 
-      page.on('request', (request) => {
-          if (['image', 'stylesheet', 'font'].indexOf(request.resourceType()) !== -1) {
-              request.abort();
-          } else {
-              request.continue();
-          }
-      });
+      // page.on('request', (request) => {
+      //     if (['image', 'stylesheet', 'font'].indexOf(request.resourceType()) !== -1) {
+      //         request.abort();
+      //     } else {
+      //         request.continue();
+      //     }
+      // });
 
       let calendarUrl = `https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`;
 
