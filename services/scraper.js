@@ -3,9 +3,12 @@
 ////////////////////////////////////////////////////////////////////
 
 const path = require("path");
+const fs = require("fs");
 const { addMonths, addDays, endOfMonth } = require("date-fns");
 const { userName, passWord } = require("../config/config");
 const { oneTimeTaskPuppeteer, tierOnePuppeteer, tierTwoThreePuppeteer, sharedData } = require("../config/puppeteerOptions");
+const cookiesString = fs.readFileSync('./config/jsons/cookies.json');
+const parsedCookies = JSON.parse(cookiesString);
 
 let needtoLogin;
 
@@ -43,7 +46,7 @@ async function executeScraper(queueType, resortID, suiteType, months, resortHasN
         "Login process failed.", error.message
       );
       return null;      
-    }
+    }    
 
     try {
       sElement = doneLogin === true ? await selectElements(queueType, resortID, suiteType, page, pageForAddress) : null;
@@ -144,6 +147,7 @@ async function launchPuppeteer(queueType) {
     let loggedIn = await login(queueType, page, pageForAddress);
     
     return loggedIn;
+
   } catch (error) {
     return null;
   }
@@ -537,6 +541,17 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
     try {
 
       await page.bringToFront();
+
+      await page.setRequestInterception(true);
+
+      page.on('request', (request) => {
+          if (['image', 'stylesheet', 'font'].indexOf(request.resourceType()) !== -1) {
+              request.abort();
+          } else {
+              request.continue();
+          }
+      });
+
       let calendarUrl = `https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`;
 
       try {
@@ -565,7 +580,7 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
 
       const resortSelector = "#ResortSelect";
 
-      await page.waitForSelector(resortSelector, { timeout:7000 });
+      await page.waitForSelector(resortSelector, { timeout:700000 });
       
       const resort  = await page.$(resortSelector);
 
@@ -892,7 +907,9 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
       }
     }
 
-  
+    await page.removeAllListeners('request');
+    await page.setRequestInterception(false);
+
     return updatedAvail;
   } catch (error) {
     console.error("Error getting availability:", error.message);

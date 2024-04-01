@@ -37,7 +37,7 @@ app.use(async (req, res, next) => {
     updateOnce = false;
 
     // await new Promise(resolve => setTimeout(resolve, 60000));
-    // await scheduledUpdates("TIER 1");
+    await scheduledUpdates("TIER 1");
     // await new Promise(resolve => setTimeout(resolve, 60000));
     // await scheduledUpdates("TIER 2");
     // await new Promise(resolve => setTimeout(resolve, 60000));
@@ -65,7 +65,6 @@ app.use(function (err, req, res, next) {
 });
 
 // Schedule the update every 8 hours, 24 hours, and 1 week, respectively
-
 //8AM
 //8PM
 schedule.scheduleJob('0 */12 * * *', async () => {
