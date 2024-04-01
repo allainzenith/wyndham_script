@@ -825,7 +825,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
                   // console.log('=======================================================')
                   responses.push(responseText);
   
-                  if (numResponses >= 2) {
+                  if (numResponses === 2) {
                       return true;
                   }
               }
