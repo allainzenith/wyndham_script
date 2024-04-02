@@ -268,6 +268,26 @@ async function deleteRecord(recordObject) {
   }
 }
 
+async function bulkdeleteRecord(objectType, condJson) {
+
+  try {
+    const model = objectType == "execution" ? execution : resorts;
+
+    const numRows = await model.destroy({
+      where: condJson
+    })
+
+    console.log( `Deleted ${numRows} rows successfully!`);
+    return true;
+  } catch (error) {
+    console.error("Error deleting record: " + error);
+    return false;
+  }
+}
+
+
+
+
 module.exports = {
   saveRecord,
   findAllRecords,
@@ -276,6 +296,7 @@ module.exports = {
   findByPk,
   joinTwoTables,
   deleteRecord,
+  bulkdeleteRecord,
   updateRecord,
   countRecords,
   setupUpdateHook,

@@ -4,7 +4,8 @@ const { Op } = require("sequelize");
 const router = express.Router();
 const { v5: uuidv5 } = require('uuid');
 const { eventEmitter } = require('../scripts/scheduledUpdates');
-const { format } = require('date-fns-tz');
+const { format } = require('date-fns');
+const { formatInTimeZone } = require('date-fns-tz');
 const { joinTwoTables, countRecords, findLikeRecords, findByPk, updateRecord, setupCreateHook, setupUpdateHook, setupDeleteHook, setupBulkCreateHook, removeHooks, deleteRecord } = require('../sequelizer/controller/controller');
 const { addToQueue, resourceIntensiveTask, processVerification } = require('../scripts/queueProcessor');
 const { findOrCreateAResort } = require('../scripts/scrapeAndUpdate');
@@ -350,9 +351,10 @@ const mapExecutionData = async(data, endpoint) => {
               unitType: item.resort.unitType === null? "To be updated": item.resort.unitType, 
               resortID: item.resort.resortID === null? "To be updated": item.resort.resortID, 
             }, 
-            execID: item.execID === null? "To be updated": item.execID,  
-            createdAt: format(item.createdAt, 'MM-dd-yyyy HH:mm:ss', { timeZone: 'America/New_York' }),
-            updatedAt: format(item.updatedAt, 'MM-dd-yyyy HH:mm:ss', { timeZone: 'America/New_York' }),
+            execID: item.execID === null? "To be updated": item.execID, 
+            datetoUpdate: format(new Date(item.datetoUpdate), 'yyyy-MM-dd'),
+            createdAt: formatInTimeZone(new Date(item.createdAt), 'America/New_York', 'yyyy-MM-dd HH:mma'),
+            updatedAt: formatInTimeZone(new Date(item.updatedAt), 'America/New_York', 'yyyy-MM-dd HH:mma'),
         }));
       }
     }

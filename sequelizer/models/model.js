@@ -69,7 +69,7 @@ const execution = sequelize.define('execution', {
   },
 
   datetoUpdate: {
-    type: DataTypes.STRING,
+    type: DataTypes.DATE,
     allowNull: true
   }
 

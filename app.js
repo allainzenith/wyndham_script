@@ -9,6 +9,7 @@ const WebSocket = require('ws');
 
 const schedule = require("node-schedule");
 const { scheduledUpdates } = require("./scripts/scheduledUpdates");
+const { deleteOldManualUpdates } = require("./sequelizer/controller/event.controller");
 
 var app = express();
 
@@ -35,6 +36,8 @@ app.use(async (req, res, next) => {
 
   if (updateOnce) {
     updateOnce = false;
+
+    // await deleteOldManualUpdates();
 
     // await new Promise(resolve => setTimeout(resolve, 60000));
     // await scheduledUpdates("TIER 1");
@@ -71,6 +74,12 @@ schedule.scheduleJob('0 */12 * * *', async () => {
   console.log("Tier 1 schedule function is called");
   await scheduledUpdates("TIER 1");
 });
+
+// //3PM DAILY
+// schedule.scheduleJob("0 8 */1 * *", async () => {
+//   console.log("Tier 2 schedule function is called");
+//   await scheduledUpdates("TIER 2");
+// });
 
 //4PM DAILY
 schedule.scheduleJob("0 8 */1 * *", async () => {

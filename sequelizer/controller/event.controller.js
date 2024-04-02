@@ -1,10 +1,11 @@
-const { saveRecord, updateRecord } = require('./controller')
+const { saveRecord, updateRecord, bulkdeleteRecord } = require('./controller')
+const { Op } = require("sequelize");
 
 async function createAnEvent(resortRefNum, period){
     try {
         let event;
 
-        if(isNaN(period)) {
+        if(period instanceof Date) {
             event = {
                 resortRefNum: resortRefNum,
                 execType: "MANUAL_UPDATE",
@@ -47,8 +48,31 @@ async function updateEventStatus(recordObject, status){
 
 }
 
+async function deleteOldManualUpdates() {
+    try {
+        // Get the current date
+        const currentDate = new Date();
+
+        const condJson ={
+            execType: "MANUAL_UDPATE",
+            datetoUpdate: {
+            [Op.lt]: currentDate 
+            }
+        }
+
+        await bulkdeleteRecord("execution", condJson);
+
+        return true;
+
+    } catch (error) {
+        console.log("An error occured while bulk deleting.", error);
+        return false;      
+    }   
+}
+
 module.exports = {
     createAnEvent,
-    updateEventStatus
+    updateEventStatus,
+    deleteOldManualUpdates
 }
 

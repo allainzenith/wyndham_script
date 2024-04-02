@@ -22,7 +22,8 @@ async function updateSingleListing(resort, startDate, endDate) {
 
     //add to database
     while(start <= end) {
-        const record = await createAnEvent(resortRefNum, format(start, 'yyyy-MM-dd'));
+        // const record = await createAnEvent(resortRefNum, format(start, 'yyyy-MM-dd'));
+        const record = await createAnEvent(resortRefNum, start);
         recordArr.push(record);
         start = addDays(start, 1)
     }
@@ -61,7 +62,7 @@ async function updateSingleListing(resort, startDate, endDate) {
 
 }
 
-// async function executeUpdates(resortFoundorCreated, token, address, updatedAvail, suiteType){
+
 async function executeUpdates(resortFoundorCreated, address, updatedAvail, suiteType, months, page){
 
     let listingIDs = [], listingNames = [];
@@ -441,10 +442,7 @@ async function updateAvailability(listing, updatedAvail, months, page){
         }, 60 * 1000);
         
         await Promise.all(updatePromises);
-        
         clearInterval(interval);
-        
-
         console.log("individual checking now..");
 
 
@@ -539,7 +537,7 @@ async function finalizeAccuracy(months, listingID, indiUpdatedAvail, page) {
             for (const item of finalAvailability) {
                 const currentDate = item.dateUpdatedAvail;
  
-                dateManuallyUpdated = cancelledReservationDates.find(item => item.datetoUpdate === currentDate);
+                dateManuallyUpdated = cancelledReservationDates.find(item => format(item.datetoUpdate, 'yyyy-MM-dd') === currentDate);
 
                 if(dateManuallyUpdated || (item.dateUpdatedAvail === item.date && item.statusUpdatedAvail !== item.status && item.an === false)) {
                     
