@@ -542,16 +542,6 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
 
       await page.bringToFront();
 
-      // await page.setRequestInterception(true);
-
-      // page.on('request', (request) => {
-      //     if (['image', 'stylesheet', 'font'].indexOf(request.resourceType()) !== -1) {
-      //         request.abort();
-      //     } else {
-      //         request.continue();
-      //     }
-      // });
-
       let calendarUrl = `https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`;
 
       try {
@@ -580,7 +570,7 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
 
       const resortSelector = "#ResortSelect";
 
-      await page.waitForSelector(resortSelector, { timeout:700000 });
+      await page.waitForSelector(resortSelector, { timeout:10000 });
       
       const resort  = await page.$(resortSelector);
 
@@ -830,7 +820,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
                   }
               }
           }
-        }, { timeout: 70000 }),
+        }, { timeout: 30000 }),
         clickOneElement(page, nextClass, 30000),
       ]);
 

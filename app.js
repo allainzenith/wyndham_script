@@ -76,7 +76,7 @@ schedule.scheduleJob('0 */12 * * *', async () => {
 //3PM MONDAYS
 schedule.scheduleJob("0 7 * * 1", async () => {
   console.log("Deleting old manual updates..");
-  await deleteOldManualUpdates();
+    await deleteOldManualUpdates();
 });
 
 //4PM DAILY
