@@ -4,9 +4,9 @@
 
 const { execution, resorts } = require("../models/model");
 const { Op } = require("sequelize");
-
-
 let numberOfHooks = 0;
+
+
 async function setupUpdateHook(objectType, functionName, offset) {
   const typeofObject = objectType == "execution" ? execution : resorts;
 

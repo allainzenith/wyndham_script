@@ -382,7 +382,7 @@ async function sendOTP(verOTP, queueType, page, pageForAddress) {
 
 }
 
-async function resendSmsCode(queueType) {
+async function resendSmsCode(queueType, browser) {
   return new Promise(async(resolve) => {
     let browser, page, pageForAddress;
 
@@ -411,7 +411,7 @@ async function resendSmsCode(queueType) {
 
       if (await page.url() !== "https://clubwyndham.wyndhamdestinations.com/us/en/login"){
         resolve("MAINTENANCE");
-        await browser.close();
+        // await browser.close();
       } else {
         let needsVerify = await findSendSmsCode();
         resolve(!needsVerify);

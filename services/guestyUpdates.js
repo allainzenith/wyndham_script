@@ -429,20 +429,20 @@ async function updateAvailability(listing, updatedAvail, months, page){
             }
         });
         
-        const interval = setInterval(async () => {
-            try {
-                console.log("Reloading page..");
-                await Promise.all([
-                    page.waitForNavigation({ waitUntil: 'load' }),
-                    page.reload()
-                ]);
-            } catch (error) {
-                console.error("Error while reloading page:", error);
-            }
-        }, 60 * 1000);
+        // const interval = setInterval(async () => {
+        //     try {
+        //         console.log("Reloading page..");
+        //         await Promise.all([
+        //             page.waitForNavigation({ waitUntil: 'load' }),
+        //             page.reload()
+        //         ]);
+        //     } catch (error) {
+        //         console.error("Error while reloading page:", error);
+        //     }
+        // }, 60 * 1000);
         
         await Promise.all(updatePromises);
-        clearInterval(interval);
+        // clearInterval(interval);
         console.log("individual checking now..");
 
 

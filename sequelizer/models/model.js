@@ -13,15 +13,15 @@ const resorts = sequelize.define('resorts', {
     allowNull: false,
   },
   resortName: {
-    type: DataTypes.TEXT,
+    type: DataTypes.TEXT('medium'),
     allowNull: true
   },
   listingID: {
-    type: DataTypes.TEXT,
+    type: DataTypes.TEXT('tiny'),
     allowNull: true
   },
   listingName: {
-    type: DataTypes.TEXT,
+    type: DataTypes.TEXT('medium'),
     allowNull: true
   },
   unitType: {
@@ -29,7 +29,7 @@ const resorts = sequelize.define('resorts', {
     allowNull: false
   },
   notes: {
-    type: DataTypes.TEXT,
+    type: DataTypes.TEXT('tiny'),
     allowNull: true
   }
 });

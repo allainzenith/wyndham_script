@@ -307,7 +307,7 @@ function generateUniqueString() {
     const randomString = Math.random().toString(36).substr(2, 8); 
 
     return timestamp + randomString;
-  }
+}
 
 // test function
 function test(){

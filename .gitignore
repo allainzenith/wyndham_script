@@ -6,5 +6,5 @@ config/chrome_one_tier/
 config/chrome_two_tier/
 config/jsons/token.json
 public/javascripts/environment.js
+chrome/
 bin/daemon
-nodeService.js

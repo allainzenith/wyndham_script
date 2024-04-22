@@ -375,10 +375,6 @@ wss.on('connection', async(ws) => {
     //for hook ids
     const id = crypto.randomUUID();
     let tabID;
-
-    // ws.on('open', function open() {
-    //   ws.send('something');
-    // });
     
     ws.on('message', async function message(data) {
       console.log('received: %s', data);

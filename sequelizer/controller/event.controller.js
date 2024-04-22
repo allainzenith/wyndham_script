@@ -53,8 +53,9 @@ async function deleteOldManualUpdates() {
         // Get the current date
         const currentDate = new Date();
 
+        console.log(currentDate)
         const condJson ={
-            execType: "MANUAL_UDPATE",
+            execType: "MANUAL_UPDATE",
             datetoUpdate: {
             [Op.lt]: currentDate 
             }

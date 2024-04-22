@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 require("dotenv").config();
 const scriptDir = __dirname;
-
+const ENV = process.env.ENV;
 
 let sharedData = {
   oneTimeBrowser: null,
@@ -55,21 +55,29 @@ async function initializeBrowser(customProfileRelPath) {
     fs.mkdirSync(customProfileDir);
   }
 
+  console.log("This is the env: ", ENV);
 
   let newBrowser;
 
+  let launchParams = {
+    args: [
+      "--disable-setuid-sandbox",
+      "--no-sandbox",
+      "--no-zygote",
+    ],
+    headless: 'new',
+    // headless: false,
+    userDataDir: customProfileDir,
+  }
+
+  if (ENV === 'TESTING') {
+    console.log("TESTING")
+    launchParams.executablePath = "C:\\Users\\allain2\\.cache\\puppeteer\\chrome\\chrome-win64\\chrome.exe";
+  }
+
   try {
     // Launch Puppeteer with the custom profile directory
-    newBrowser = await puppeteer.launch({
-      args: [
-        "--disable-setuid-sandbox",
-        "--no-sandbox",
-        "--no-zygote",
-      ],
-      headless: 'new',
-      // headless: false,
-      userDataDir: customProfileDir
-    });
+    newBrowser = await puppeteer.launch(launchParams);
 
     return newBrowser;
 
