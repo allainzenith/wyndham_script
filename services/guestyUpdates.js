@@ -13,7 +13,9 @@ const { findRecords, findLikeRecords } = require('../sequelizer/controller/contr
 
 async function updateSingleListing(resort, startDate, endDate) {
 
-    const listingID = resort.listingID;
+    let success = 0;
+
+    const listingIDs = resort.listingID.split(',');
     const resortRefNum = resort.resortRefNum;
 
     let start = new Date(startDate);
@@ -28,38 +30,43 @@ async function updateSingleListing(resort, startDate, endDate) {
         start = addDays(start, 1)
     }
 
-    const url = `https://open-api.guesty.com/v1/availability-pricing/api/calendar/listings/${listingID}`;
+    for(const listingID of listingIDs) {
+        const url = `https://open-api.guesty.com/v1/availability-pricing/api/calendar/listings/${listingID}`;
 
-    const token = await returnAValidToken(clientID, clientSecret);
-    const headers = {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-    };
-
-    const payload = {
-        startDate: startDate,
-        endDate: endDate,
-        status: "available"
-    }
-
-    try {   
-        await axios.put(url, payload, { headers });
-        console.log("Calendar single update successful.");
-
-        for(const record of recordArr) {
-            await updateEventStatus(record, "DONE");
+        const token = await returnAValidToken(clientID, clientSecret);
+        const headers = {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        };
+    
+        const payload = {
+            startDate: startDate,
+            endDate: endDate,
+            status: "available"
         }
-
-        return true;
-
-    } catch (error) {
-        // Handle errors that may occur during the request
-        console.error('Error:', error.message);
-        console.error('Reason:', error.response.data);
-        return null;
+    
+        try {   
+            await axios.put(url, payload, { headers });
+            console.log("Calendar single update successful.");
+    
+            for(const record of recordArr) {
+                await updateEventStatus(record, "DONE");
+            }
+    
+            return true;
+    
+        } catch (error) {
+            // Handle errors that may occur during the request
+            console.error('Error:', error.message);
+            console.error('Reason:', error.response.data);
+            success++;
+        }
+    
     }
 
+
+    return success === 0;
 }
 
 
