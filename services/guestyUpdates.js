@@ -15,54 +15,60 @@ async function updateSingleListing(resort, startDate, endDate) {
 
     let success = 0;
 
-    const listingIDs = resort.listingID.split(',');
-    const resortRefNum = resort.resortRefNum;
+    try {
 
-    let start = new Date(startDate);
-    let recordArr = [];
-    const end = new Date(endDate);
+        const listingIDs = resort.listingID.split(',');
+        const resortRefNum = resort.resortRefNum;
 
-    //add to database
-    while(start <= end) {
-        // const record = await createAnEvent(resortRefNum, format(start, 'yyyy-MM-dd'));
-        const record = await createAnEvent(resortRefNum, start);
-        recordArr.push(record);
-        start = addDays(start, 1)
-    }
+        let start = new Date(startDate);
+        let recordArr = [];
+        const end = new Date(endDate);
 
-    for(const listingID of listingIDs) {
-        const url = `https://open-api.guesty.com/v1/availability-pricing/api/calendar/listings/${listingID}`;
-
-        const token = await returnAValidToken(clientID, clientSecret);
-        const headers = {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-        };
-    
-        const payload = {
-            startDate: startDate,
-            endDate: endDate,
-            status: "available"
+        //add to database
+        while(start <= end) {
+            // const record = await createAnEvent(resortRefNum, format(start, 'yyyy-MM-dd'));
+            const record = await createAnEvent(resortRefNum, start);
+            recordArr.push(record);
+            start = addDays(start, 1)
         }
-    
-        try {   
-            await axios.put(url, payload, { headers });
-            console.log("Calendar single update successful.");
-    
-            for(const record of recordArr) {
-                await updateEventStatus(record, "DONE");
+
+        for(const listingID of listingIDs) {
+            const url = `https://open-api.guesty.com/v1/availability-pricing/api/calendar/listings/${listingID}`;
+
+            const token = await returnAValidToken(clientID, clientSecret);
+            const headers = {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            };
+        
+            const payload = {
+                startDate: startDate,
+                endDate: endDate,
+                status: "available"
             }
-    
-            return true;
-    
-        } catch (error) {
-            // Handle errors that may occur during the request
-            console.error('Error:', error.message);
-            console.error('Reason:', error.response.data);
-            success++;
+        
+            try {   
+                await axios.put(url, payload, { headers });
+                console.log("Calendar single update successful.");
+        
+                for(const record of recordArr) {
+                    await updateEventStatus(record, "DONE");
+                }
+        
+                return true;
+        
+            } catch (error) {
+                // Handle errors that may occur during the request
+                console.error('Error:', error.message);
+                console.error('Reason:', error.response.data);
+                success++;
+            }
+        
         }
-    
+     
+    } catch (error) {
+        console.error("Error updating manually: ", error.message);
     }
 
 
