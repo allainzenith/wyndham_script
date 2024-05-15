@@ -576,11 +576,12 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
       } catch (error) {
         console.log("Calendar not working.. Trying another approach")
         await enableSessionCalendar(page);
-        await page.waitForSelector(resortSelector, { timeout:10000 });
         console.log("Done enabling session calendar")
       }
 
       await checkOverlay(page);
+
+      await page.waitForSelector(resortSelector, { timeout:10000, visible: true });
       
       const resort  = await page.$(resortSelector);
 
