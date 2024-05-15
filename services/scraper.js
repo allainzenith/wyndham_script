@@ -569,17 +569,17 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
 
       const resortSelector = "#ResortSelect";
 
-      try {
+      // try {
 
-        await page.waitForSelector(resortSelector, { timeout:10000 });
+      //   await page.waitForSelector(resortSelector, { timeout:10000 });
 
-      } catch (error) {
-        console.log("Calendar not working.. Trying another approach")
-        await enableSessionCalendar(page);
-        console.log("Done enabling session calendar")
-      }
+      // } catch (error) {
+      console.log("Calendar not working.. Trying another approach")
+      await enableSessionCalendar(page);
+      console.log("Done enabling session calendar")
+      // }
 
-      await checkOverlay(page);
+      // await checkOverlay(page);
 
       await page.waitForSelector(resortSelector, { timeout:10000, visible: true });
       
