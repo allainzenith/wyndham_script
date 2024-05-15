@@ -367,7 +367,7 @@ const mapExecutionData = async(data, endpoint) => {
 }
 
 const WebSocket = require('ws');
-const wss = new WebSocket.Server({ port : 5002 });
+const wss = new WebSocket.Server({ port : 3003 });
 const c = new Map();
 const crypto = require('crypto');
 wss.on('connection', async(ws) => {
