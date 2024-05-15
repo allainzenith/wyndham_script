@@ -583,9 +583,9 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
 
       await page.waitForSelector(resortSelector, { timeout:10000, visible: true });
       
-      const resort  = await page.$(resortSelector);
+      // const resort  = await page.$(resortSelector);
 
-      await resort.scrollIntoView();
+      // await resort.scrollIntoView();
 
       let selectedResort = await page.evaluate((selector) => {
         const select = document.querySelector(selector);
