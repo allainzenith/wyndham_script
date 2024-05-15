@@ -566,11 +566,21 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
 
       }
 
-      await checkOverlay(page);
 
       const resortSelector = "#ResortSelect";
 
-      await page.waitForSelector(resortSelector, { timeout:10000 });
+      try {
+
+        await page.waitForSelector(resortSelector, { timeout:10000 });
+
+      } catch (error) {
+        console.log("Calendar not working.. Trying another approach")
+        await enableSessionCalendar(page);
+        await page.waitForSelector(resortSelector, { timeout:10000 });
+        console.log("Done enabling session calendar")
+      }
+
+      await checkOverlay(page);
       
       const resort  = await page.$(resortSelector);
 
@@ -596,14 +606,17 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
         }, resortSelector);
     
         console.log("This is the selected resort:",selectedResort);
+        console.log("This is the resort ID:", resortID);
 
-        let error = await page.waitForSelector("#error-message", {
-          timeout: 15000,
-        });
-
-        if(error) {
+        try {
+          let error = await page.waitForSelector("#error-message", {
+            timeout: 5000,
+          });
           return null;
-        }
+        } catch (error) {
+          console.error("Error not found");
+        } 
+
       }
 
       let selectedOptionText = await page.evaluate((selector) => {
