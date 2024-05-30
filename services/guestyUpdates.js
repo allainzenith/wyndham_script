@@ -61,7 +61,7 @@ async function updateSingleListing(resort, startDate, endDate) {
             } catch (error) {
                 // Handle errors that may occur during the request
                 console.error('Error:', error.message);
-                console.error('Reason:', error.response.data);
+                // console.error('Reason:', error.response.data);
                 success++;
             }
         
@@ -298,7 +298,7 @@ async function retrieveListings(substringAddress){
     } catch (error) {
         // Handle errors that may occur during the request
         console.error('Error:', error.message);
-        console.error('Reason:', error.response.data);
+        // console.error('Reason:', error.response.data);
         return null;
     }
 
@@ -330,7 +330,7 @@ async function retrieveAListing(listingID){
         // Handle errors that may occur during the request
         console.error('Error:', error.message);
         console.error(error)
-        console.error('Reason:', error.response.data);
+        // console.error('Reason:', error.response.data);
         return null;
     }
 }
@@ -368,7 +368,7 @@ async function updateAvailabilitySettings(listingID){
     } catch (error) {
         // Handle errors that may occur during the request
         console.error('Error:', error.message);
-        console.error('Reason:', error.response.data);
+        // console.error('Reason:', error.response.data);
         return false;
     }
 }
@@ -646,7 +646,7 @@ async function getCalendarAvailability(startDate, endDate, listingID) {
             } catch (error) {
                 // Handle errors that may occur during the request
                 console.error('Error:', error.message);
-                console.error('Reason:', error.response.data);
+                // console.error('Reason:', error.response.data);
                 reject(null);
             }
 
@@ -710,7 +710,7 @@ async function getLatLongAddress(address){
     } catch (error) {
         // Handle errors that may occur during the request
         console.error('Error:', error.message);
-        console.error('Reason:', error.response.data);
+        // console.error('Reason:', error.response.data);
         return null;
     } 
 
