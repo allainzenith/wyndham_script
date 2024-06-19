@@ -719,7 +719,7 @@ async function selectMonth(page, monthNow, queueType, resortID, suiteType, page,
 
     await monthSelector.click();
 
-    await page.waitForSelector('.react-datepicker__month-year-option', { timeout:60000, visible: true });
+    await page.waitForSelector('.react-datepicker__month-year-option', { timeout: 10000, visible: true });
 
     const curentMonth = await page.evaluate((monthSelector, monthNow) => {
       const months = document.querySelectorAll(monthSelector);
@@ -741,9 +741,9 @@ async function selectMonth(page, monthNow, queueType, resortID, suiteType, page,
     console.log("Clicked: ", curentMonth);
   } catch (error) {
     console.error("Error choosing month: ", error.message);
-    console.log("Selecting options and month one more time.")
+    console.log("Selecting options and month one more time.");
     await selectElements(queueType, resortID, suiteType, page, pageForAddress);
-    await selectMonth(page, monthNow);
+    await selectMonth(page, monthNow, queueType, resortID, suiteType, page, pageForAddress);
   }
 }
 
