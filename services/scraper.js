@@ -712,6 +712,31 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
   }
 }
 
+async function selectMonth(page, monthNow) {
+  await page.waitForSelector('.react-datepicker__month-year-read-view--down-arrow', {timeout:60000});
+  const monthSelector = await page.$('.react-datepicker__month-year-read-view--down-arrow');
+
+  await monthSelector.click();
+
+  const curentMonth = await page.evaluate((monthSelector, monthNow) => {
+    const months = document.querySelectorAll(monthSelector);
+  
+    if (months.length > 0) { 
+      const month = months[monthNow];
+      
+      if (month) {
+        month.click();
+        return month.textContent.trim(); 
+      } else {
+        return "no current month"; 
+      }
+    } else {
+      return "no month selector"; 
+    }
+  }, '.react-datepicker__month-year-option', monthNow);
+
+  console.log("Clicked: ", curentMonth);
+}
 
 async function checkAvailability(queueType, months, resortID, suiteType, page, pageForAddress) {
 
@@ -802,6 +827,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
       initialDate = '01';
       currentYear = currentDate.getFullYear();
 
+
       // Getting the last date of the month
       lastDay = endOfMonth(currentDate).toLocaleDateString(undefined, { day: "2-digit" });
 
@@ -809,7 +835,6 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
 
 
       await Promise.all([
-        // page.waitForNetworkIdle({ idleTime: 80000 }),
         page.waitForResponse(async response => {
           if (await response.request().method() === "POST" &&
               await response.status() === 200 &&
@@ -824,9 +849,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
                   const responseData = JSON.parse(responseText);
                   let date = responseData.calendarDays[0].date;
                   console.log(`Response with date ${date} pushed.`);
-                  // console.log('=======================================================')
-                  // console.log(postData)
-                  // console.log('=======================================================')
+
                   responses.push(responseText);
   
                   if (numResponses === 2) {
@@ -835,7 +858,8 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
               }
           }
         }, { timeout: 120000 }),
-        clickOneElement(page, nextClass, 120000),
+        // clickOneElement(page, nextClass, 120000),
+        selectMonth(page, monthNow)
       ]);
 
       await page.waitForTimeout(2000);

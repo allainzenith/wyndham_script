@@ -7,6 +7,7 @@ var logger = require("morgan");
 var router = require("./routes/index");
 const WebSocket = require('ws');
 
+
 const schedule = require("node-schedule");
 const { scheduledUpdates } = require("./scripts/scheduledUpdates");
 const { deleteOldManualUpdates } = require("./sequelizer/controller/event.controller");
@@ -39,7 +40,7 @@ app.use(async (req, res, next) => {
 
     await deleteOldManualUpdates();
     // await new Promise(resolve => setTimeout(resolve, 60000));
-    await scheduledUpdates("TIER 1");
+    // await scheduledUpdates("TIER 1");
     // await new Promise(resolve => setTimeout(resolve, 60000));
     // await scheduledUpdates("TIER 2");
     // await new Promise(resolve => setTimeout(resolve, 60000));
