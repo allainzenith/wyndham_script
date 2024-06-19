@@ -718,6 +718,8 @@ async function selectMonth(page, monthNow) {
 
   await monthSelector.click();
 
+  await page.waitForSelector('.react-datepicker__month-year-option', { visible: true });
+
   const curentMonth = await page.evaluate((monthSelector, monthNow) => {
     const months = document.querySelectorAll(monthSelector);
   
