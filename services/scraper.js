@@ -712,32 +712,39 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
   }
 }
 
-async function selectMonth(page, monthNow) {
-  await page.waitForSelector('.react-datepicker__month-year-read-view--down-arrow', { timeout:20000 });
-  const monthSelector = await page.$('.react-datepicker__month-year-read-view--down-arrow');
+async function selectMonth(page, monthNow, queueType, resortID, suiteType, page, pageForAddress) {
+  try {
+    await page.waitForSelector('.react-datepicker__month-year-read-view--down-arrow', { timeout:20000 });
+    const monthSelector = await page.$('.react-datepicker__month-year-read-view--down-arrow');
 
-  await monthSelector.click();
+    await monthSelector.click();
 
-  await page.waitForSelector('.react-datepicker__month-year-option', { timeout:60000, visible: true });
+    await page.waitForSelector('.react-datepicker__month-year-option', { timeout:60000, visible: true });
 
-  const curentMonth = await page.evaluate((monthSelector, monthNow) => {
-    const months = document.querySelectorAll(monthSelector);
-  
-    if (months.length > 0) { 
-      const month = months[monthNow];
-      
-      if (month) {
-        month.click();
-        return month.textContent.trim(); 
+    const curentMonth = await page.evaluate((monthSelector, monthNow) => {
+      const months = document.querySelectorAll(monthSelector);
+    
+      if (months.length > 0) { 
+        const month = months[monthNow];
+        
+        if (month) {
+          month.click();
+          return month.textContent.trim(); 
+        } else {
+          return "no current month"; 
+        }
       } else {
-        return "no current month"; 
+        return "no month selector"; 
       }
-    } else {
-      return "no month selector"; 
-    }
-  }, '.react-datepicker__month-year-option', monthNow);
+    }, '.react-datepicker__month-year-option', monthNow);
 
-  console.log("Clicked: ", curentMonth);
+    console.log("Clicked: ", curentMonth);
+  } catch (error) {
+    console.error("Error choosing month: ", error.message);
+    console.log("Selecting options and month one more time.")
+    await selectElements(queueType, resortID, suiteType, page, pageForAddress);
+    await selectMonth(page, monthNow);
+  }
 }
 
 async function checkAvailability(queueType, months, resortID, suiteType, page, pageForAddress) {
@@ -861,7 +868,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
           }
         }, { timeout: 120000 }),
         // clickOneElement(page, nextClass, 120000),
-        selectMonth(page, monthNow)
+        selectMonth(page, monthNow, queueType, resortID, suiteType, page, pageForAddress)
       ]);
 
       await page.waitForTimeout(2000);
