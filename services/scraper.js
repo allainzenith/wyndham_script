@@ -713,14 +713,16 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
 }
 
 async function selectMonth(page, monthNow, queueType, resortID, suiteType, page, pageForAddress) {
+
+
   try {
     await page.waitForSelector('.react-datepicker__month-year-read-view--down-arrow', { timeout:20000 });
     const monthSelector = await page.$('.react-datepicker__month-year-read-view--down-arrow');
-
+  
     await monthSelector.click();
-
+  
     await page.waitForSelector('.react-datepicker__month-year-option', { timeout: 10000, visible: true });
-
+  
     const curentMonth = await page.evaluate((monthSelector, monthNow) => {
       const months = document.querySelectorAll(monthSelector);
     
@@ -737,14 +739,73 @@ async function selectMonth(page, monthNow, queueType, resortID, suiteType, page,
         return "no month selector"; 
       }
     }, '.react-datepicker__month-year-option', monthNow);
-
+  
     console.log("Clicked: ", curentMonth);
+
   } catch (error) {
     console.error("Error choosing month: ", error.message);
     console.log("Selecting options and month one more time.");
     await selectElements(queueType, resortID, suiteType, page, pageForAddress);
+    await selectSuiteType(page, suiteType, resortID, currentYear, currentMonth, initialDate, lastDay);
     await selectMonth(page, monthNow, queueType, resortID, suiteType, page, pageForAddress);
   }
+}
+
+async function selectSuiteType(page, suiteType, resortID, currentYear, currentMonth, initialDate, lastDay) {
+
+  let responses = [];
+  let numResponses = 0;
+  //====================================================================
+  // SELECTING SUITE TYPE
+  //====================================================================
+
+  const suiteSelector = "#suiteType";
+
+  let selectedOption = resortID === "PI|R000000000031" ? "Studio" : "All Suites";
+
+  console.log("Selected option: ", selectedOption);
+
+  let selectedSuiteType = await page.select(suiteSelector, selectedOption);
+
+  // IMPORTANT
+  while (selectedSuiteType !== suiteType) {
+    responses = [];
+    await Promise.all([
+      page.waitForResponse( async response => {
+        if (await response.request().method() === "POST" && await response.status() === 200 &&
+        response.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability') ) {
+          const postData = await response.request().postData();
+          const responseText = await response.text();
+  
+          if ( postData && postData.includes(suiteType) && postData.includes(resortID) &&
+            responseText.includes(`${currentYear}-${currentMonth}`)
+          ) {
+            if ( responseText.includes(`${currentYear}-${currentMonth}-${initialDate}`) && postData.includes(suiteType) && postData.includes(resortID) ) numResponses++;
+            if ( responseText.includes(`${currentYear}-${currentMonth}-${lastDay}`) && postData.includes(suiteType) && postData.includes(resortID) ) numResponses++;
+            const responseData = JSON.parse(responseText);
+            let date = responseData.calendarDays[0].date;
+            console.log(`Response with date ${date} pushed.`);
+            responses.push(responseText);
+
+            if (numResponses >= 2) {
+              return true;
+            }
+          }
+        }
+      }),
+      page.select(suiteSelector, suiteType),
+    ]);
+
+    selectedSuiteType = await page.evaluate((selector) => {
+      const select = document.querySelector(selector);
+      const selectedOption = select.options[select.selectedIndex];
+      return selectedOption.text;
+    }, suiteSelector);
+
+    console.log("This is the selected suite type:", selectedSuiteType);
+  }
+
+  return responses;
 }
 
 async function checkAvailability(queueType, months, resortID, suiteType, page, pageForAddress) {
@@ -767,62 +828,9 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
   
   try {
 
-    //====================================================================
-    // SELECTING SUITE TYPE
-    //====================================================================
-
-    const suiteSelector = "#suiteType";
-
-    let selectedOption = resortID === "PI|R000000000031" ? "Studio" : "All Suites";
-
-    console.log("Selected option: ", selectedOption);
-
-    let selectedSuiteType = await page.select(suiteSelector, selectedOption);
-
-    // IMPORTANT
-    while (selectedSuiteType !== suiteType) {
-      responses = [];
-      await Promise.all([
-        page.waitForResponse( async response => {
-          if (response.request().method() === "POST" && await response.status() === 200 &&
-          response.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability') ) {
-            const postData = await response.request().postData();
-            const responseText = await response.text();
-    
-            if ( postData && postData.includes(suiteType) && postData.includes(resortID) &&
-              responseText.includes(`${currentYear}-${currentMonth}`)
-            ) {
-              if ( responseText.includes(`${currentYear}-${currentMonth}-${initialDate}`) && postData.includes(suiteType) && postData.includes(resortID) ) numResponses++;
-              if ( responseText.includes(`${currentYear}-${currentMonth}-${lastDay}`) && postData.includes(suiteType) && postData.includes(resortID) ) numResponses++;
-              const responseData = JSON.parse(responseText);
-              let date = responseData.calendarDays[0].date;
-              console.log(`Response with date ${date} pushed.`);
-              responses.push(responseText);
-  
-              if (numResponses >= 2) {
-                return true;
-              }
-            }
-          }
-        }),
-        page.select(suiteSelector, suiteType),
-      ]);
-
-      selectedSuiteType = await page.evaluate((selector) => {
-        const select = document.querySelector(selector);
-        const selectedOption = select.options[select.selectedIndex];
-        return selectedOption.text;
-      }, suiteSelector);
-
-      console.log("This is the selected suite type:", selectedSuiteType);
-      numResponses = 0;
-    }
+    responses = await selectSuiteType(page, suiteType, resortID, currentYear, currentMonth, initialDate, lastDay);
 
     await page.waitForTimeout(2000);
-
-    //====================================================================
-    // END OF SELECTING SUITE TYPE
-    //====================================================================
   
     while (monthNow < months) {   
 
@@ -841,7 +849,6 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
       lastDay = endOfMonth(currentDate).toLocaleDateString(undefined, { day: "2-digit" });
 
       let nextClass = `button.react-datepicker__navigation--next[aria-label="Next Month"]`;
-
 
       await Promise.all([
         page.waitForResponse(async response => {

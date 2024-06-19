@@ -66,7 +66,7 @@ async function initializeBrowser(customProfileRelPath) {
       "--no-zygote",
     ],
     headless: 'new',
-    // headless: false,
+    headless: false,
     userDataDir: customProfileDir,
   }
 
