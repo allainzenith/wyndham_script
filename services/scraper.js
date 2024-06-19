@@ -713,7 +713,7 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
 }
 
 async function selectMonth(page, monthNow) {
-  await page.waitForSelector('.react-datepicker__month-year-read-view--down-arrow', {timeout:60000});
+  await page.waitForSelector('.react-datepicker__month-year-read-view--down-arrow', { timeout:6000 });
   const monthSelector = await page.$('.react-datepicker__month-year-read-view--down-arrow');
 
   await monthSelector.click();
