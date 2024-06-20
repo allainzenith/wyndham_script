@@ -569,16 +569,6 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
 
       const resortSelector = "#ResortSelect";
 
-      // try {
-
-      //   await page.waitForSelector(resortSelector, { timeout:10000 });
-
-      // } catch (error) {
-      // console.log("Calendar not working.. Trying another approach")
-      // await enableSessionCalendar(page);
-      // console.log("Done enabling session calendar")
-      // }
-
       await checkOverlay(page);
 
       await page.waitForSelector(resortSelector, { timeout:10000, visible: true });
@@ -712,7 +702,7 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
   }
 }
 
-async function selectMonth(page, monthNow, queueType, resortID, suiteType, page, pageForAddress) {
+async function selectMonth(page, monthNow, queueType, resortID, suiteType, pageForAddress, currentYear, currentMonth, initialDate, lastDay) {
 
 
   try {
@@ -747,7 +737,7 @@ async function selectMonth(page, monthNow, queueType, resortID, suiteType, page,
     console.log("Selecting options and month one more time.");
     await selectElements(queueType, resortID, suiteType, page, pageForAddress);
     await selectSuiteType(page, suiteType, resortID, currentYear, currentMonth, initialDate, lastDay);
-    await selectMonth(page, monthNow, queueType, resortID, suiteType, page, pageForAddress);
+    await selectMonth(page, monthNow, queueType, resortID, suiteType, pageForAddress, currentYear, currentMonth, initialDate, lastDay);
   }
 }
 
@@ -875,7 +865,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
           }
         }, { timeout: 120000 }),
         // clickOneElement(page, nextClass, 120000),
-        selectMonth(page, monthNow, queueType, resortID, suiteType, page, pageForAddress)
+        selectMonth(page, monthNow, queueType, resortID, suiteType, pageForAddress, currentYear, currentMonth, initialDate, lastDay)
       ]);
 
       await page.waitForTimeout(2000);
