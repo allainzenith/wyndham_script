@@ -773,7 +773,7 @@ async function selectSuiteType(page, suiteType, resortID, currentYear, currentMo
                 responses.push(responseText);
               }
 
-              if (firstFound && secondFound && responseSet.length >= 2) {
+              if (firstFound && secondFound && responses.length >= 2) {
                 return true;
               }
             }
