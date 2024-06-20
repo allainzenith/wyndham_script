@@ -753,8 +753,6 @@ async function selectSuiteType(page, suiteType, resortID, currentYear, currentMo
 
   let selectedOption = resortID === "PI|R000000000031" ? "Studio" : "All Suites";
 
-  console.log("Selected option: ", selectedOption);
-
   let selectedSuiteType = await page.select(suiteSelector, selectedOption);
 
   // IMPORTANT
@@ -776,11 +774,11 @@ async function selectSuiteType(page, suiteType, resortID, currentYear, currentMo
               numResponses++;
               const responseData = JSON.parse(responseText);
               let date = responseData.calendarDays[0].date;
-              console.log(`Response with date ${date} pushed. Unit type: ${parsedPostData.unitTypes}`);
+              console.log(`Response with date ${date} pushed. Resort ID: ${parsedPostData.productId}, Unit type: ${parsedPostData.unitTypes}, Start: ${parsedPostData.startDate}, End: ${parsedPostData.endDate}`);
               responses.push(responseText);
             }
 
-            if (numResponses >= 2) {
+            if (numResponses === 2) {
               return true;
             }
           }
@@ -844,29 +842,31 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
       let nextClass = `button.react-datepicker__navigation--next[aria-label="Next Month"]`;
 
       await Promise.all([
-        page.waitForResponse(async response => {
-          if (await response.request().method() === "POST" &&
-              await response.status() === 200 &&
-              await response.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability')) {
-              const postData = await response.request().postData();
-              const responseText = await response.text();
-  
-              if (postData && postData.includes(resortID) && postData.includes(suiteType) &&
-                  responseText.includes(`${currentYear}-${currentMonth}`)) {
-                  if (responseText.includes(`${currentYear}-${currentMonth}-${initialDate}`)) numResponses++;
-                  if (responseText.includes(`${currentYear}-${currentMonth}-${lastDay}`)) numResponses++;
-                  const responseData = JSON.parse(responseText);
-                  let date = responseData.calendarDays[0].date;
-                  console.log(`Response with date ${date} pushed.`);
-
-                  responses.push(responseText);
-  
-                  if (numResponses === 2) {
-                      return true;
-                  }
+        page.waitForResponse( async response => {
+          if (await response.request().method() === "POST" && await response.status() === 200 &&
+          await response.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability') ) {
+            const postData = await response.request().postData();
+            const responseText = await response.text();
+    
+            if ( postData && postData.includes(suiteType) && postData.includes(resortID) &&
+              responseText.includes(`${currentYear}-${currentMonth}`)
+            ) {
+              if ( responseText.includes(`${currentYear}-${currentMonth}-${initialDate}`) && postData.includes(suiteType) && postData.includes(resortID) || 
+               responseText.includes(`${currentYear}-${currentMonth}-${lastDay}`) && postData.includes(suiteType) && postData.includes(resortID) )  {
+                const parsedPostData = JSON.parse(postData);
+                numResponses++;
+                const responseData = JSON.parse(responseText);
+                let date = responseData.calendarDays[0].date;
+                console.log(`Response with date ${date} pushed. Resort ID: ${parsedPostData.productId}, Unit type: ${parsedPostData.unitTypes}, Start: ${parsedPostData.startDate}, End: ${parsedPostData.endDate}`);
+                responses.push(responseText);
               }
+  
+              if (numResponses === 2) {
+                return true;
+              }
+            }
           }
-        }, { timeout: 120000 }),
+        }, { timeout: 30000 }),
         // clickOneElement(page, nextClass, 120000),
         selectMonth(page, monthNow, queueType, resortID, suiteType, pageForAddress, currentYear, currentMonth, initialDate, lastDay)
       ]);
