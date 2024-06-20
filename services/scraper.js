@@ -778,7 +778,7 @@ async function selectSuiteType(page, suiteType, resortID, currentYear, currentMo
               responses.push(responseText);
             }
 
-            if (numResponses === 2) {
+            if (numResponses >= 2) {
               return true;
             }
           }
@@ -861,14 +861,14 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
                 responses.push(responseText);
               }
   
-              if (numResponses === 2) {
+              if (numResponses >= 2) {
                 return true;
               }
             }
           }
         }, { timeout: 30000 }),
-        // clickOneElement(page, nextClass, 120000),
-        selectMonth(page, monthNow, queueType, resortID, suiteType, pageForAddress, currentYear, currentMonth, initialDate, lastDay)
+        clickOneElement(page, nextClass, 120000),
+        // selectMonth(page, monthNow, queueType, resortID, suiteType, pageForAddress, currentYear, currentMonth, initialDate, lastDay)
       ]);
 
       await page.waitForTimeout(2000);
