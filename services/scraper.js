@@ -844,7 +844,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
 
       await Promise.all([
         page.waitForResponse( async response => {
-          if (await response.request().method() === "POST" && await response.status() === 200 &&
+          if (await response.request().method() !== "OPTIONS" && await response.status() === 200 &&
           response.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability') ) {
             const postData = await response.request().postData();
             const responseText = await response.text();
@@ -867,7 +867,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
               }
             }
           }
-        }, { timeout: 30000 }),
+        }, { timeout: 120000 }),
         clickOneElement(page, nextClass, 120000),
         // selectMonth(page, monthNow, queueType, resortID, suiteType, pageForAddress, currentYear, currentMonth, initialDate, lastDay)
       ]);
