@@ -768,8 +768,8 @@ async function selectSuiteType(page, suiteType, resortID, currentYear, currentMo
           if ( postData && postData.includes(suiteType) && postData.includes(resortID) &&
             responseText.includes(`${currentYear}-${currentMonth}`)
           ) {
-            if ( responseText.includes(`${currentYear}-${currentMonth}-${initialDate}`) && postData.includes(suiteType) && postData.includes(resortID) || 
-             responseText.includes(`${currentYear}-${currentMonth}-${lastDay}`) && postData.includes(suiteType) && postData.includes(resortID) )  {
+            if ( responseText.includes(`${currentYear}-${currentMonth}-${initialDate}`) || 
+            responseText.includes(`${currentYear}-${currentMonth}-${lastDay}`)  )  {
               const parsedPostData = JSON.parse(postData);
               numResponses++;
               const responseData = JSON.parse(responseText);
@@ -851,8 +851,8 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
             if ( postData && postData.includes(suiteType) && postData.includes(resortID) &&
               responseText.includes(`${currentYear}-${currentMonth}`)
             ) {
-              if ( responseText.includes(`${currentYear}-${currentMonth}-${initialDate}`) && postData.includes(suiteType) && postData.includes(resortID) || 
-               responseText.includes(`${currentYear}-${currentMonth}-${lastDay}`) && postData.includes(suiteType) && postData.includes(resortID) )  {
+              if ( responseText.includes(`${currentYear}-${currentMonth}-${initialDate}`) || 
+               responseText.includes(`${currentYear}-${currentMonth}-${lastDay}`)  )  {
                 const parsedPostData = JSON.parse(postData);
                 numResponses++;
                 const responseData = JSON.parse(responseText);
