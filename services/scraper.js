@@ -768,8 +768,8 @@ async function selectSuiteType(page, suiteType, resortID, currentYear, currentMo
           if ( postData && postData.includes(suiteType) && postData.includes(resortID) &&
             responseText.includes(`${currentYear}-${currentMonth}`)
           ) {
-            if ( responseText.includes(`${currentYear}-${currentMonth}-${initialDate}`) || 
-            responseText.includes(`${currentYear}-${currentMonth}-${lastDay}`)  )  {
+              if ( responseText.includes(`${currentYear}-${currentMonth}-${initialDate}`) || 
+               responseText.includes(`${currentYear}-${currentMonth}-${lastDay}`)  )  {
               const parsedPostData = JSON.parse(postData);
               numResponses++;
               const responseData = JSON.parse(responseText);
@@ -844,7 +844,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
       await Promise.all([
         page.waitForResponse( async response => {
           if (await response.request().method() === "POST" && await response.status() === 200 &&
-          await response.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability') ) {
+          response.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability') ) {
             const postData = await response.request().postData();
             const responseText = await response.text();
     
