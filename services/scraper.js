@@ -751,12 +751,13 @@ async function selectSuiteType(page, suiteType, resortID, currentYear, currentMo
 
   const suiteSelector = "#suiteType";
 
-  let selectedOption = resortID === "PI|R000000000031" ? "Studio" : "All Suites";
+  // let selectedOption = resortID === "PI|R000000000031" ? "Studio" : "All Suites";
 
-  let selectedSuiteType = await page.select(suiteSelector, selectedOption);
+  // let selectedSuiteType = await page.select(suiteSelector, selectedOption);
+  let selectedSuiteType = "";
 
   // IMPORTANT
-  while (selectedSuiteType !== suiteType) {
+  do {
     responses = [];
     await Promise.all([
       page.waitForResponse( async response => {
@@ -794,7 +795,7 @@ async function selectSuiteType(page, suiteType, resortID, currentYear, currentMo
     }, suiteSelector);
 
     console.log("This is the selected suite type:", selectedSuiteType);
-  }
+  }  while (selectedSuiteType !== suiteType)
 
   return responses;
 }
