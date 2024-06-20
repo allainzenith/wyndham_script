@@ -867,7 +867,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
               }
             }
           }
-        }, { timeout: 120000 }),
+        }, { timeout: 20000 }),
         clickOneElement(page, nextClass, 120000),
         // selectMonth(page, monthNow, queueType, resortID, suiteType, pageForAddress, currentYear, currentMonth, initialDate, lastDay)
       ]);
