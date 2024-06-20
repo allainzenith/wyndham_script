@@ -770,12 +770,15 @@ async function selectSuiteType(page, suiteType, resortID, currentYear, currentMo
           if ( postData && postData.includes(suiteType) && postData.includes(resortID) &&
             responseText.includes(`${currentYear}-${currentMonth}`)
           ) {
-            if ( responseText.includes(`${currentYear}-${currentMonth}-${initialDate}`) && postData.includes(suiteType) && postData.includes(resortID) ) numResponses++;
-            if ( responseText.includes(`${currentYear}-${currentMonth}-${lastDay}`) && postData.includes(suiteType) && postData.includes(resortID) ) numResponses++;
-            const responseData = JSON.parse(responseText);
-            let date = responseData.calendarDays[0].date;
-            console.log(`Response with date ${date} pushed.`);
-            responses.push(responseText);
+            if ( responseText.includes(`${currentYear}-${currentMonth}-${initialDate}`) && postData.includes(suiteType) && postData.includes(resortID) || 
+             responseText.includes(`${currentYear}-${currentMonth}-${lastDay}`) && postData.includes(suiteType) && postData.includes(resortID) )  {
+              const parsedPostData = JSON.parse(postData);
+              numResponses++;
+              const responseData = JSON.parse(responseText);
+              let date = responseData.calendarDays[0].date;
+              console.log(`Response with date ${date} pushed. Unit type: ${parsedPostData.unitTypes}`);
+              responses.push(responseText);
+            }
 
             if (numResponses >= 2) {
               return true;
