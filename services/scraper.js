@@ -801,6 +801,10 @@ async function selectSuiteType(page, suiteType, resortID, currentYear, currentMo
   } catch (error) {
     console.error("Error selecting suite type and getting first set of response: ", error.message);
 
+    await Promise.all([
+      page.waitForNavigation(),
+      page.reload( {waitUntil: 'load'} )
+    ])
     await selectSuiteType(page, suiteType, resortID, currentYear, currentMonth, initialDate, lastDay, isFirstTime);
   }
 }
