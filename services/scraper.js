@@ -7,8 +7,6 @@ const fs = require("fs");
 const { addMonths, addDays, endOfMonth } = require("date-fns");
 const { userName, passWord } = require("../config/config");
 const { oneTimeTaskPuppeteer, tierOnePuppeteer, tierTwoThreePuppeteer, sharedData } = require("../config/puppeteerOptions");
-const cookiesString = fs.readFileSync('./config/jsons/cookies.json');
-const parsedCookies = JSON.parse(cookiesString);
 
 let needtoLogin;
 
@@ -618,12 +616,12 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
 
       console.log("This is the selected option: " + selectedOptionText);
 
-      await page.waitForTimeout(2000);
+      // await page.waitForTimeout(2000);
       
-      await Promise.all([
-        page.waitForNavigation(), 
-        page.reload({ waitUntil: 'domcontentloaded' })
-      ]);
+      // await Promise.all([
+      //   page.waitForNavigation(), 
+      //   page.reload({ waitUntil: 'domcontentloaded' })
+      // ]);
 
       const suiteSelector = "#suiteType";
 
@@ -702,10 +700,8 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
   }
 }
 
-async function selectMonth(page, monthNow, queueType, resortID, suiteType, pageForAddress, currentYear, currentMonth, initialDate, lastDay) {
+async function selectMonth(page, monthNow) {
 
-
-  try {
     await page.waitForSelector('.react-datepicker__month-year-read-view--down-arrow', { timeout:20000 });
     const monthSelector = await page.$('.react-datepicker__month-year-read-view--down-arrow');
   
@@ -732,77 +728,84 @@ async function selectMonth(page, monthNow, queueType, resortID, suiteType, pageF
   
     console.log("Clicked: ", curentMonth);
 
+
+}
+
+async function selectSuiteType(page, suiteType, resortID, currentYear, currentMonth, initialDate, lastDay, isFirstTime) {
+
+  try {
+    let responses = [];
+
+    //====================================================================
+    // SELECTING SUITE TYPE
+    //====================================================================
+
+    const suiteSelector = "#suiteType";
+
+    let selectedOption = resortID === "PI|R000000000031" ? "Studio" : "All Suites";
+
+    let selectedSuiteType = await page.select(suiteSelector, selectedOption);
+
+    // IMPORTANT
+    do {
+      responses = [];
+      let firstFound = false;
+      let secondFound = false;
+
+      const responseWaited = (async() => {
+        page.waitForResponse( async response => {
+          if (await response.request().method() === "POST" && await response.status() === 200 &&
+          response.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability') ) {
+            const postData = await response.request().postData();
+            const responseText = await response.text();
+    
+            if ( postData && postData.includes(suiteType) && postData.includes(resortID) &&
+              responseText.includes(`${currentYear}-${currentMonth}`)
+            ) {
+                if ( responseText.includes(`${currentYear}-${currentMonth}-${initialDate}`)) firstFound = true;
+                if ( responseText.includes(`${currentYear}-${currentMonth}-${lastDay}`)  ) secondFound = true;
+                if ( responseText.includes(`${currentYear}-${currentMonth}-${initialDate}`) || 
+                responseText.includes(`${currentYear}-${currentMonth}-${lastDay}`)  )  {
+                const parsedPostData = JSON.parse(postData);
+                const responseData = JSON.parse(responseText);
+                let date = responseData.calendarDays[0].date;
+                console.log(`Response with date ${date} pushed. Resort ID: ${parsedPostData.productId}, Unit type: ${parsedPostData.unitTypes}, Start: ${parsedPostData.startDate}, End: ${parsedPostData.endDate}`);
+                responses.push(responseText);
+              }
+
+              if (firstFound && secondFound && responseSet.length >= 2) {
+                return true;
+              }
+            }
+          }
+        })
+
+        console.log("Responses length: ", responses.length);
+      })
+
+      await Promise.all([
+        isFirstTime ? responseWaited() : '',
+        page.select(suiteSelector, suiteType)
+      ]);
+
+      selectedSuiteType = await page.evaluate((selector) => {
+        const select = document.querySelector(selector);
+        const selectedOption = select.options[select.selectedIndex];
+        return selectedOption.text;
+      }, suiteSelector);
+
+      console.log("This is the selected suite type:", selectedSuiteType);
+    }  while (selectedSuiteType !== suiteType )
+
+    return responses;
   } catch (error) {
-    console.error("Error choosing month: ", error.message);
-    console.log("Selecting options and month one more time.");
-    await selectElements(queueType, resortID, suiteType, page, pageForAddress);
-    await selectSuiteType(page, suiteType, resortID, currentYear, currentMonth, initialDate, lastDay);
-    await selectMonth(page, monthNow, queueType, resortID, suiteType, pageForAddress, currentYear, currentMonth, initialDate, lastDay);
+    console.error("Error selecting suite type and getting first set of response: ", error.message);
+
+    await selectSuiteType(page, suiteType, resortID, currentYear, currentMonth, initialDate, lastDay, isFirstTime);
   }
 }
 
-async function selectSuiteType(page, suiteType, resortID, currentYear, currentMonth, initialDate, lastDay) {
-
-  let responses = [];
-  let numResponses = 0;
-  //====================================================================
-  // SELECTING SUITE TYPE
-  //====================================================================
-
-  const suiteSelector = "#suiteType";
-
-  // let selectedOption = resortID === "PI|R000000000031" ? "Studio" : "All Suites";
-
-  // let selectedSuiteType = await page.select(suiteSelector, selectedOption);
-  let selectedSuiteType = "";
-
-  // IMPORTANT
-  do {
-    responses = [];
-    await Promise.all([
-      page.waitForResponse( async response => {
-        if (await response.request().method() === "POST" && await response.status() === 200 &&
-        response.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability') ) {
-          const postData = await response.request().postData();
-          const responseText = await response.text();
-  
-          if ( postData && postData.includes(suiteType) && postData.includes(resortID) &&
-            responseText.includes(`${currentYear}-${currentMonth}`)
-          ) {
-              if ( responseText.includes(`${currentYear}-${currentMonth}-${initialDate}`) || 
-               responseText.includes(`${currentYear}-${currentMonth}-${lastDay}`)  )  {
-              const parsedPostData = JSON.parse(postData);
-              numResponses++;
-              const responseData = JSON.parse(responseText);
-              let date = responseData.calendarDays[0].date;
-              console.log(`Response with date ${date} pushed. Resort ID: ${parsedPostData.productId}, Unit type: ${parsedPostData.unitTypes}, Start: ${parsedPostData.startDate}, End: ${parsedPostData.endDate}`);
-              responses.push(responseText);
-            }
-
-            if (numResponses >= 2) {
-              return true;
-            }
-          }
-        }
-      }),
-      page.select(suiteSelector, suiteType),
-    ]);
-
-    selectedSuiteType = await page.evaluate((selector) => {
-      const select = document.querySelector(selector);
-      const selectedOption = select.options[select.selectedIndex];
-      return selectedOption.text;
-    }, suiteSelector);
-
-    console.log("This is the selected suite type:", selectedSuiteType);
-  }  while (selectedSuiteType !== suiteType)
-
-  return responses;
-}
-
 async function checkAvailability(queueType, months, resortID, suiteType, page, pageForAddress) {
-
-  let numResponses = 0;
   
   let { currentDate } = getCurrentAndEndDate(months);
   let monthNow = 0;
@@ -820,13 +823,12 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
   
   try {
 
-    responses = await selectSuiteType(page, suiteType, resortID, currentYear, currentMonth, initialDate, lastDay);
+    responses = await selectSuiteType(page, suiteType, resortID, currentYear, currentMonth, initialDate, lastDay, true);
 
     await page.waitForTimeout(2000);
   
     while (monthNow < months) {   
 
-      numResponses = 0;
       currentDate = addMonths(currentDate, 1);
       monthNow++;
 
@@ -841,40 +843,73 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
       lastDay = endOfMonth(currentDate).toLocaleDateString(undefined, { day: "2-digit" });
 
       let nextClass = `button.react-datepicker__navigation--next[aria-label="Next Month"]`;
+      let responseSet = [];
 
-      await Promise.all([
-        page.waitForResponse( async response => {
-          if (await response.request().method() !== "OPTIONS" && await response.status() === 200 &&
-          response.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability') ) {
-            const postData = await response.request().postData();
-            const responseText = await response.text();
-    
-            if ( postData && postData.includes(suiteType) && postData.includes(resortID) &&
-              responseText.includes(`${currentYear}-${currentMonth}`)
+      const responseAchieved = async (isFirstTime) => {
+        responseSet = [];
+        let firstFound = false;
+        let secondFound = false;
+        (!isFirstTime) ?? console.log("Retry: ", isFirstTime);
+
+        await Promise.all([
+          page.waitForResponse(async (response) => {
+            if (
+              (await response.request().method()) !== "OPTIONS" &&
+              (await response.status()) === 200 &&
+              response.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability')
             ) {
-              if ( responseText.includes(`${currentYear}-${currentMonth}-${initialDate}`) || 
-               responseText.includes(`${currentYear}-${currentMonth}-${lastDay}`)  )  {
-                const parsedPostData = JSON.parse(postData);
-                numResponses++;
-                const responseData = JSON.parse(responseText);
-                let date = responseData.calendarDays[0].date;
-                console.log(`Response with date ${date} pushed. Resort ID: ${parsedPostData.productId}, Unit type: ${parsedPostData.unitTypes}, Start: ${parsedPostData.startDate}, End: ${parsedPostData.endDate}`);
-                responses.push(responseText);
-              }
-  
-              if (numResponses >= 2) {
-                return true;
+              const postData = await response.request().postData();
+              const responseText = await response.text();
+      
+              if (
+                postData &&
+                postData.includes(suiteType) &&
+                postData.includes(resortID) &&
+                responseText.includes(`${currentYear}-${currentMonth}`)
+              ) {
+                if ( responseText.includes(`${currentYear}-${currentMonth}-${initialDate}`) ) firstFound = true;
+                if ( responseText.includes(`${currentYear}-${currentMonth}-${lastDay}`) ) secondFound = true;
+
+                if (
+                  responseText.includes(`${currentYear}-${currentMonth}-${initialDate}`) ||
+                  responseText.includes(`${currentYear}-${currentMonth}-${lastDay}`)
+                ) {
+                  const parsedPostData = JSON.parse(postData);
+                  const responseData = JSON.parse(responseText);
+                  let date = responseData.calendarDays[0].date;
+                  console.log(`Response with date ${date} pushed. Resort ID: ${parsedPostData.productId}, Unit type: ${parsedPostData.unitTypes}, Start: ${parsedPostData.startDate}, End: ${parsedPostData.endDate}`);
+                  responseSet.push(responseText);
+                }
+      
+                if (firstFound && secondFound && responseSet.length >= 2) {
+                  responses = responses.concat(responseSet);
+                  console.log(responses.length);
+                  return true;
+                }
               }
             }
-          }
-        }, { timeout: 20000 }),
-        clickOneElement(page, nextClass, 120000),
-        // selectMonth(page, monthNow, queueType, resortID, suiteType, pageForAddress, currentYear, currentMonth, initialDate, lastDay)
-      ]);
+          }, { timeout: 20000 }),
+          isFirstTime ? clickOneElement(page, nextClass, 120000) : selectMonth(page, monthNow),
+        ]);
+      };
+      
+      try {
+        await responseAchieved(true);
+        console.log("Done fetching responses..");
+      } catch (error) {
+        console.error("Error getting response:", error.message);
+        await page.waitForTimeout(3000);
+        await Promise.all([
+          page.waitForNavigation(),
+          page.reload({ waitUntil: 'load' })
+        ])
+
+        console.log("Trying again..");
+        await selectSuiteType(page, suiteType, resortID, currentYear, currentMonth, initialDate, lastDay, false);
+        await responseAchieved(false);
+      }
 
       await page.waitForTimeout(2000);
-
-      console.log("Done fetching responses..");
   
     }
 
