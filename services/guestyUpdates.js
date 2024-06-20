@@ -452,7 +452,7 @@ async function updateAvailability(listing, updatedAvail, months, page){
             } catch (error) {
                 console.error("Error while reloading page:", error);
             }
-        }, 60 * 1000);
+        }, 20 * 1000);
         
         await Promise.all(updatePromises);
         clearInterval(interval);
