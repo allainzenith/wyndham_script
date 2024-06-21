@@ -903,9 +903,9 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
 
         try {
           await page.waitForSelector('.account-info--text.semibold');
-          const profileButton = await page.$('.account-info--text.semibold');
-          if(profileButton) {
-            await profileButton.click();
+          const profileButton = await page.click('.account-info--text.semibold');
+          // if(profileButton) {
+            // await profileButton.click();
             console.log("clicked profile button")
             await page.waitForSelector('.account-navigation__list-item.logout');
             const logoutButton = await page.$('.account-navigation__list-item.logout');
@@ -913,7 +913,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
               await logoutButton.click();
             }
             console.log("Clicked logout button.");
-          }
+          // }
         } catch(error) {
           console.error("Error logging out: ", error.message)
         }
