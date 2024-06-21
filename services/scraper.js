@@ -902,18 +902,17 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
         console.log("Trying again..");
 
         try {
-          await page.waitForSelector('.account-info--text.semibold');
-          const profileButton = await page.click('.account-info--text.semibold');
-          // if(profileButton) {
-            // await profileButton.click();
-            console.log("clicked profile button")
-            await page.waitForSelector('.account-navigation__list-item.logout');
-            const logoutButton = await page.$('.account-navigation__list-item.logout');
-            if(logoutButton) {
-              await logoutButton.click();
-            }
+          await Promise.all([
+            page.waitForNavigation(),
+            page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/owner/account')
+          ])
+
+          await page.waitForSelector('li.accountNavigationV3-item a[href*="/us/en/login"]');
+          const logoutButton = await page.$('li.accountNavigationV3-item a[href*="/us/en/login"]');
+          if(logoutButton) {
+            await logoutButton.click();
             console.log("Clicked logout button.");
-          // }
+          }
         } catch(error) {
           console.error("Error logging out: ", error.message)
         }
