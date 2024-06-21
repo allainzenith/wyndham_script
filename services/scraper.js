@@ -900,6 +900,15 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
         console.error("Error getting response:", error.message);
 
         console.log("Trying again..");
+        const profileButton = await page.$('button.account-info__container.js-open-account');
+        if(profileButton) {
+          await profileButton.click();
+          const logoutButton = await page.$('.account-navigation__list-item.logout a.nav-logout-button');
+          if(logoutButton) {
+            await logoutButton.click();
+          }
+          console.log("Clicked logout button.");
+        }
         await login(queueType, page, pageForAddress);
         await selectElements(queueType, resortID, suiteType, page, pageForAddress);
         await selectSuiteType(page, suiteType, resortID, currentYear, currentMonth, initialDate, lastDay, false);
@@ -976,9 +985,6 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
         index++;
       }
     }
-
-    await page.removeAllListeners('request');
-    await page.setRequestInterception(false);
 
     return updatedAvail;
   } catch (error) {
