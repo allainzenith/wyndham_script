@@ -902,8 +902,8 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
         console.log("Trying again..");
 
         try {
-          await page.waitForSelector('li.loggedIn.member-initials-list-el');
-          const profileButton = await page.$('li.loggedIn.member-initials-list-el');
+          await page.waitForSelector('.account-info--text.semibold');
+          const profileButton = await page.$('.account-info--text.semibold');
           if(profileButton) {
             await profileButton.click();
             const logoutButton = await page.$('.account-navigation__list-item.logout a.nav-logout-button');
