@@ -900,15 +900,22 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
         console.error("Error getting response:", error.message);
 
         console.log("Trying again..");
-        const profileButton = await page.$('button.account-info__container.js-open-account');
-        if(profileButton) {
-          await profileButton.click();
-          const logoutButton = await page.$('.account-navigation__list-item.logout a.nav-logout-button');
-          if(logoutButton) {
-            await logoutButton.click();
+
+        try {
+          await page.waitForSelector('li.loggedIn.member-initials-list-el');
+          const profileButton = await page.$('li.loggedIn.member-initials-list-el');
+          if(profileButton) {
+            await profileButton.click();
+            const logoutButton = await page.$('.account-navigation__list-item.logout a.nav-logout-button');
+            if(logoutButton) {
+              await logoutButton.click();
+            }
+            console.log("Clicked logout button.");
           }
-          console.log("Clicked logout button.");
+        } catch(error) {
+          console.error("Error logging out: ", error.message)
         }
+
         await login(queueType, page, pageForAddress);
         await selectElements(queueType, resortID, suiteType, page, pageForAddress);
         await selectSuiteType(page, suiteType, resortID, currentYear, currentMonth, initialDate, lastDay, false);
