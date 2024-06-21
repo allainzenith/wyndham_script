@@ -901,23 +901,33 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
 
         console.log("Trying again..");
 
-        try {
-          await Promise.all([
-            page.waitForNavigation(),
-            page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/owner/account')
-          ])
+        await Promise.all([
+          page.waitForNavigation(),
+          page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/owner/account')
+        ])
 
-          await page.waitForSelector('li.accountNavigationV3-item a[href*="/us/en/login"]');
-          const logoutButton = await page.$('li.accountNavigationV3-item a[href*="/us/en/login"]');
-          if(logoutButton) {
-            await logoutButton.click();
-            console.log("Clicked logout button.");
-          }
-        } catch(error) {
-          console.error("Error logging out: ", error.message)
-        }
+        await Promise.all([
+          page.waitForNavigation(),
+          page.reload()
+        ])
 
-        await login(queueType, page, pageForAddress);
+        // try {
+        //   await Promise.all([
+        //     page.waitForNavigation(),
+        //     page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/owner/account')
+        //   ])
+
+        //   await page.waitForSelector('li.accountNavigationV3-item a[href*="/us/en/login"]');
+        //   const logoutButton = await page.$('li.accountNavigationV3-item a[href*="/us/en/login"]');
+        //   if(logoutButton) {
+        //     await logoutButton.click();
+        //     console.log("Clicked logout button.");
+        //   }
+        // } catch(error) {
+        //   console.error("Error logging out: ", error.message)
+        // }
+
+        // await login(queueType, page, pageForAddress);
         await selectElements(queueType, resortID, suiteType, page, pageForAddress);
         await selectSuiteType(page, suiteType, resortID, currentYear, currentMonth, initialDate, lastDay, false);
         await responseAchieved(false);
