@@ -35,6 +35,7 @@ async function executeScraper(queueType, resortID, suiteType, months, resortHasN
         return null;
     }
 
+
     try {
       console.log("I need to log in: " + needtoLogin);
       doneLogin = needtoLogin ? await login(queueType, page, pageForAddress) : true;
@@ -909,6 +910,8 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
         ])
 
         console.log("Trying again..");
+        await login(queueType, page, pageForAddress);
+        await selectElements(queueType, resortID, suiteType, page, pageForAddress);
         await selectSuiteType(page, suiteType, resortID, currentYear, currentMonth, initialDate, lastDay, false);
         await responseAchieved(false);
       }
