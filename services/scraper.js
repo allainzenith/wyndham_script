@@ -755,8 +755,11 @@ async function selectSuiteType(page, suiteType, resortID, currentYear, currentMo
 
       const responseWaited = (async() => {
         page.waitForResponse( async response => {
-          if (await response.request().method() === "POST" && await response.status() === 200 &&
-          response.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability') ) {
+          if (
+            await response.request().method() !== "OPTIONS" && await response.request().method() === "POST" &&
+            await response.status() === 200 &&
+            response.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability')
+          ) {
             const postData = await response.request().postData();
             const responseText = await response.text();
     
@@ -854,8 +857,8 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
         await Promise.all([
           page.waitForResponse(async (response) => {
             if (
-              (await response.request().method()) !== "OPTIONS" &&
-              (await response.status()) === 200 &&
+              await response.request().method() !== "OPTIONS" && await response.request().method() === "POST" &&
+              await response.status() === 200 &&
               response.url().includes('https://api.wvc.wyndhamdestinations.com/resort-operations/v3/resorts/calendar/availability')
             ) {
               const postData = await response.request().postData();
@@ -906,10 +909,6 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
           page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/owner/account')
         ])
 
-        await Promise.all([
-          page.waitForNavigation(),
-          page.reload()
-        ])
 
         // try {
         //   await Promise.all([
