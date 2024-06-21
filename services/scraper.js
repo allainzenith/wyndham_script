@@ -801,11 +801,6 @@ async function selectSuiteType(page, suiteType, resortID, currentYear, currentMo
     return responses;
   } catch (error) {
     console.error("Error selecting suite type and getting first set of response: ", error.message);
-
-    await Promise.all([
-      page.waitForNavigation(),
-      page.reload( {waitUntil: 'load'} )
-    ])
     await selectSuiteType(page, suiteType, resortID, currentYear, currentMonth, initialDate, lastDay, isFirstTime);
   }
 }
@@ -903,11 +898,6 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
         console.log("Done fetching responses..");
       } catch (error) {
         console.error("Error getting response:", error.message);
-        await page.waitForTimeout(3000);
-        await Promise.all([
-          page.waitForNavigation(),
-          page.reload({ waitUntil: 'load' })
-        ])
 
         console.log("Trying again..");
         await login(queueType, page, pageForAddress);
