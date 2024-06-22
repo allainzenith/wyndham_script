@@ -905,13 +905,11 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
 
         console.log("Trying again..");
 
-        // await Promise.all([
-        //   page.waitForNavigation(),
-        //   page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/owner/account')
-        // ])
+        await Promise.all([
+          page.waitForNavigation(),
+          page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/owner/account')
+        ])
 
-
-        await login(queueType, page, pageForAddress);
         await selectElements(queueType, resortID, suiteType, page, pageForAddress);
         await selectSuiteType(page, suiteType, resortID, currentYear, currentMonth, initialDate, lastDay, false);
         await responseAchieved(false);
@@ -921,7 +919,6 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
   
     }
 
-    await page.waitForTimeout(2000);
   
     let calendarObj = [];
   
@@ -992,9 +989,17 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
   } catch (error) {
     console.error("Error getting availability:", error.message);
     //try the process one more time
+
+    let doneLogin = await login(queueType, page, pageForAddress);
+
+    console.log("Logged in again successfully: ", doneLogin);
   
-    let doneSelect = await selectElements(queueType, resortID, suiteType, page, pageForAddress);
+    let doneSelect = doneLogin !== null && doneLogin !== undefined ?
+                      await selectElements(queueType, resortID, suiteType, page, pageForAddress)
+                      : null;
+    
     console.log("Reselected elements successfully: ", doneSelect);
+    
     let doneScraping = doneSelect !== null && doneSelect !== undefined ? await checkAvailability( 
       queueType,
       months,
