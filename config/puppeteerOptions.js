@@ -55,7 +55,7 @@ async function initializeBrowser(customProfileRelPath) {
     fs.mkdirSync(customProfileDir);
   }
 
-  console.log("This is the env: ", ENV);
+  console.log("This is the env: ", executablePath);
 
   let newBrowser;
 
@@ -69,11 +69,6 @@ async function initializeBrowser(customProfileRelPath) {
     headless: false,
     userDataDir: customProfileDir,
     executablePath: executablePath
-  }
-
-  if (ENV === 'TESTING') {
-    console.log("TESTING")
-    launchParams.executablePath = "C:\\Users\\allain2\\.cache\\puppeteer\\chrome\\chrome-win64\\chrome.exe";
   }
 
   try {
