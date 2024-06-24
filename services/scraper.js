@@ -792,7 +792,7 @@ async function selectSuiteType(page, suiteType, resortID, currentYear, currentMo
               }
             }
           }
-        })
+        }, {timeout: 40001})
 
         console.log("Responses length: ", responses.length);
       })
@@ -923,8 +923,6 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
         await selectSuiteType(page, suiteType, resortID, currentYear, currentMonth, initialDate, lastDay, false);
         await responseAchieved(false);
       }
-
-      await page.waitForTimeout(2000);
   
     }
 
