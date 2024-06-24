@@ -259,7 +259,9 @@ async function findSendSmsCode(queueType, page, pageForAddress){
     console.log("We need OTP verification!");
 
     try {
-      await page.click(selector)
+      const sendCodeButton = await page.$(selector);
+      await sendCodeButton.click();
+      console.log("Send code clicked successfully")
     } catch (error) {
       console.log("Cannot re-click otp button")
     }
