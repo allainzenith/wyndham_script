@@ -212,7 +212,7 @@ async function login(queueType, page, pageForAddress) {
           addressSelectorFound++;
           console.log("Timed out. Reloading the page.");
           await Promise.all([
-            pageForAddress.waitForNavigation({ waitUntil: 'load' }), 
+            pageForAddress.waitForNavigation({ waitUntil: 'domcontentloaded' }), 
             pageForAddress.reload()
           ]);
         }
@@ -431,7 +431,7 @@ async function resendSmsCode(queueType, browser) {
 }
 async function enableSessionCalendar(page){
   try {
-    await page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results', { waitUntil: 'load' });
+    await page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results', { waitUntil: 'domcontentloaded' });
 
     let addressSelectorFound = 0;
 
@@ -451,7 +451,7 @@ async function enableSessionCalendar(page){
         console.log("Timed out. Reloading the page.");
         await Promise.all([
           page.waitForNavigation(), 
-          page.reload({ waitUntil: 'load' })
+          page.reload({ waitUntil: 'domcontentloaded' })
         ]);
       }
     }
@@ -549,7 +549,7 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
 
       await Promise.all([
         page.waitForNavigation(), 
-        page.goto(calendarUrl, { waitUntil: 'load' }),
+        page.goto(calendarUrl, { waitUntil: 'domcontentloaded' }),
       ]);
 
       // try {
@@ -631,7 +631,7 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
       //reload to make sure options are loaded correctly
       await Promise.all([
         page.waitForNavigation(), 
-        page.reload({ waitUntil: 'load' })
+        page.reload({ waitUntil: 'domcontentloaded' })
       ]);
 
       const suiteSelector = "#suiteType";
