@@ -547,27 +547,32 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
 
       let calendarUrl = `https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`;
 
-      try {
-        await page.waitForFunction(
-          (url) => window.location.href.includes(url),
-          { timeout: 1000 },
-          calendarUrl
-        );
-        console.log("Already on the calendar URL");
-        //IMPORTANT: DO NOT DELETE
-        await Promise.all([
-          page.waitForNavigation(), 
-          page.reload({ waitUntil: 'load' })
-        ]);
-      } catch (error) {
-        console.error("Not on the calendar URL yet: ", error.message);
-        console.log("Navigating now..");
-        await Promise.all([
-          page.waitForNavigation(), 
-          page.goto(calendarUrl, { waitUntil: 'load' }),
-        ]);
+      await Promise.all([
+        page.waitForNavigation(), 
+        page.goto(calendarUrl, { waitUntil: 'load' }),
+      ]);
 
-      }
+      // try {
+      //   await page.waitForFunction(
+      //     (url) => window.location.href.includes(url),
+      //     { timeout: 1000 },
+      //     calendarUrl
+      //   );
+      //   console.log("Already on the calendar URL");
+      //   //IMPORTANT: DO NOT DELETE
+      //   await Promise.all([
+      //     page.waitForNavigation(), 
+      //     page.reload({ waitUntil: 'load' })
+      //   ]);
+      // } catch (error) {
+      //   console.error("Not on the calendar URL yet: ", error.message);
+      //   console.log("Navigating now..");
+      //   await Promise.all([
+      //     page.waitForNavigation(), 
+      //     page.goto(calendarUrl, { waitUntil: 'load' }),
+      //   ]);
+
+      // }
 
 
       const resortSelector = "#ResortSelect";
@@ -626,7 +631,7 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
       //reload to make sure options are loaded correctly
       await Promise.all([
         page.waitForNavigation(), 
-        page.reload({ waitUntil: 'domcontentloaded' })
+        page.reload({ waitUntil: 'load' })
       ]);
 
       const suiteSelector = "#suiteType";
