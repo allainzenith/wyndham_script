@@ -953,8 +953,11 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
     dates = await checkCalendarObject(calendarObj, resortID);
   
     // start of grouping dates together
-  
+    
+    //get unique responses by its last occurence
     dates = filterUniqueKeys(dates);
+
+    //sorts the objects by date
     const compareDates = (a,b) => new Date(a.date) - new Date(b.date);
     dates = dates.sort(compareDates);
   
