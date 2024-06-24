@@ -224,8 +224,8 @@ async function login(queueType, page, pageForAddress) {
       let loginSelector = await page.$(`.button-primary[value*="Login"]`);
       await loginSelector.scrollIntoView();
 
-      await acceptCookies(page);
-      await checkOverlay(page);
+      // await acceptCookies(page);
+      // await checkOverlay(page);
 
       await page.type("#okta-signin-username", userName);
       await page.type("#okta-signin-password", passWord);
