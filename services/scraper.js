@@ -212,7 +212,7 @@ async function login(queueType, page, pageForAddress) {
           addressSelectorFound++;
           console.log("Timed out. Reloading the page.");
           await Promise.all([
-            pageForAddress.waitForNavigation({ waitUntil: 'domcontentloaded' }), 
+            pageForAddress.waitForNavigation({ waitUntil: 'networkidle2' }), 
             pageForAddress.reload()
           ]);
         }
@@ -229,7 +229,7 @@ async function login(queueType, page, pageForAddress) {
 
       await page.type("#okta-signin-username", userName);
       await page.type("#okta-signin-password", passWord);
-      await page.waitForTimeout(5000);
+      await page.setDefaultTimeout(5000);
       await page.click(`.button-primary[value*="Login"]`)
 
       let isVerified = await findSendSmsCode(queueType, page, pageForAddress);
@@ -254,7 +254,7 @@ async function findSendSmsCode(queueType, page, pageForAddress){
   try {
     await page.waitForSelector(selector);
     console.log("send-code button found");
-    await page.waitForTimeout(3000);
+    await page.setDefaultTimeout(3000);
     await page.click(selector);
     console.log("We need OTP verification!");
 
@@ -336,7 +336,7 @@ async function sendOTP(verOTP, queueType, page, pageForAddress) {
     await page.waitForSelector('#input69', {timeout:3000});
     await page.click("#input69");
     console.log("Clicked remember device");
-    await page.waitForTimeout(2000);
+    await page.setDefaultTimeout(2000);
     await page.waitForSelector('input[type="submit"]', {timeout:3000});
     await page.click('input[type="submit"]');
     console.log("Hit submit button");
@@ -431,7 +431,7 @@ async function resendSmsCode(queueType, browser) {
 }
 async function enableSessionCalendar(page){
   try {
-    await page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results', { waitUntil: 'domcontentloaded' });
+    await page.goto('https://clubwyndham.wyndhamdestinations.com/us/en/resorts/resort-search-results', { waitUntil: 'networkidle2' });
 
     let addressSelectorFound = 0;
 
@@ -451,7 +451,7 @@ async function enableSessionCalendar(page){
         console.log("Timed out. Reloading the page.");
         await Promise.all([
           page.waitForNavigation(), 
-          page.reload({ waitUntil: 'domcontentloaded' })
+          page.reload({ waitUntil: 'networkidle2' })
         ]);
       }
     }
@@ -549,7 +549,7 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
 
       await Promise.all([
         page.waitForNavigation(), 
-        page.goto(calendarUrl, { waitUntil: 'domcontentloaded' }),
+        page.goto(calendarUrl, { waitUntil: 'networkidle2' }),
       ]);
 
       // try {
@@ -626,12 +626,12 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
 
       console.log("This is the selected option: " + selectedOptionText);
 
-      await page.waitForTimeout(2000);
+      await page.setDefaultTimeout(2000);
       
       //reload to make sure options are loaded correctly
       await Promise.all([
         page.waitForNavigation(), 
-        page.reload({ waitUntil: 'domcontentloaded' })
+        page.reload({ waitUntil: 'networkidle2' })
       ]);
 
       const suiteSelector = "#suiteType";
@@ -787,7 +787,7 @@ async function selectSuiteType(page, suiteType, resortID, currentYear, currentMo
                 responses.push(responseText);
               }
 
-              if (firstFound && secondFound && responses.length >= 2) {
+              if (firstFound && secondFound) {
                 return true;
               }
             }
@@ -838,7 +838,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
 
     responses = await selectSuiteType(page, suiteType, resortID, currentYear, currentMonth, initialDate, lastDay, true);
 
-    await page.waitForTimeout(2000);
+    await page.setDefaultTimeout(2000);
   
     while (monthNow < months) {   
 
@@ -894,7 +894,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
                   responseSet.push(responseText);
                 }
       
-                if (firstFound && secondFound && responseSet.length >= 2) {
+                if (firstFound && secondFound) {
                   responses = responses.concat(responseSet);
                   console.log(responses.length);
                   return true;
