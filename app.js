@@ -68,26 +68,26 @@ app.use(function (err, req, res, next) {
 });
 
 // Schedule the update every 8 hours, 24 hours, and 1 week, respectively
-//8AM
-//8PM
+//12AM
+//12PM
 schedule.scheduleJob('0 */12 * * *', async () => {
   console.log("Tier 1 schedule function is called");
   await scheduledUpdates("TIER 1");
 });
 
-//3PM MONDAYS
+//7PM MONDAYS
 schedule.scheduleJob("0 7 * * 1", async () => {
   console.log("Deleting old manual updates..");
     await deleteOldManualUpdates();
 });
 
-//4PM DAILY
+//8PM DAILY
 schedule.scheduleJob("0 8 */1 * *", async () => {
   console.log("Tier 2 schedule function is called");
   await scheduledUpdates("TIER 2");
 });
 
-//4PM, MONDAYS
+//8PM, MONDAYS
 schedule.scheduleJob("0 8 * * 1", async () => {
   console.log("Tier 3 schedule function is called");
   await scheduledUpdates("TIER 3");

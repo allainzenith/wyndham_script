@@ -416,47 +416,44 @@ async function updateAvailability(listing, updatedAvail, months, page){
         console.log("Subarray size: ", subArrayOfAvailability.length);
 
         let requestsSent = 0;
-
-        const updatePromises = subArrayOfAvailability.map(async (sub) => {
-            try {
-                await axios.put(url, sub, { headers })
-                    .then(async (response) => {
-                        console.log("Request successful");
-                    })
-                    .catch(error => {
-                        console.error(error.message);
-                        console.log("Request failed");
-                    });
         
+        // const updatePromises = subArrayOfAvailability.map(async (sub) => {
+        //     try {
+        //         const response = await axios.put(url, sub, { headers });
+        //         console.log("Request successful");
+        //         requestsSent++;
+        
+        //         if (requestsSent >= 10) {
+        //             console.log("Ten or more requests sent. Waiting for a second.");
+        //             await new Promise(resolve => setTimeout(resolve, 1000));
+        //         }
+        
+        //         return true;
+        //     } catch (error) {
+        //         console.error(error.message);
+        //         return false;
+        //     }
+        // });
+        
+        // await Promise.all(updatePromises);
+
+        for(const sub of subArrayOfAvailability) {
+            try {
+                const response = await axios.put(url, sub, { headers });
+                console.log("Request successful");
                 requestsSent++;
         
                 if (requestsSent >= 10) {
                     console.log("Ten or more requests sent. Waiting for a second.");
                     await new Promise(resolve => setTimeout(resolve, 1000));
                 }
-        
-                return true;
-            } catch (err) {
-                console.error(err.message);
-                return false;
-            }
-        });
-        
-        // const interval = setInterval(async () => {
-        //     try {
-        //         console.log("Reloading page..");
-        //         await Promise.all([
-        //             page.waitForNavigation({ waitUntil: 'load' }),
-        //             page.reload()
-        //         ]);
-        //     } catch (error) {
-        //         console.error("Error while reloading page:", error);
-        //     }
-        // }, 20 * 1000);
-        
-        await Promise.all(updatePromises);
-        // clearInterval(interval);
+
+            } catch (error) {
+                console.error(error.message);
+            }            
+        }
         console.log("individual checking now..");
+        
 
 
         let indiUpdatedAvail = [];
