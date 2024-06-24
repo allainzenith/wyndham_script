@@ -258,6 +258,12 @@ async function findSendSmsCode(queueType, page, pageForAddress){
     await page.click(selector);
     console.log("We need OTP verification!");
 
+    try {
+      await page.click(selector)
+    } catch (error) {
+      console.log("Cannot re-click otp button")
+    }
+
     return false;
 
   } catch (error) {
@@ -410,7 +416,6 @@ async function resendSmsCode(queueType, browser) {
 
       if (await page.url() !== "https://clubwyndham.wyndhamdestinations.com/us/en/login"){
         resolve("MAINTENANCE");
-        // await browser.close();
       } else {
         let needsVerify = await findSendSmsCode();
         resolve(!needsVerify);
