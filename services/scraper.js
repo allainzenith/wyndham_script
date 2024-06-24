@@ -906,7 +906,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
                   responseSet.push(responseText);
                 }
       
-                if (firstFound && secondFound && responseSet.length === 2) {
+                if (firstFound && secondFound && responseSet.length >= 2) {
                   responses = responses.concat(responseSet);
                   console.log(responses.length);
                   return true;
