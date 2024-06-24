@@ -805,8 +805,6 @@ async function selectSuiteType(page, suiteType, resortID, currentYear, currentMo
             }
           }
         }, {timeout: 40001})
-
-        console.log("Responses length: ", responses.length);
       })
 
       await Promise.all([
@@ -822,6 +820,9 @@ async function selectSuiteType(page, suiteType, resortID, currentYear, currentMo
 
       console.log("This is the selected suite type:", selectedSuiteType);
     }  while (selectedSuiteType !== suiteType )
+
+    console.log("Done fetching responses..");
+    console.log("Responses length: ", responses.length);
 
     return responses;
   } catch (error) {
@@ -906,7 +907,7 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
                   responseSet.push(responseText);
                 }
       
-                if (firstFound && secondFound && responseSet.length >= 2) {
+                if (firstFound && secondFound) {
                   responses = responses.concat(responseSet);
                   console.log(responses.length);
                   return true;
