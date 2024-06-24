@@ -595,8 +595,8 @@ async function finalizeAccuracy(months, listingID, indiUpdatedAvail, page) {
                         //page reload
                         requestsSent = 0;
                         await Promise.all([
-                            page.waitForNavigation({ waitUntil: 'load' }),
-                            page.reload()
+                            page.waitForNavigation(),
+                            page.reload({ waitUntil: 'load' })
                         ])
 
                         await new Promise(resolve => setTimeout(resolve, 1000));
