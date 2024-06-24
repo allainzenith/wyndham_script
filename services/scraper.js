@@ -171,7 +171,7 @@ async function login(queueType, page, pageForAddress) {
       await Promise.all([
         page.waitForNavigation(), 
         page.bringToFront(),
-        page.goto("https://clubwyndham.wyndhamdestinations.com/us/en/login", { waitUntil: "load" }),
+        page.goto("https://clubwyndham.wyndhamdestinations.com/us/en/login", { waitUntil: 'load' }),
       ]);
 
     } catch (error) {
@@ -212,8 +212,8 @@ async function login(queueType, page, pageForAddress) {
           addressSelectorFound++;
           console.log("Timed out. Reloading the page.");
           await Promise.all([
-            pageForAddress.waitForNavigation({ waitUntil: 'networkidle2' }), 
-            pageForAddress.reload()
+            pageForAddress.waitForNavigation(), 
+            pageForAddress.reload({ waitUntil: 'load' })
           ]);
         }
       }
@@ -229,7 +229,8 @@ async function login(queueType, page, pageForAddress) {
 
       await page.type("#okta-signin-username", userName);
       await page.type("#okta-signin-password", passWord);
-      await page.setDefaultTimeout(5000);
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      // await page.setDefaultTimeout(5000);
       await page.click(`.button-primary[value*="Login"]`)
 
       let isVerified = await findSendSmsCode(queueType, page, pageForAddress);
@@ -254,7 +255,8 @@ async function findSendSmsCode(queueType, page, pageForAddress){
   try {
     await page.waitForSelector(selector);
     console.log("send-code button found");
-    await page.setDefaultTimeout(3000);
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    // await page.setDefaultTimeout(3000);
     await page.click(selector);
     console.log("We need OTP verification!");
 
@@ -344,7 +346,8 @@ async function sendOTP(verOTP, queueType, page, pageForAddress) {
     await page.waitForSelector('#input69', {timeout:3000});
     await page.click("#input69");
     console.log("Clicked remember device");
-    await page.setDefaultTimeout(2000);
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    // await page.setDefaultTimeout(2000);
     await page.waitForSelector('input[type="submit"]', {timeout:3000});
     await page.click('input[type="submit"]');
     console.log("Hit submit button");
@@ -633,7 +636,9 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
 
       console.log("This is the selected option: " + selectedOptionText);
 
-      await page.setDefaultTimeout(2000);
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // await page.setDefaultTimeout(2000);
       
       //reload to make sure options are loaded correctly
       await Promise.all([
@@ -844,8 +849,8 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
   try {
 
     responses = await selectSuiteType(page, suiteType, resortID, currentYear, currentMonth, initialDate, lastDay, true);
-
-    await page.setDefaultTimeout(2000);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    // await page.setDefaultTimeout(2000);
   
     while (monthNow < months) {   
 
@@ -916,6 +921,8 @@ async function checkAvailability(queueType, months, resortID, suiteType, page, p
       try {
         await responseAchieved(true);
         console.log("Done fetching responses..");
+        
+
       } catch (error) {
         console.error("Error getting response:", error.message);
 
