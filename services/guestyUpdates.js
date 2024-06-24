@@ -594,10 +594,14 @@ async function finalizeAccuracy(months, listingID, indiUpdatedAvail, page) {
                     if (requestsSent >=10) {
                         //page reload
                         requestsSent = 0;
-                        await Promise.all([
-                            page.waitForNavigation(),
-                            page.reload({ waitUntil: 'load' })
-                        ])
+                        try {
+                            await Promise.all([
+                                page.waitForNavigation(),
+                                page.reload({ waitUntil: 'load' })
+                            ])
+                        } catch (error) {
+                            console.error("Error reloading page after updating")
+                        }
 
                         await new Promise(resolve => setTimeout(resolve, 1000));
                     }
@@ -611,7 +615,7 @@ async function finalizeAccuracy(months, listingID, indiUpdatedAvail, page) {
         console.log("finalize accuracy: ", success);
         return success;
     } catch (error) {
-        console.error("Error finalizing accuracy", error.message);
+        console.error("Error finalizing accuracy: ", error.message);
         return 1;
     } 
 
