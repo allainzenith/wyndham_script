@@ -501,7 +501,13 @@ async function finalizeAccuracy(months, listingID, indiUpdatedAvail, page) {
         
         let data = await getCalendarAvailability(startDate, endDate, listingID);
 
+
         if (data !== null) {
+            console.log("Printing availability...")
+            console.log(".................................................................")
+            console.log(JSON.stringify(data, null, 2));
+            console.log(".................................................................")
+            
             let dateAvailability = data.data.days;
             let retrievedAvailability = [];
 
@@ -550,7 +556,7 @@ async function finalizeAccuracy(months, listingID, indiUpdatedAvail, page) {
                 dateManuallyUpdated = cancelledReservationDates.find(item => format(item.datetoUpdate, 'yyyy-MM-dd') === currentDate);
 
                 if(dateManuallyUpdated || (item.dateUpdatedAvail === item.date && item.statusUpdatedAvail !== item.status && item.an === false)) {
-                    
+                    console.log(item);
                     // if date is a cancelled reservation before, do not update its status
                     if (dateManuallyUpdated) {
 
@@ -564,7 +570,6 @@ async function finalizeAccuracy(months, listingID, indiUpdatedAvail, page) {
 
                     } else {
                         console.log("statuses don't match");
-                        console.log(item);
                         status = item.statusUpdatedAvail;
                         
                     }
@@ -648,7 +653,7 @@ async function getCalendarAvailability(startDate, endDate, listingID) {
                 // Handle errors that may occur during the request
                 console.error('Error:', error.message);
                 // console.error('Reason:', error.response.data);
-                reject(null);
+                reject([null]);
             }
 
         });
