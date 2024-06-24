@@ -505,18 +505,21 @@ async function acceptCookies(page) {
 }
 
 async function clickOneElement(page, elementSelector, timeout) {
-  const overlayExistsPromise = await page.evaluate((selector) => {
-      const overlayElement = document.querySelector(selector);
-      return overlayElement !== null;
-  }, elementSelector);
+  // const overlayExistsPromise = await page.evaluate((selector) => {
+  //     const overlayElement = document.querySelector(selector);
+  //     return overlayElement !== null;
+  // }, elementSelector);
 
-  const timeoutPromise = new Promise((resolve) => {
-      setTimeout(resolve, timeout, false); 
-  });
+  // const timeoutPromise = new Promise((resolve) => {
+  //     setTimeout(resolve, timeout, false); 
+  // });
   
-  const overlayExists = await Promise.race([overlayExistsPromise, timeoutPromise]);
+  // const overlayExists = await Promise.race([overlayExistsPromise, timeoutPromise]);
+
   
-  if (overlayExists) {
+  try {
+
+    await page.waitForSelector(elementSelector, { timeout: timeout, visible: true })
     const buttonClicked = await page.evaluate((selector) => {
       const buttonSelector = document.querySelector(selector);
       if (buttonSelector) {
@@ -528,9 +531,10 @@ async function clickOneElement(page, elementSelector, timeout) {
     }, elementSelector);
 
     return buttonClicked;
-  }  
-  console.log("Button is not there.")
-  return false;
+  } catch(error) { 
+    console.log("Button is not there.: ", error.message)
+    return false;
+  }
 }
 
 async function selectElements(queueType, resortID, suiteType, page, pageForAddress) {
