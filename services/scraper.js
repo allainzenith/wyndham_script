@@ -556,7 +556,7 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
 
       await Promise.all([
         page.waitForNavigation(), 
-        page.goto(calendarUrl, { waitUntil: 'networkidle2' }),
+        page.goto(calendarUrl, { waitUntil: 'load' }),
       ]);
 
       // try {
