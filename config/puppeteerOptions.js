@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 require("dotenv").config();
 const scriptDir = __dirname;
-const ENV = process.env.ENV;
+const executablePath = process.env.EXECUTABLE_PATH;
 
 let sharedData = {
   oneTimeBrowser: null,
@@ -65,9 +65,10 @@ async function initializeBrowser(customProfileRelPath) {
       "--no-sandbox",
       "--no-zygote",
     ],
-    headless: 'new',
-    // headless: false,
+    // headless: 'new',
+    headless: false,
     userDataDir: customProfileDir,
+    executablePath: executablePath
   }
 
   if (ENV === 'TESTING') {
