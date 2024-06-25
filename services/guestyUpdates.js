@@ -503,10 +503,6 @@ async function finalizeAccuracy(months, listingID, indiUpdatedAvail, page) {
 
 
         if (data !== null) {
-            console.log("Printing availability...")
-            console.log(".................................................................")
-            console.log(JSON.stringify(data, null, 2));
-            console.log(".................................................................")
             
             let dateAvailability = data.data.days;
             let retrievedAvailability = [];
@@ -536,6 +532,7 @@ async function finalizeAccuracy(months, listingID, indiUpdatedAvail, page) {
                 })
             }
             
+            //could cause potential issues from misalignment of dates.
             const finalAvailability = indiUpdatedAvail.map((obj, index) => ({ ...obj, ...retrievedAvailability[index] }));
 
             let requestsSent = 0;
@@ -611,13 +608,7 @@ async function finalizeAccuracy(months, listingID, indiUpdatedAvail, page) {
                         await new Promise(resolve => setTimeout(resolve, 1000));
                     }
   
-                } else {
-                    console.log("////////////////////////////////////////")
-                    console.log("matches");
-                    console.log(item);
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    console.log("////////////////////////////////////////")
-                }
+                } 
             }
         } else {
             success = 1;
