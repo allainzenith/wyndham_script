@@ -611,7 +611,13 @@ async function finalizeAccuracy(months, listingID, indiUpdatedAvail, page) {
                         await new Promise(resolve => setTimeout(resolve, 1000));
                     }
   
-                } 
+                } else {
+                    console.log("////////////////////////////////////////")
+                    console.log("matches");
+                    console.log(item);
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    console.log("////////////////////////////////////////")
+                }
             }
         } else {
             success = 1;
