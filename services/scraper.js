@@ -515,18 +515,7 @@ async function acceptCookies(page) {
 }
 
 async function clickOneElement(page, elementSelector, timeout) {
-  // const overlayExistsPromise = await page.evaluate((selector) => {
-  //     const overlayElement = document.querySelector(selector);
-  //     return overlayElement !== null;
-  // }, elementSelector);
 
-  // const timeoutPromise = new Promise((resolve) => {
-  //     setTimeout(resolve, timeout, false); 
-  // });
-  
-  // const overlayExists = await Promise.race([overlayExistsPromise, timeoutPromise]);
-
-  
   try {
 
     await page.waitForSelector(elementSelector, { timeout: timeout, visible: true })
@@ -554,13 +543,23 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
     try {
 
       await page.bringToFront();
+      const resortSelector = "#ResortSelect";
 
       let calendarUrl = `https://clubwyndham.wyndhamdestinations.com/us/en/owner/resort-monthly-calendar?productId=${resortID}`;
 
-      await Promise.all([
-        page.waitForNavigation(), 
-        page.goto(calendarUrl, { waitUntil: 'load' }),
-      ]);
+      // if(resortID === 'PI|R000000000052') {
+      //   console.log("Resort id is 52. Enabling session first.")
+      //   await enableSessionCalendar(page);
+      //   await page.waitForSelector(resortSelector, { timeout:10000, visible: true });
+      //   await new Promise(resolve => setTimeout(resolve, 150000));
+      //   console.log("Calendar session enabled")
+      //   // await page.select(resortSelector, resortID);
+      // } else {
+        await Promise.all([
+          page.waitForNavigation(), 
+          page.goto(calendarUrl, { waitUntil: 'load' }),
+        ]);
+      // }
 
       // try {
       //   await page.waitForFunction(
@@ -583,9 +582,6 @@ async function selectElements(queueType, resortID, suiteType, page, pageForAddre
       //   ]);
 
       // }
-
-
-      const resortSelector = "#ResortSelect";
 
       await checkOverlay(page);
 
